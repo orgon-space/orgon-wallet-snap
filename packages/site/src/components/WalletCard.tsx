@@ -62,76 +62,76 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500 hover:border-l-purple-500">
+    <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-[1.02]">
       <CardContent className="p-6">
         <div className="mb-4">
           {/* Header with wallet icon and name */}
-          <div className="flex items-center space-x-3 mb-3">
+          <div className="flex items-center space-x-4 mb-4">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Wallet className="w-6 h-6 text-white" />
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <Wallet className="w-7 h-7 text-white" />
               </div>
-              {wallet.balance && parseFloat(wallet.balance.trx) > 0 && (
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+              {wallet.balance && parseFloat(wallet.balance.orgon) > 0 && (
+                <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-md"></div>
               )}
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+              <h3 className="font-bold text-xl text-gray-900 dark:text-white">
                 {wallet.name || 'Unnamed Wallet'}
               </h3>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-8 w-8 p-0"
+                className="h-9 w-9 p-0 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30"
                 onClick={() => onRefresh?.()}
                 disabled={isRefreshing}
                 title="Refresh Balance"
               >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-8 w-8 p-0"
+                className="h-9 w-9 p-0 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30"
                 onClick={() => onExport?.(wallet.id)}
                 title="Export Private Key"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-green-600" />
               </Button>
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                className="h-9 w-9 p-0 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30"
                 onClick={() => onDelete?.(wallet.id)}
                 title="Delete Wallet"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4 text-red-600" />
               </Button>
             </div>
           </div>
           
           {/* Address section */}
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500 font-mono break-all">
+          <div className="flex items-center space-x-3 bg-gray-50 dark:bg-slate-700/50 rounded-xl p-3">
+            <span className="text-sm text-gray-600 dark:text-gray-300 font-mono break-all flex-1">
               {displayAddress(wallet.address)}
             </span>
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 opacity-100 transition-opacity flex-shrink-0"
+              className="h-8 w-8 p-0 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 flex-shrink-0"
               onClick={() => copyToClipboard(wallet.address)}
             >
-              <Copy className="w-3 h-3" />
+              <Copy className="w-4 h-4 text-gray-500" />
             </Button>
           </div>
         </div>
 
         {/* Balance Section */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
               Balance
             </span>
             {isRefreshing && (
@@ -140,22 +140,25 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           </div>
           
           {wallet.balance ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                {getBalanceIcon(wallet.balance.trx)}
-                <span className={`text-2xl font-bold ${getBalanceColor(wallet.balance.trx)}`}>
-                  {wallet.balance.trx}
-                </span>
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
-                    TRX
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {getBalanceIcon(wallet.balance.orgon)}
+                  <span className={`text-3xl font-bold ${getBalanceColor(wallet.balance.orgon)}`}>
+                    {wallet.balance.orgon}
                   </span>
+                </div>
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md">
+                  ORGON
+                </span>
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center py-4">
+            <div className="flex items-center justify-center py-6">
               <Button
                 variant="outline"
                 size="sm"
+                className="rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400"
                 onClick={() => onRefresh?.()}
                 disabled={isRefreshing}
               >

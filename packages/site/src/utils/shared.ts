@@ -47,7 +47,8 @@ export const copyToClipboard = async (text: string): Promise<void> => {
 };
 
 export const validateOrgonAddress = (address: string): boolean => {
-  return address.startsWith('T') && address.length === 34;
+  // Orgon addresses start with 'o' and are 34 characters long
+  return address.startsWith('o') && address.length === 34;
 };
 
 export const calculateTransactionFee = (gasPrice: string, gasLimit: string): string => {

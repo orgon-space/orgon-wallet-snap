@@ -188,12 +188,12 @@ export function isValidOrgonAddress(address: string): boolean {
     // Create a TronWeb instance to ensure utils are available
     const tronWebInstance = new TronWeb();
 
-
     // Use TronWeb's address validation
     return tronWebInstance.isAddress(address);
   } catch (error) {
     console.error('Error validating Orgon address:', JSON.stringify(error));
-    // Fallback to basic validation
+    // Fallback to basic validation for Orgon addresses
+    // Orgon addresses start with 'o' and are 34 characters long
     return /^o[A-Za-z1-9]{33}$/.test(address);
   }
 }
@@ -251,22 +251,22 @@ export function getDefaultNetwork(): OrgonNetworkConfig {
 /**
  * Convert ORG to sun (1 ORG = 1,000,000 sun)
  */
-export function orgToSun(org: string): number {
+export function orgonToSun(orgon: string): number {
   try {
     const tronWebInstance = new TronWeb();
 
-    return tronWebInstance.toSun(org);
+    return tronWebInstance.toSun(orgon);
   } catch (error) {
     console.error('Error converting ORG to sun:', error);
     // Fallback to manual calculation
-    return Math.floor(parseFloat(org) * 1000000);
+    return Math.floor(parseFloat(orgon) * 1000000);
   }
 }
 
 /**
  * Convert sun to ORG (1 ORG = 1,000,000 sun)
  */
-export function sunToOrg(sun: number): string {
+export function sunToOrgon(sun: number): string {
   try {
     const tronWebInstance = new TronWeb();
 
@@ -289,8 +289,6 @@ export async function createOrgonTransaction(
   network?: OrgonNetworkConfig
 ): Promise<any> {
   try {
-    console.log('Creating Orgon transaction:', { from, to, amount, memo, network });
-
     // Validate addresses
     if (!isValidOrgonAddress(from)) {
       throw new Error(`Invalid from address: ${from}`);
@@ -301,48 +299,27 @@ export async function createOrgonTransaction(
 
     // Use the provided network or default to mainnet
     const networkConfig = network || getDefaultNetwork();
-    console.log('Using network config:', networkConfig);
 
-    // Create TronWeb instance with proper configuration (no private key for transaction creation)
+    // Create TronWeb instance with proper configuration
     const tronWebConfig: any = {
       fullHost: networkConfig.rpcUrl
     };
 
     // Add headers if API key is provided
     if (networkConfig.apiKey) {
-      tronWebConfig.headers = { "TRON-PRO-API-KEY": networkConfig.apiKey };
+      tronWebConfig.headers = { "ORGON-PRO-API-KEY": networkConfig.apiKey };
     }
 
-    console.log('Creating TronWeb instance with config:', tronWebConfig);
     const tronWeb = new TronWeb(tronWebConfig);
-    console.log('TronWeb instance created successfully');
 
     // Convert amount to sun
-    console.log('Converting amount to sun:', amount);
     const amountSun = tronWeb.toSun(amount);
-    console.log('Amount in sun:', amountSun);
 
     // Create transaction
-    console.log('Building transaction...');
     const transaction = await tronWeb.transactionBuilder.sendTrx(to, amountSun, from, memo);
-    console.log('Transaction created successfully:', !!transaction);
-    console.log('Transaction object:', JSON.stringify(transaction, null, 2));
-    console.log('Transaction object keys:', transaction ? Object.keys(transaction) : []);
-    console.log('Transaction raw_data:', transaction?.raw_data);
-    console.log('Transaction txID:', transaction?.txID);
 
     if (!transaction || !transaction.raw_data) {
       throw new Error('Transaction creation failed - invalid transaction returned');
-    }
-
-    // Add additional transaction properties that might be required
-    if (!transaction.raw_data.contract) {
-      console.log('Warning: Transaction missing contract data');
-    }
-
-    // Ensure transaction has proper structure
-    if (!transaction.raw_data.contract || !Array.isArray(transaction.raw_data.contract)) {
-      console.log('Warning: Transaction contract data is invalid');
     }
 
     return transaction;
@@ -374,30 +351,15 @@ export async function signOrgonTransaction(
     };
 
     if (networkConfig.apiKey) {
-      tronWebConfig.headers = { "TRON-PRO-API-KEY": networkConfig.apiKey };
+      tronWebConfig.headers = { "ORGON-PRO-API-KEY": networkConfig.apiKey };
     }
 
-    console.log('Creating TronWeb instance for signing with config:', tronWebConfig);
     const tronWeb = new TronWeb(tronWebConfig);
-    console.log('TronWeb instance created for signing');
 
-    console.log('Signing transaction with private key...');
-    console.log('Transaction object before signing:', {
-      hasTransaction: !!transaction,
-      transactionKeys: transaction ? Object.keys(transaction) : [],
-      transactionType: typeof transaction
-    });
-    console.log('Private key length:', privateKey ? privateKey.length : 0);
+    // Remove 0x prefix from private key if present
+    privateKey = privateKey.replace(/^0x/, '');
 
     const signedTransaction = await tronWeb.trx.sign(transaction, privateKey);
-    console.log('Raw signed transaction:', JSON.stringify(signedTransaction, null, 2));
-    console.log('Transaction signed successfully:', !!signedTransaction);
-    console.log('Signed transaction properties:', {
-      hasRawData: !!signedTransaction?.raw_data_hex,
-      hasSignature: !!signedTransaction?.signature,
-      hasTxId: !!signedTransaction?.txID,
-      signatureLength: signedTransaction?.signature?.length
-    });
 
     if (!signedTransaction || !signedTransaction.raw_data_hex || !signedTransaction.signature) {
       throw new Error('Transaction signing failed - invalid signed transaction returned');
@@ -408,7 +370,7 @@ export async function signOrgonTransaction(
       ? signedTransaction.signature
       : [signedTransaction.signature];
 
-    // Return the complete transaction object as required by Tron network
+    // Return the complete transaction object as required by Orgon network
     const result = {
       visible: signedTransaction.visible || false,
       txID: signedTransaction.txID,

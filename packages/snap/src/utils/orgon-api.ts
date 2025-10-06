@@ -1,7 +1,7 @@
 import { OrgonNetworkConfig, OrgonSignedTransaction } from './orgon-crypto';
 
 export interface OrgonBalance {
-  org: string;
+  orgon: string;
   usd?: string;
 }
 
@@ -41,7 +41,7 @@ class OrgonApiClient {
 
     // Add API key if available
     if (this.network.apiKey) {
-      headers['TRON-PRO-API-KEY'] = this.network.apiKey;
+      headers['ORGON-PRO-API-KEY'] = this.network.apiKey;
     }
 
     console.log('Making request to:', url);
@@ -86,10 +86,10 @@ class OrgonApiClient {
       });
       
       // Convert from sun to ORG (1 ORG = 1,000,000 sun)
-      const orgBalance = (data.balance || 0) / 1000000;
+      const orgonBalance = (data.balance || 0) / 1000000;
       
       return {
-        org: orgBalance.toString()
+        orgon: orgonBalance.toString()
       };
     } catch (error) {
       console.error('Error fetching balance:', error);
@@ -102,7 +102,7 @@ class OrgonApiClient {
    */
   async getAccountTransactions(address: string, limit: number = 20): Promise<OrgonTransaction[]> {
     try {
-      const data = await this.makeRequest(`/v1/accounts/${address}/transactions/trc20`, 'GET');
+      const data = await this.makeRequest(`/v1/accounts/${address}/transactions/orc20`, 'GET');
       
       return (data.data || []).slice(0, limit).map((tx: any) => ({
         hash: tx.transaction_id,

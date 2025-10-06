@@ -56,18 +56,18 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   return (
     <div className="lg:hidden">
       {/* Main Header Bar - Hides on scroll */}
-      <div className={`sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 transition-transform duration-200 ease-out ${isScrolled ? '-translate-y-full' : 'translate-y-0'} rounded-b-2xl`}>
+      <div className={`sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 transition-transform duration-200 ease-out ${isScrolled ? '-translate-y-full' : 'translate-y-0'} rounded-b-2xl shadow-lg`}>
         <div className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Wallet className="w-4 h-4 text-white" />
+          <div className="flex items-center space-x-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <Wallet className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                 Orgon Snap
               </h1>
-              <p className="text-xs text-gray-500">
-                {walletCount} wallet{walletCount !== 1 ? 's' : ''}
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                {walletCount} wallet{walletCount !== 1 ? 's' : ''} • {formatBalance(totalBalance)} ORGON
               </p>
             </div>
           </div>
@@ -77,15 +77,15 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               variant="ghost"
               size="sm"
               onClick={onRefresh}
-              className="h-8 w-8 p-0"
+              className="h-9 w-9 p-0 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-4 h-4 text-blue-600" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="h-8 w-8 p-0"
+              className="h-9 w-9 p-0 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               {isMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </Button>
@@ -96,28 +96,28 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       {/* Sticky Tabs - Floating Island */}
       {showTabs && onTabChange && (
         <div className={`fixed left-4 right-4 z-40 transition-all duration-200 ease-out ${isScrolled ? 'top-3' : 'top-[88px]'}`}>
-           <div className="bg-white dark:bg-gray-800 rounded-full shadow-lg border border-gray-200 dark:border-gray-700 px-2 py-1 backdrop-blur-sm">
+           <div className="bg-white/90 dark:bg-slate-800/90 rounded-full shadow-xl border border-gray-200 dark:border-gray-700 px-3 py-2 backdrop-blur-md">
              <Tabs value={activeTab} onValueChange={onTabChange}>
                <div className="overflow-x-auto scrollbar-hide tab-scroll-container px-1">
-                 <TabsList className="inline-flex h-10 w-max bg-transparent p-0 min-w-full gap-1">
-                   <TabsTrigger value="overview" className="text-xs flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                     <Eye className="w-3.5 h-3.5" />
+                 <TabsList className="inline-flex h-11 w-max bg-transparent p-0 min-w-full gap-1">
+                   <TabsTrigger value="overview" className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                     <Eye className="w-4 h-4" />
                      <span>Overview</span>
                    </TabsTrigger>
-                   <TabsTrigger value="create" className="text-xs flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                     <Plus className="w-3.5 h-3.5" />
+                   <TabsTrigger value="create" className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                     <Plus className="w-4 h-4" />
                      <span>Create</span>
                    </TabsTrigger>
-                   <TabsTrigger value="send" className="text-xs flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                     <Send className="w-3.5 h-3.5" />
+                   <TabsTrigger value="send" className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                     <Send className="w-4 h-4" />
                      <span>Send</span>
                    </TabsTrigger>
-                   <TabsTrigger value="settings" className="text-xs flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                     <Cog className="w-3.5 h-3.5" />
+                   <TabsTrigger value="settings" className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                     <Cog className="w-4 h-4" />
                      <span>Settings</span>
                    </TabsTrigger>
-                   <TabsTrigger value="history" className="text-xs flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap data-[state=active]:bg-blue-500 data-[state=active]:text-white">
-                     <RefreshCw className="w-3.5 h-3.5" />
+                   <TabsTrigger value="history" className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-gray-500 data-[state=active]:to-slate-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                     <RefreshCw className="w-4 h-4" />
                      <span>History</span>
                    </TabsTrigger>
                 </TabsList>

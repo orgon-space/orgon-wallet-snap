@@ -21,7 +21,7 @@ export type OrgonNetwork = {
 };
 
 export type OrgonBalance = {
-  org: string;
+  orgon: string;
   usd?: string;
 };
 

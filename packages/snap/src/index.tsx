@@ -759,14 +759,11 @@ async function sendOrgonTransaction(params: any) {
   }
 
   if (storedAccount.account.address !== from) {
-    throw new Error('Account address mismatch '+ storedAccount.account.address);
+    throw new Error(`Account address mismatch: stored=${storedAccount.account.address}, from=${from}`);
   }
 
   try {
-    console.log('Starting transaction process:', { from, to, amount, memo, networkId, accountId });
-    
     // Show confirmation dialog
-    console.log('Showing confirmation dialog...');
     const confirmed = await snap.request({
       method: 'snap_dialog',
       params: {
@@ -791,18 +788,14 @@ async function sendOrgonTransaction(params: any) {
       throw new Error('Transaction cancelled by user');
     }
 
-    console.log('User confirmed transaction, creating transaction...');
     // Create transaction
     const transaction = await createOrgonTransaction(from, to, amount, memo, network);
-    console.log('Transaction created, signing...');
 
     // Sign transaction
     const signedTransaction = await signOrgonTransaction(transaction, storedAccount.account.privateKey, network);
-    console.log('Transaction signed, broadcasting...');
 
     // Broadcast transaction
     const txId = await broadcastTransaction(signedTransaction, network);
-    console.log('Transaction broadcasted successfully:', txId);
 
     return {
       success: true,

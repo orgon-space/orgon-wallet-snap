@@ -80,18 +80,18 @@ export const Dashboard: React.FC = () => {
   // If snap is not installed, show installation UI
   if (!installedSnap) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900">
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
-                <Wallet size={40} color="white" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
+        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="mb-12">
+              <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-3xl mb-6 shadow-lg">
+                <Wallet size={48} color="white" />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                Welcome to <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">Orgon Snap</span>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+                Welcome to <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent">Orgon Snap</span>
               </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                Connect to MetaMask and install the Orgon Snap to manage your Orgon wallets
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                Connect to MetaMask and install the Orgon Snap to manage your Orgon wallets with ease
               </p>
             </div>
 
@@ -104,20 +104,25 @@ export const Dashboard: React.FC = () => {
               </Alert>
             )}
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-6 max-w-md mx-auto">
               {!isMetaMaskReady && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Download size={20} />
+                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                  <CardHeader className="text-center pb-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl mb-4">
+                      <Download size={24} color="white" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
                       Install MetaMask Flask
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       Snaps is pre-release software only available in MetaMask Flask, a canary distribution for developers with access to upcoming features.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <Button className="w-full" size="lg">
+                  <CardContent className="pt-0">
+                    <Button 
+                      className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" 
+                      size="lg"
+                    >
                       Install MetaMask Flask
                     </Button>
                   </CardContent>
@@ -125,19 +130,21 @@ export const Dashboard: React.FC = () => {
               )}
 
               {isMetaMaskReady && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Wallet size={20} />
+                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                  <CardHeader className="text-center pb-4">
+                    <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
+                      <Wallet size={24} color="white" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
                       Connect Orgon Snap
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-gray-600 dark:text-gray-300 leading-relaxed">
                       Get started by connecting to and installing the Orgon Snap to manage your Orgon wallets.
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0">
                     <Button
-                      className="w-full"
+                      className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                       size="lg"
                       onClick={requestSnap}
                       disabled={!isMetaMaskReady}
@@ -156,21 +163,21 @@ export const Dashboard: React.FC = () => {
 
   // Main wallet interface
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
       <MobileHeader 
         walletCount={walletManager.accounts?.length || 0}
         totalBalance={Object.values(walletManager.balances)
-          .reduce((sum, balance) => sum + parseFloat(balance.trx), 0)
+          .reduce((sum, balance) => sum + parseFloat(balance?.orgon || '0'), 0)
           .toString()}
         onRefresh={walletManager.refreshAllBalances}
         activeTab={activeTab}
         onTabChange={uiActions.setActiveTab}
         showTabs={true}
-        showReconnect={shouldDisplayReconnectButton(installedSnap)}
+        showReconnect={shouldDisplayReconnectButton(installedSnap) || false}
         onReconnect={requestSnap}
       />
       
-      <div className="max-w-6xl mx-auto px-4 py-8 lg:pt-8 pt-[120px]">
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 lg:pt-8 pt-[120px]">
         {error && (
           <Alert className="mb-6" variant="destructive">
             <AlertCircle size={16} />

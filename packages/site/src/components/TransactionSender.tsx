@@ -20,8 +20,8 @@ export const TransactionSender: React.FC = () => {
   
   // Form state
   const [selectedAccount, setSelectedAccount] = useState<string>('');
-  const [toAddress, setToAddress] = useState('');
-  const [amount, setAmount] = useState('');
+  const [toAddress, setToAddress] = useState('oZJ26HNoRGPDJDVezXe5ZWWgy9W49KMoUp');
+  const [amount, setAmount] = useState('1');
   const [memo, setMemo] = useState('');
   const [selectedNetwork, setSelectedNetwork] = useState<string>('');
   const [transactionResult, setTransactionResult] = useState<any>(null);
@@ -31,10 +31,10 @@ export const TransactionSender: React.FC = () => {
 
   // Set default network when networks are loaded
   useEffect(() => {
-    if (networkManager.networks.length > 0 && !selectedNetwork) {
-      setSelectedNetwork(networkManager.networks[0].chainId);
+    if (networkManager.networks && networkManager.networks.length > 0 && !selectedNetwork) {
+      setSelectedNetwork(networkManager.networks[0]?.chainId || '');
     }
-  }, [networkManager.networks.length, selectedNetwork]);
+  }, [networkManager.networks?.length, selectedNetwork]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,8 +50,8 @@ export const TransactionSender: React.FC = () => {
         from: selectedAccount,
         to: toAddress,
         amount,
-        memo: memo || undefined,
-        networkId: selectedNetwork || undefined,
+        memo: memo || '',
+        networkId: selectedNetwork || '',
         accountId: walletManager.accounts?.find((acc) => acc.address === selectedAccount)?.id || '',
       };
 
@@ -78,7 +78,7 @@ export const TransactionSender: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Send size={20} />
-            Send TRX Transaction
+            Send ORGON Transaction
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -92,42 +92,46 @@ export const TransactionSender: React.FC = () => {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Send size={20} />
-          Send TRX Transaction
+    <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+      <CardHeader className="text-center pb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl mb-4 shadow-lg">
+          <Send size={32} color="white" />
+        </div>
+        <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          Send ORGON Transaction
         </CardTitle>
-        <CardDescription>
-          Transfer TRX to another Orgon address with advanced options
+        <CardDescription className="text-gray-600 dark:text-gray-300 text-lg">
+          Transfer ORGON to another Orgon address with advanced options
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-8 pb-8">
         <div className="flex flex-col gap-6">
           {transactionManager.error && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="border-red-200 bg-red-50 dark:bg-red-900/20">
               <AlertCircle size={16} />
-              <AlertDescription>{transactionManager.error}</AlertDescription>
+              <AlertDescription className="text-red-800 dark:text-red-200">
+                {transactionManager.error}
+              </AlertDescription>
             </Alert>
           )}
 
           {transactionResult && (
-            <Alert>
-              <CheckCircle size={16} />
-              <AlertDescription>
+            <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
+              <CheckCircle size={16} className="text-green-600" />
+              <AlertDescription className="text-green-800 dark:text-green-200">
                 <strong>Transaction sent successfully!</strong>
-                <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="text-sm flex flex-col gap-1">
+                <div className="mt-3 p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-green-200 dark:border-green-800">
+                  <div className="text-sm flex flex-col gap-2">
                     <div>
                       <strong>Transaction ID:</strong> 
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="font-mono text-xs break-all">
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="font-mono text-xs break-all bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded-lg">
                           {transactionResult.txId}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 w-6 p-0"
+                          className="h-7 w-7 p-0 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600"
                           onClick={() => copyToClipboard(transactionResult.txId)}
                         >
                           <Copy size={12} />
@@ -148,10 +152,10 @@ export const TransactionSender: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* From Account */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">From Account</label>
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">From Account</label>
               <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400">
                   <SelectValue placeholder="Select an account" />
                 </SelectTrigger>
                 <SelectContent>
@@ -170,30 +174,34 @@ export const TransactionSender: React.FC = () => {
             </div>
 
             {/* To Address */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">To Address</label>
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">To Address</label>
               <div className="relative">
                 <Input
                   value={toAddress}
                   onChange={(e) => setToAddress(e.target.value)}
-                  placeholder="TRecipientAddress..."
-                  className={toAddress && !validateOrgonAddress(toAddress) ? 'border-red-500' : ''}
+                  placeholder="oRecipientAddress..."
+                  className={`h-12 rounded-xl border-2 focus:border-blue-500 dark:focus:border-blue-400 ${
+                    toAddress && !validateOrgonAddress(toAddress) 
+                      ? 'border-red-500 dark:border-red-400' 
+                      : 'border-gray-200 dark:border-gray-700'
+                  }`}
                   required
                 />
                 {toAddress && validateOrgonAddress(toAddress) && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <CheckCircle size={16} className="text-green-500" />
+                    <CheckCircle size={18} className="text-green-500" />
                   </div>
                 )}
               </div>
               {toAddress && !validateOrgonAddress(toAddress) && (
-                <p className="text-xs text-red-500">Invalid Orgon address format</p>
+                <p className="text-sm text-red-600 dark:text-red-400">Invalid Orgon address format</p>
               )}
             </div>
 
             {/* Amount */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Amount (TRX)</label>
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Amount (ORGON)</label>
               <div className="relative">
                 <Input
                   type="number"
@@ -202,41 +210,43 @@ export const TransactionSender: React.FC = () => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.0"
+                  className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 pr-16"
                   required
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <Badge variant="secondary" className="text-xs">TRX</Badge>
+                  <Badge variant="secondary" className="text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white">ORGON</Badge>
                 </div>
               </div>
               {amount && parseFloat(amount) > 0 && (
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Calculator size={12} />
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2">
+                  <Calculator size={14} />
                   <span>≈ ${(parseFloat(amount) * 0.1).toFixed(2)} USD</span>
                 </div>
               )}
             </div>
 
             {/* Memo */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Memo (Optional)</label>
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Memo (Optional)</label>
               <Textarea
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
                 placeholder="Add a memo to your transaction"
                 rows={3}
                 maxLength={200}
+                className="rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
               />
-              <div className="flex justify-between text-xs text-gray-500">
+              <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                 <span>Optional message to include with the transaction</span>
                 <span>{memo.length}/200</span>
               </div>
             </div>
 
             {/* Network */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Network</label>
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Network</label>
               <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400">
                   <SelectValue placeholder="Select a network" />
                 </SelectTrigger>
                 <SelectContent>
@@ -267,7 +277,7 @@ export const TransactionSender: React.FC = () => {
               {showAdvanced && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Gas Price (TRX)</label>
+                    <label className="text-sm font-medium">Gas Price (ORGON)</label>
                     <Input
                       type="number"
                       step="0.01"
@@ -290,7 +300,7 @@ export const TransactionSender: React.FC = () => {
                   <div className="col-span-full">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Clock size={16} />
-                      <span>Estimated Fee: {calculateTransactionFee(gasPrice, gasLimit)} TRX</span>
+                      <span>Estimated Fee: {calculateTransactionFee(gasPrice, gasLimit)} ORGON</span>
                     </div>
                   </div>
                 </div>
@@ -317,7 +327,7 @@ export const TransactionSender: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-blue-700 dark:text-blue-300">Amount:</span>
                     <span className="font-mono text-blue-900 dark:text-blue-100">
-                      {amount} TRX
+                      {amount} ORGON
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -337,7 +347,7 @@ export const TransactionSender: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-blue-700 dark:text-blue-300">Fee:</span>
                     <span className="font-mono text-blue-900 dark:text-blue-100">
-                      {calculateTransactionFee(gasPrice, gasLimit)} TRX
+                      {calculateTransactionFee(gasPrice, gasLimit)} ORGON
                     </span>
                   </div>
                 </div>
@@ -347,7 +357,7 @@ export const TransactionSender: React.FC = () => {
             <Button
               type="submit"
               disabled={transactionManager.loading || !isFormValid}
-              className="w-full h-12 text-lg"
+              className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {transactionManager.loading ? (
                 <>

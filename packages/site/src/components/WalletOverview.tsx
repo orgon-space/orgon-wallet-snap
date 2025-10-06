@@ -62,7 +62,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
       return sum;
     }
     const balance = parentBalances[account.id];
-    return sum + (balance ? parseFloat(balance.trx) : 0);
+    return sum + (balance ? parseFloat(balance.orgon) : 0);
   }, 0);
 
   const displayBalance = (balance: number) => {
@@ -112,7 +112,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
               disabled={parentAccounts.length === 0}
             >
               <Send className="w-5 h-5" />
-              <span className="text-xs">Send TRX</span>
+              <span className="text-xs">Send ORGON</span>
             </Button>
           </div>
         </CardContent>
