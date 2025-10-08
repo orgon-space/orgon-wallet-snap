@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 
-import { useWalletManager, useNetworkManager, useTransactionManager } from '../hooks';
-import { formatAddress, validateOrgonAddress, calculateTransactionFee, copyToClipboard } from '../utils/shared';
-import type { OrgonTransaction } from '../types/snap';
+import { useWalletManager } from '../hooks/wallet';
+import { useNetworkManager } from '../hooks/network';
+import { useTransactionManager } from '../hooks/transaction';
+import { formatAddress, validateOrgonAddress, calculateTransactionFee, copyToClipboard } from '../utils/helpers';
+import type { OrgonTransaction } from '../types';
 
 export const TransactionSender: React.FC = () => {
   const walletManager = useWalletManager();

@@ -1,3 +1,8 @@
+/**
+ * MetaMask provider detection and interaction utilities
+ * EIP-6963 provider discovery and snap support detection
+ */
+
 import type {
   EIP6963AnnounceProviderEvent,
   MetaMaskInpageProvider,
@@ -118,3 +123,5 @@ export async function getSnapsProvider() {
 
   return null;
 }
+
+

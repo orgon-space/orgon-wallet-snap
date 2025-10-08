@@ -8,8 +8,8 @@ import { Textarea } from './ui/textarea';
 import { Alert, AlertDescription } from './ui/alert';
 import { WalletCard } from './WalletCard';
 
-import { useWalletManager } from '../hooks';
-import { formatAddress } from '../utils/shared';
+import { useWalletManager } from '../hooks/wallet';
+import { formatAddress } from '../utils/helpers';
 
 interface WalletManagementProps {
   onExportWallet: (walletId: string) => void;

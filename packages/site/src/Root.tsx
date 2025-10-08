@@ -1,7 +1,7 @@
 import type { FunctionComponent, ReactNode } from 'react';
 import { createContext, useState, useEffect } from 'react';
-import { MetaMaskProvider } from './hooks';
-import { getThemePreference, setLocalStorage } from './utils';
+import { MetaMaskProvider } from './hooks/metamask';
+import { getThemePreference, setLocalStorage } from './utils/helpers';
 import './styles/globals.css';
 
 export type RootProps = {

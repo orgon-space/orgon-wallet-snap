@@ -17,7 +17,7 @@ import {
   SelectValue 
 } from './ui/select';
 import { Card, CardContent } from './ui/card';
-import { useNetworkManager } from '../hooks';
+import { useNetworkManager } from '../hooks/network';
 
 interface Network {
   chainId: string;

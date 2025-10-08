@@ -11,10 +11,12 @@ import { TransactionSender } from './TransactionSender';
 import { ExportWalletModal } from './ExportWalletModal';
 import { MobileHeader } from './MobileHeader';
 
-import { useMetaMask, useRequestSnap, useMetaMaskContext, useWalletManager, useNetworkManager } from '../hooks';
-import { useUIStore, useUIActions, useExportModal } from '../store/uiStore';
+import { useMetaMask, useRequestSnap, useMetaMaskContext } from '../hooks/metamask';
+import { useWalletManager } from '../hooks/wallet';
+import { useNetworkManager } from '../hooks/network';
+import { useUIStore, useUIActions, useExportModal } from '../hooks/uiStore';
 import { defaultSnapOrigin } from '../config';
-import { isLocalSnap, shouldDisplayReconnectButton } from '../utils';
+import { isLocalSnap, shouldDisplayReconnectButton } from '../utils/helpers';
 
 export const Dashboard: React.FC = () => {
   const { error } = useMetaMaskContext();

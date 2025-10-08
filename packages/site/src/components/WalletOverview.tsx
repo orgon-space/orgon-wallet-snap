@@ -15,8 +15,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 // import { Badge } from './ui/badge';
 import { NetworkSwitcher } from './NetworkSwitcher';
 import { WalletCard } from './WalletCard';
-import { formatAddress, formatBalance, copyToClipboard } from '../utils/shared';
-import type { OrgonAccount, OrgonBalance, OrgonNetwork } from '../types/snap';
+import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
+import type { OrgonAccount, OrgonBalance, OrgonNetwork } from '../types';
 
 interface WalletOverviewProps {
   onCreateWallet: () => void;

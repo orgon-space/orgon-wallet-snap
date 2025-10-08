@@ -1,6 +1,6 @@
 import type { FunctionComponent } from 'react';
 
-import { Dashboard } from './components';
+import { Dashboard } from './components/Dashboard';
 
 export const App: FunctionComponent = () => {
   return (

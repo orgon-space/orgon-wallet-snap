@@ -20,8 +20,8 @@ import { Card, CardContent } from './ui/card';
 //   DropdownMenuSeparator 
 // } from './ui/dropdown-menu';
 // import { Badge } from './ui/badge';
-import { formatAddress, formatBalance, copyToClipboard } from '../utils/shared';
-import type { OrgonAccount, OrgonBalance } from '../types/snap';
+import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
+import type { OrgonAccount, OrgonBalance } from '../types';
 
 interface WalletCardProps {
   wallet: OrgonAccount & { balance?: OrgonBalance };
