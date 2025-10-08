@@ -31,6 +31,8 @@ export type OrgonAccount = {
   id: string;
   name: string;
   address: string;
+  balance?: any;
+  mnemonic?: string;
 };
 
 export type OrgonNetwork = {
@@ -38,11 +40,6 @@ export type OrgonNetwork = {
   name: string;
   rpcUrl: string;
   explorerUrl: string;
-};
-
-export type OrgonBalance = {
-  orgon: string;
-  usd?: string;
 };
 
 export type OrgonTransaction = {

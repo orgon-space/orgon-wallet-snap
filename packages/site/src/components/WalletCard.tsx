@@ -46,21 +46,6 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     return address; // Always show full address
   };
 
-  const getBalanceColor = (balance: string) => {
-    const num = parseFloat(balance);
-    if (num > 1000) return 'text-green-600';
-    if (num > 100) return 'text-blue-600';
-    if (num > 10) return 'text-yellow-600';
-    return 'text-gray-600';
-  };
-
-  const getBalanceIcon = (balance: string) => {
-    const num = parseFloat(balance);
-    if (num > 1000) return <TrendingUp className="w-4 h-4 text-green-600" />;
-    if (num > 100) return <TrendingUp className="w-4 h-4 text-blue-600" />;
-    return <TrendingDown className="w-4 h-4 text-gray-600" />;
-  };
-
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-[1.02]">
       <CardContent className="p-6">
@@ -143,9 +128,8 @@ export const WalletCard: React.FC<WalletCardProps> = ({
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  {getBalanceIcon(wallet.balance.orgon)}
-                  <span className={`text-3xl font-bold ${getBalanceColor(wallet.balance.orgon)}`}>
-                    {wallet.balance.orgon}
+                  <span className={`text-3xl font-bold`}>
+                    {(wallet.balance?.balance / 10 ** 6) || 0}
                   </span>
                 </div>
                 <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md">

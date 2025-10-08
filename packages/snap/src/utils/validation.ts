@@ -49,28 +49,6 @@ export function isValidMnemonic(mnemonic: string): boolean {
   return words.length >= MIN_MNEMONIC_WORDS;
 }
 
-/**
- * Validate transaction amount
- * @param amount - Amount to validate
- * @returns True if valid, false otherwise
- */
-export function isValidAmount(amount: string): boolean {
-  if (!amount || typeof amount !== 'string') {
-    return false;
-  }
-  
-  const numAmount = parseFloat(amount);
-  
-  if (isNaN(numAmount) || numAmount <= 0) {
-    return false;
-  }
-  
-  if (numAmount > MAX_TRANSACTION_AMOUNT) {
-    return false;
-  }
-  
-  return true;
-}
 
 /**
  * Validate transaction parameters
@@ -86,11 +64,15 @@ export function validateTransactionParams(params: OrgonTransactionRequest): void
     throw new Error(ERROR_MESSAGES.INVALID_TO_ADDRESS);
   }
 
-  if (!isValidAmount(params.amount)) {
+  if (!params.amount || typeof params.amount !== 'string') {
     throw new Error(ERROR_MESSAGES.INVALID_AMOUNT);
   }
 
   const amount = parseFloat(params.amount);
+  if (isNaN(amount) || amount <= 0) {
+    throw new Error(ERROR_MESSAGES.INVALID_AMOUNT);
+  }
+
   if (amount > MAX_TRANSACTION_AMOUNT) {
     throw new Error(ERROR_MESSAGES.AMOUNT_TOO_LARGE);
   }

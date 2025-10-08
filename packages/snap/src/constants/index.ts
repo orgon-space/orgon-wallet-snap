@@ -94,11 +94,42 @@ export const MIN_MNEMONIC_WORDS = 12;
  */
 export const API_ENDPOINTS = {
   GET_ACCOUNT: '/wallet/getaccount',
-  GET_TRANSACTIONS: '/v1/accounts',
-  BROADCAST_TRANSACTION: '/wallet/broadcasttransaction',
-  GET_TRANSACTION_INFO: '/wallet/gettransactioninfobyid',
   GET_ACCOUNT_RESOURCES: '/wallet/getaccountresource',
+  GETv1_ACCOUNT: '/v1/accounts/{address}',
+  GETv1_TRANSACTIONS: '/v1/accounts/{address}/transactions',
+  BROADCAST_TRANSACTION: '/wallet/broadcasttransaction',
+  GET_TRANSACTION: '/wallet/gettransactionbyid',
+  GET_TRANSACTION_INFO: '/wallet/gettransactioninfobyid',
 } as const;
+
+/**
+ * Build API endpoint URL with dynamic parameters
+ * Replaces {param} placeholders in endpoint templates with actual values
+ * 
+ * @param endpoint - Endpoint template with {param} placeholders
+ * @param params - Object with parameter values to replace placeholders
+ * @returns Formatted endpoint URL with placeholders replaced
+ * 
+ * @example
+ * // Single parameter
+ * buildEndpoint(API_ENDPOINTS.GETv1_TRANSACTIONS, { address: 'oAbc123...' })
+ * // Returns: '/v1/accounts/oAbc123.../transactions'
+ * 
+ * @example
+ * // Multiple parameters
+ * buildEndpoint('/v1/{network}/accounts/{address}', { 
+ *   network: 'mainnet', 
+ *   address: 'oAbc123...' 
+ * })
+ * // Returns: '/v1/mainnet/accounts/oAbc123...'
+ */
+export function buildEndpoint(endpoint: string, params: Record<string, string>): string {
+  let result = endpoint;
+  for (const [key, value] of Object.entries(params)) {
+    result = result.replace(`{${key}}`, value);
+  }
+  return result;
+}
 
 // ============================================================================
 // Error Messages

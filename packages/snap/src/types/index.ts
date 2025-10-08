@@ -184,46 +184,11 @@ export interface GetMnemonicParams {
 }
 
 /**
- * Parameters for getting balance
+ * Parameters for signing and broadcasting any transaction
  */
-export interface GetBalanceParams {
-  address: string;
-  networkId?: string;
-}
-
-/**
- * Parameters for getting account info
- */
-export interface GetAccountInfoParams {
-  address: string;
-  networkId?: string;
-}
-
-/**
- * Parameters for sending transaction
- */
-export interface SendTransactionParams {
-  from: string;
-  to: string;
-  amount: string;
-  memo?: string;
-  networkId?: string;
+export interface SignTransactionParams {
   accountId: string;
-}
-
-/**
- * Parameters for getting transaction info
- */
-export interface GetTransactionInfoParams {
-  txId: string;
-  networkId?: string;
-}
-
-/**
- * Parameters for getting account resources
- */
-export interface GetAccountResourcesParams {
-  address: string;
+  transaction: any; // Unsigned transaction object from TronWeb/OrgonWeb
   networkId?: string;
 }
 

@@ -6,7 +6,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { OrgonAccount, OrgonBalance } from '../types';
+import type { OrgonAccount } from '../types';
 import { useInvokeSnap, useRequest } from './metamask';
 import { useNetworkStore } from './network';
 
@@ -22,7 +22,7 @@ export interface WalletServiceInterface {
   deleteAccount(accountId: string): Promise<void>;
   exportAccount(accountId: string): Promise<{ privateKey: string; address: string }>;
   getAccountMnemonic(accountId: string): Promise<{ accountId: string; address: string; mnemonic: string }>;
-  getBalance(address: string, networkId?: string): Promise<OrgonBalance>;
+  getBalance(address: string, networkId?: string): Promise<any>;
 }
 
 export class WalletService implements WalletServiceInterface {
@@ -144,15 +144,15 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async getBalance(address: string, networkId?: string): Promise<OrgonBalance> {
+  async getBalance(address: string, networkId?: string): Promise<any> {
     try {
       console.log('Getting balance for:', { address, networkId });
-      const balance = await this.invokeSnap({
-        method: 'orgon_getBalance',
+      const data = await this.invokeSnap({
+        method: 'orgon_getAccountV1',
         params: { address, networkId },
-      });
-      console.log('Balance result:', balance);
-      return balance as OrgonBalance;
+      }) as Array<{ data: any }>;
+      console.log('Balance result:', data[0]?.data);
+      return data[0]?.data;
     } catch (error: any) {
       console.error('Failed to get balance:', error);
       throw new Error(error?.message || 'Failed to get balance');
@@ -181,7 +181,7 @@ export class WalletService implements WalletServiceInterface {
 interface WalletState {
   // State
   accounts: OrgonAccount[];
-  balances: Record<string, OrgonBalance>;
+  balances: Record<string, any>;
   loading: boolean;
   error: string | null;
   refreshingWallets: Set<string>;
@@ -191,8 +191,8 @@ interface WalletState {
   setAccounts: (accounts: OrgonAccount[]) => void;
   addAccount: (account: OrgonAccount) => void;
   removeAccount: (accountId: string) => void;
-  updateBalance: (accountId: string, balance: OrgonBalance) => void;
-  updateBalances: (balances: Record<string, OrgonBalance>) => void;
+  updateBalance: (accountId: string, balance: any) => void;
+  updateBalances: (balances: Record<string, any>) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setRefreshingWallet: (accountId: string, refreshing: boolean) => void;
@@ -355,7 +355,7 @@ export const useWalletManager = () => {
     
     try {
       const balanceResults = await Promise.all(
-        accountsToLoad.map(async (account) => {
+        accountsToLoad.filter(account => account && account.address).map(async (account) => {
           try {
             const balance = await walletService.getBalance(account.address, networkId);
             return { accountId: account.id, balance };
@@ -366,7 +366,7 @@ export const useWalletManager = () => {
         })
       );
       
-      const newBalances: Record<string, OrgonBalance> = {};
+      const newBalances: Record<string, any> = {};
       balanceResults.forEach(({ accountId, balance }) => {
         if (balance) {
           newBalances[accountId] = balance;
@@ -416,7 +416,6 @@ export const useWalletManager = () => {
         const balance = await walletService.getBalance(account.address, currentNetwork.chainId);
         walletActions.updateBalance(account.id, balance);
       }
-      
       return account;
     } catch (err: any) {
       console.error('Failed to import account:', err);

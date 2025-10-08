@@ -87,12 +87,17 @@ export async function createAccount(
   // Store the account
   const storedAccount = await addAccount(orgonAccount, name);
 
-  return {
+  const result: AccountCreationResult = {
     id: storedAccount.id,
     name: storedAccount.name,
     address: storedAccount.account.address,
-    mnemonic: orgonAccount.mnemonic ?? undefined,
   };
+
+  if (orgonAccount.mnemonic) {
+    result.mnemonic = orgonAccount.mnemonic;
+  }
+
+  return result;
 }
 
 /**

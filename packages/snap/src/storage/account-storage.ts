@@ -162,41 +162,5 @@ export async function getAccountById(accountId: string): Promise<StoredAccount |
   }
 }
 
-/**
- * Update account name
- * @param accountId - Account ID
- * @param name - New name
- */
-export async function updateAccountName(accountId: string, name: string): Promise<void> {
-  try {
-    const accounts = await getStoredAccounts();
-    const accountIndex = accounts.findIndex((acc) => acc.id === accountId);
-
-    if (accountIndex === -1) {
-      throw new StorageError(ERROR_MESSAGES.ACCOUNT_NOT_FOUND);
-    }
-
-    accounts[accountIndex].name = name;
-    await saveAccounts(accounts);
-  } catch (error) {
-    throw new StorageError(
-      `Failed to update account name: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
-
-/**
- * Clear all accounts (use with caution!)
- */
-export async function clearAllAccounts(): Promise<void> {
-  try {
-    await saveAccounts([]);
-    await setAccountCounter(0);
-  } catch (error) {
-    throw new StorageError(
-      `Failed to clear accounts: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
 
 

@@ -3,6 +3,5 @@
  */
 
 export * from './crypto';
-export * from './api-client';
 
 

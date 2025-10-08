@@ -53,41 +53,5 @@ export async function updateState(newState: Partial<SnapState>): Promise<void> {
   }
 }
 
-/**
- * Get a specific value from state
- * @param key - State key
- * @returns Value or undefined
- */
-export async function getStateValue<T = any>(key: string): Promise<T | undefined> {
-  const state = await getState();
-  return state[key] as T | undefined;
-}
-
-/**
- * Set a specific value in state
- * @param key - State key
- * @param value - Value to set
- */
-export async function setStateValue(key: string, value: any): Promise<void> {
-  await updateState({ [key]: value });
-}
-
-/**
- * Clear all state
- */
-export async function clearState(): Promise<void> {
-  try {
-    await snap.request({
-      method: 'snap_manageState',
-      params: {
-        operation: 'clear',
-      },
-    });
-  } catch (error) {
-    throw new StorageError(
-      `${ERROR_MESSAGES.STORAGE_ERROR}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
 
 

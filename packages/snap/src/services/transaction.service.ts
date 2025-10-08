@@ -1,39 +1,72 @@
 /**
  * Transaction service
  * Business logic for transaction operations
+ * All methods correspond to API_ENDPOINTS
  */
 
+import axios, { type AxiosError } from 'axios';
 import type {
   TransactionBroadcastResult,
-  SendTransactionParams,
-  GetTransactionInfoParams,
-  GetAccountResourcesParams,
-  GetBalanceParams,
-  GetAccountInfoParams,
-  OrgonBalance,
-  OrgonAccountInfo,
+  SignTransactionParams,
+  OrgonNetworkConfig,
+  OrgonSignedTransaction,
 } from '../types';
 import { getAccountById } from '../storage';
 import {
-  createOrgonTransaction,
   signOrgonTransaction,
   getNetworkConfig,
   getDefaultNetwork,
 } from '../blockchain';
-import { createApiClient } from '../blockchain';
 import { showTransactionConfirmDialog } from '../ui';
-import { ERROR_MESSAGES } from '../constants';
-import { validateRequired, validateTransactionParams, isValidOrgonAddress } from '../utils/validation';
-import { UserCancelledError } from '../utils/errors';
+import { API_ENDPOINTS, buildEndpoint, ERROR_MESSAGES } from '../constants';
+import { validateRequired, isValidOrgonAddress } from '../utils/validation';
+import { UserCancelledError, ApiError } from '../utils/errors';
 
 /**
- * Get account balance
- * @param params - Balance query parameters
- * @returns Balance information
+ * Make an HTTP request to the Orgon network using axios
+ * @param network - Network configuration
+ * @param endpoint - API endpoint path
+ * @param method - HTTP method
+ * @param body - Request body
+ * @returns Response data
  */
-export async function getBalance(params: GetBalanceParams): Promise<OrgonBalance> {
-  const { address, networkId } = params;
+async function makeRequest(
+  network: OrgonNetworkConfig,
+  endpoint: string,
+  method: 'GET' | 'POST' = 'POST',
+  body?: any,
+): Promise<any> {
+  const url = `${network.rpcUrl}${endpoint}`;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
 
+  if (network.apiKey) {
+    headers['ORGON-PRO-API-KEY'] = network.apiKey;
+  }
+
+  try {
+    const response = method === 'GET'
+      ? await axios.get(url, { headers })
+      : await axios.post(url, body, { headers });
+
+    return response.data;
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    throw new ApiError(
+      `${ERROR_MESSAGES.API_REQUEST_FAILED}: ${axiosError.message}`,
+      axiosError.response?.status,
+    );
+  }
+}
+
+/**
+ * Get account information (GET_ACCOUNT endpoint: /wallet/getaccount)
+ * @param address - Account address
+ * @param networkId - Optional network ID
+ * @returns Account data
+ */
+export async function getAccount(address: string, networkId?: string): Promise<any> {
   validateRequired(address, 'Address');
 
   if (!isValidOrgonAddress(address)) {
@@ -46,18 +79,27 @@ export async function getBalance(params: GetBalanceParams): Promise<OrgonBalance
     throw new Error(ERROR_MESSAGES.INVALID_NETWORK);
   }
 
-  const apiClient = createApiClient(network);
-  return await apiClient.getAccountBalance(address);
+  try {
+    return await makeRequest(network, API_ENDPOINTS.GET_ACCOUNT, 'POST', {
+      address,
+      visible: true,
+    });
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    throw new ApiError(
+      `${ERROR_MESSAGES.BALANCE_FETCH_FAILED}: ${axiosError.message}`,
+      axiosError.response?.status,
+    );
+  }
 }
 
 /**
- * Get complete account information
- * @param params - Account info query parameters
- * @returns Complete account information
+ * Get account information (GET_ACCOUNT endpoint: /wallet/getaccount)
+ * @param address - Account address
+ * @param networkId - Optional network ID
+ * @returns Account data
  */
-export async function getAccountInfo(params: GetAccountInfoParams): Promise<OrgonAccountInfo> {
-  const { address, networkId } = params;
-
+export async function getAccountV1(address: string, networkId?: string): Promise<any> {
   validateRequired(address, 'Address');
 
   if (!isValidOrgonAddress(address)) {
@@ -70,29 +112,152 @@ export async function getAccountInfo(params: GetAccountInfoParams): Promise<Orgo
     throw new Error(ERROR_MESSAGES.INVALID_NETWORK);
   }
 
-  const apiClient = createApiClient(network);
-  return await apiClient.getAccountInfo(address);
+  try {
+    const endpoint = buildEndpoint(API_ENDPOINTS.GETv1_ACCOUNT, { address });
+    return await makeRequest(network, endpoint, 'GET');
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    throw new ApiError(
+      `${ERROR_MESSAGES.BALANCE_FETCH_FAILED}: ${axiosError.message}`,
+      axiosError.response?.status,
+    );
+  }
+}
+
+
+/**
+ * Get account resources (GET_ACCOUNT_RESOURCES endpoint: /wallet/getaccountresource)
+ * @param address - Account address
+ * @param networkId - Optional network ID
+ * @returns Account resources (bandwidth, energy)
+ */
+export async function getAccountResources(address: string, networkId?: string): Promise<any> {
+  validateRequired(address, 'Address');
+
+  if (!isValidOrgonAddress(address)) {
+    throw new Error(ERROR_MESSAGES.INVALID_ADDRESS);
+  }
+
+  const network = networkId ? getNetworkConfig(networkId) : getDefaultNetwork();
+
+  if (!network) {
+    throw new Error(ERROR_MESSAGES.INVALID_NETWORK);
+  }
+
+  try {
+    return await makeRequest(network, API_ENDPOINTS.GET_ACCOUNT_RESOURCES, 'POST', {
+      address,
+    });
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    throw new ApiError(
+      `Failed to get account resources: ${axiosError.message}`,
+      axiosError.response?.status,
+    );
+  }
 }
 
 /**
- * Send a transaction
- * @param params - Transaction parameters
+ * Get account transactions (GETv1_TRANSACTIONS endpoint: /v1/accounts/{address}/transactions)
+ * @param address - Account address
+ * @param networkId - Optional network ID
+ * @param limit - Maximum number of transactions
+ * @returns Array of transactions
+ */
+export async function getAccountTransactions(
+  address: string,
+  networkId?: string,
+  limit: number = 20,
+): Promise<any[]> {
+  validateRequired(address, 'Address');
+
+  if (!isValidOrgonAddress(address)) {
+    throw new Error(ERROR_MESSAGES.INVALID_ADDRESS);
+  }
+
+  const network = networkId ? getNetworkConfig(networkId) : getDefaultNetwork();
+
+  if (!network) {
+    throw new Error(ERROR_MESSAGES.INVALID_NETWORK);
+  }
+
+  try {
+    const endpoint = buildEndpoint(API_ENDPOINTS.GETv1_TRANSACTIONS, { address });
+    return await makeRequest(network, endpoint, 'GET');
+  } catch (error) {
+    // Return empty array if transactions fetch fails (account might be new)
+    return [];
+  }
+}
+
+/**
+ * Get transaction by ID (GET_TRANSACTION endpoint: /wallet/gettransactionbyid)
+ * @param txId - Transaction ID
+ * @param networkId - Optional network ID
+ * @returns Transaction data
+ */
+export async function getTransaction(txId: string, networkId?: string): Promise<any> {
+  validateRequired(txId, 'Transaction ID');
+
+  const network = networkId ? getNetworkConfig(networkId) : getDefaultNetwork();
+
+  if (!network) {
+    throw new Error(ERROR_MESSAGES.INVALID_NETWORK);
+  }
+
+  try {
+    return await makeRequest(network, API_ENDPOINTS.GET_TRANSACTION, 'POST', {
+      value: txId,
+    });
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    throw new ApiError(
+      `Failed to get transaction: ${axiosError.message}`,
+      axiosError.response?.status,
+    );
+  }
+}
+
+/**
+ * Get transaction info by ID (GET_TRANSACTION_INFO endpoint: /wallet/gettransactioninfobyid)
+ * @param txId - Transaction ID
+ * @param networkId - Optional network ID
+ * @returns Transaction information
+ */
+export async function getTransactionInfo(txId: string, networkId?: string): Promise<any> {
+  validateRequired(txId, 'Transaction ID');
+
+  const network = networkId ? getNetworkConfig(networkId) : getDefaultNetwork();
+
+  if (!network) {
+    throw new Error(ERROR_MESSAGES.INVALID_NETWORK);
+  }
+
+  try {
+    return await makeRequest(network, API_ENDPOINTS.GET_TRANSACTION_INFO, 'POST', {
+      value: txId,
+    });
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    throw new ApiError(
+      `Failed to get transaction info: ${axiosError.message}`,
+      axiosError.response?.status,
+    );
+  }
+}
+
+/**
+ * Sign and broadcast any transaction
+ * @param params - Transaction signing parameters
  * @returns Transaction broadcast result
  */
-export async function sendTransaction(
-  params: SendTransactionParams,
+export async function signAndBroadcastTransaction(
+  params: SignTransactionParams,
 ): Promise<TransactionBroadcastResult> {
-  const { from, to, amount, memo, networkId, accountId } = params;
-
-  // Validate required parameters
-  if (!from || !to || !amount) {
-    throw new Error(ERROR_MESSAGES.TRANSACTION_PARAMS_REQUIRED);
-  }
+  const { accountId, transaction, networkId } = params;
 
   validateRequired(accountId, 'Account ID');
-
-  // Validate transaction parameters
-  validateTransactionParams({ from, to, amount, memo });
+  validateRequired(transaction, 'Transaction');
 
   // Get network configuration
   const network = networkId ? getNetworkConfig(networkId) : getDefaultNetwork();
@@ -107,21 +272,18 @@ export async function sendTransaction(
     throw new Error(ERROR_MESSAGES.ACCOUNT_NOT_FOUND);
   }
 
-  if (storedAccount.account.address !== from) {
-    throw new Error(
-      `Account address mismatch: stored=${storedAccount.account.address}, from=${from}`,
-    );
-  }
-
   // Show confirmation dialog
-  const confirmed = await showTransactionConfirmDialog(from, to, amount, memo, network);
+  const confirmed = await showTransactionConfirmDialog(
+    storedAccount.account.address,
+    transaction.to_address || transaction.contract?.[0]?.parameter?.value?.to_address || 'Contract Call',
+    transaction.amount || 'N/A',
+    transaction.memo || transaction.data,
+    network,
+  );
 
   if (!confirmed) {
     throw new UserCancelledError(ERROR_MESSAGES.TRANSACTION_CANCELLED);
   }
-
-  // Create transaction
-  const transaction = await createOrgonTransaction(from, to, amount, memo, network);
 
   // Sign transaction
   const signedTransaction = await signOrgonTransaction(
@@ -131,58 +293,30 @@ export async function sendTransaction(
   );
 
   // Broadcast transaction
-  const apiClient = createApiClient(network);
-  const txId = await apiClient.broadcastTransaction(signedTransaction);
+  try {
+    const data = await makeRequest(
+      network,
+      API_ENDPOINTS.BROADCAST_TRANSACTION,
+      'POST',
+      signedTransaction,
+    );
 
-  return {
-    success: true,
-    txId,
-    transaction: signedTransaction,
-  };
-}
+    if (data.result !== true) {
+      throw new ApiError(data.message || ERROR_MESSAGES.TRANSACTION_FAILED);
+    }
 
-/**
- * Get transaction information
- * @param params - Transaction query parameters
- * @returns Transaction information
- */
-export async function getTransactionInfo(params: GetTransactionInfoParams): Promise<any> {
-  const { txId, networkId } = params;
-
-  validateRequired(txId, 'Transaction ID');
-
-  const network = networkId ? getNetworkConfig(networkId) : getDefaultNetwork();
-
-  if (!network) {
-    throw new Error(ERROR_MESSAGES.INVALID_NETWORK);
+    return {
+      success: true,
+      txId: data.txid,
+      transaction: signedTransaction,
+    };
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    throw new ApiError(
+      `${ERROR_MESSAGES.TRANSACTION_FAILED}: ${axiosError.message}`,
+      axiosError.response?.status,
+    );
   }
-
-  const apiClient = createApiClient(network);
-  return await apiClient.getTransactionInfo(txId);
-}
-
-/**
- * Get account resources (bandwidth, energy)
- * @param params - Account resources query parameters
- * @returns Account resources
- */
-export async function getAccountResources(params: GetAccountResourcesParams): Promise<any> {
-  const { address, networkId } = params;
-
-  validateRequired(address, 'Address');
-
-  if (!isValidOrgonAddress(address)) {
-    throw new Error(ERROR_MESSAGES.INVALID_ADDRESS);
-  }
-
-  const network = networkId ? getNetworkConfig(networkId) : getDefaultNetwork();
-
-  if (!network) {
-    throw new Error(ERROR_MESSAGES.INVALID_NETWORK);
-  }
-
-  const apiClient = createApiClient(network);
-  return await apiClient.getAccountResources(address);
 }
 
 

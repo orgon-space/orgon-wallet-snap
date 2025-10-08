@@ -33,29 +33,6 @@ try {
   throw new BlockchainError('Failed to import OrgonWeb library');
 }
 
-/**
- * Generate a new Orgon account with private key and address
- * @returns New Orgon account
- */
-export function generateOrgonAccount(): OrgonAccount {
-  try {
-    if (!TronWeb) {
-      throw new BlockchainError(ERROR_MESSAGES.TRONWEB_NOT_AVAILABLE);
-    }
-
-    const tronWebInstance = new TronWeb();
-    const account = tronWebInstance.utils.accounts.generateAccount();
-
-    return {
-      address: account.address.base58,
-      privateKey: account.privateKey,
-    };
-  } catch (error) {
-    throw new BlockchainError(
-      `${ERROR_MESSAGES.ACCOUNT_GENERATION_FAILED}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
 
 /**
  * Generate a new Orgon account with mnemonic phrase (BIP39)
@@ -124,7 +101,11 @@ export function createOrgonAccountFromPrivateKey(privateKey: string): OrgonAccou
       throw new BlockchainError(ERROR_MESSAGES.TRONWEB_NOT_AVAILABLE);
     }
 
-    const tronWebInstance = new TronWeb();
+    // Use default network config to avoid "Invalid URL" error
+    const networkConfig = getDefaultNetwork();
+    const tronWebInstance = new TronWeb({
+      fullHost: networkConfig.rpcUrl,
+    });
     const address = tronWebInstance.address.fromPrivateKey(sanitized);
 
     return {
@@ -138,21 +119,6 @@ export function createOrgonAccountFromPrivateKey(privateKey: string): OrgonAccou
   }
 }
 
-/**
- * Validate an Orgon address using TronWeb
- * Falls back to regex validation if TronWeb fails
- * @param address - Address to validate
- * @returns True if valid, false otherwise
- */
-export function validateOrgonAddress(address: string): boolean {
-  try {
-    const tronWebInstance = new TronWeb();
-    return tronWebInstance.isAddress(address);
-  } catch (error) {
-    // Fallback to regex validation
-    return isValidOrgonAddress(address);
-  }
-}
 
 /**
  * Get network configuration by chain ID
@@ -180,35 +146,6 @@ export function getDefaultNetwork(): OrgonNetworkConfig {
   return network;
 }
 
-/**
- * Convert ORG to sun (1 ORG = 1,000,000 sun)
- * @param orgon - Amount in ORG
- * @returns Amount in sun
- */
-export function orgonToSun(orgon: string): number {
-  try {
-    const tronWebInstance = new TronWeb();
-    return tronWebInstance.toSun(orgon);
-  } catch (error) {
-    // Fallback to manual calculation
-    return Math.floor(parseFloat(orgon) * ORGON_TO_SUN_MULTIPLIER);
-  }
-}
-
-/**
- * Convert sun to ORG (1 ORG = 1,000,000 sun)
- * @param sun - Amount in sun
- * @returns Amount in ORG
- */
-export function sunToOrgon(sun: number): string {
-  try {
-    const tronWebInstance = new TronWeb();
-    return tronWebInstance.fromSun(sun);
-  } catch (error) {
-    // Fallback to manual calculation
-    return (sun / ORGON_TO_SUN_MULTIPLIER).toString();
-  }
-}
 
 /**
  * Create an Orgon transaction
