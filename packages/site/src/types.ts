@@ -27,11 +27,22 @@ export type Snap = {
 // Orgon Blockchain Types
 // ============================================================================
 
+export type OrgonBalance = {
+  address?: string;
+  balance?: number;
+  create_time?: number;
+  assetV2?: Array<{
+    key: string;
+    value: number;
+  }>;
+  orc20?: Array<Record<string, string>>;
+};
+
 export type OrgonAccount = {
   id: string;
   name: string;
   address: string;
-  balance?: any;
+  balance?: OrgonBalance;
   mnemonic?: string;
 };
 
@@ -46,9 +57,10 @@ export type OrgonTransaction = {
   from: string;
   to: string;
   amount: string;
-  memo?: string;
+  memo?: string | null;
   networkId?: string;
   accountId: string;
+  transaction?: any; // Raw unsigned transaction from OrgonWeb
 };
 
 // ============================================================================
@@ -63,6 +75,7 @@ declare global {
       detected?: MetaMaskInpageProvider[];
       providers?: MetaMaskInpageProvider[];
     };
+    Buffer: typeof Buffer;
   }
 
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions

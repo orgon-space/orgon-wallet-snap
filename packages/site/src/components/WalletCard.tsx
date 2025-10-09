@@ -21,10 +21,11 @@ import { Card, CardContent } from './ui/card';
 // } from './ui/dropdown-menu';
 // import { Badge } from './ui/badge';
 import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
+import { useTokenBalances } from '../hooks/wallet';
 import type { OrgonAccount, OrgonBalance } from '../types';
 
 interface WalletCardProps {
-  wallet: OrgonAccount & { balance?: OrgonBalance };
+  wallet: OrgonAccount;
   onRefresh?: () => void;
   onDelete?: (id: string) => void;
   onExport?: (id: string) => void;
@@ -41,11 +42,13 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   currentNetwork
 }) => {
   const [showPrivateKey, setShowPrivateKey] = useState(false);
-
+  
   const displayAddress = (address: string) => {
     return address; // Always show full address
   };
-
+  
+  // Use the reusable hook to get token balances
+  const tokens = useTokenBalances(wallet);
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-[1.02]">
       <CardContent className="p-6">
@@ -56,7 +59,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                 <Wallet className="w-7 h-7 text-white" />
               </div>
-              {wallet.balance && parseFloat(wallet.balance.orgon) > 0 && (
+              {wallet.balance && (wallet.balance.balance ?? 0) > 0 && (
                 <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-md"></div>
               )}
             </div>
@@ -113,29 +116,57 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           </div>
         </div>
 
-        {/* Balance Section */}
+        {/* Tokens Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
-              Balance
+              Tokens
             </span>
             {isRefreshing && (
               <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
             )}
           </div>
           
-          {wallet.balance ? (
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-2xl p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className={`text-3xl font-bold`}>
-                    {(wallet.balance?.balance / 10 ** 6) || 0}
-                  </span>
-                </div>
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md">
-                  ORGON
-                </span>
-              </div>
+          {wallet.balance && tokens.length > 0 ? (
+            <div className="space-y-2">
+              {tokens.map((token, index) => {
+                const balance = (token.value / (10 ** token.decimals)).toFixed(token.decimals);
+                const displaySymbol = token.type === 'orc20' ? formatAddress(token.symbol) : token.symbol;
+                
+                return (
+                  <div 
+                    key={index} 
+                    className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl p-3 hover:shadow-md transition-shadow"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        <span className="font-bold text-lg text-gray-900 dark:text-white block">
+                          {balance}
+                        </span>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="text-sm text-gray-600 dark:text-gray-300 font-medium truncate" title={token.symbol}>
+                            {displaySymbol}
+                          </span>
+                          {token.type === 'orc20' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 rounded hover:bg-gray-200 dark:hover:bg-slate-600"
+                              onClick={() => copyToClipboard(token.symbol)}
+                              title="Copy token address"
+                            >
+                              <Copy className="w-3 h-3 text-gray-500" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md ml-3">
+                        {token.type}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="flex items-center justify-center py-6">

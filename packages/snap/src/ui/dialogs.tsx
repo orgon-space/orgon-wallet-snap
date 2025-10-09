@@ -202,12 +202,14 @@ export async function showTransactionConfirmDialog(
       content: (
         <Box>
           <Text>
-            <Bold>Send ORG Transaction</Bold>
+            <Bold>Send Transaction</Bold>
           </Text>
           <Text>From: {from}</Text>
           <Text>To: {to}</Text>
-          <Text>Amount: {amount} ORG</Text>
-          {memo && <Text>Memo: {memo}</Text>}
+          <Text>Amount: {amount}</Text>
+          {memo ? (
+            <Text>Memo: {memo}</Text>
+          ) : null}
           <Text>Network: {network.name}</Text>
           <Text>⚠️ Please verify the details before confirming!</Text>
         </Box>

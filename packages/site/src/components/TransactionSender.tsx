@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 
-import { useWalletManager } from '../hooks/wallet';
+import { useWalletManager, useTokenBalances, type TokenBalance } from '../hooks/wallet';
 import { useNetworkManager } from '../hooks/network';
 import { useTransactionManager } from '../hooks/transaction';
 import { formatAddress, validateOrgonAddress, calculateTransactionFee, copyToClipboard } from '../utils/helpers';
+import { createOrgonTransaction, createOrc10Transaction, createOrc20Transaction } from '../utils/transaction';
 import type { OrgonTransaction } from '../types';
 
 export const TransactionSender: React.FC = () => {
@@ -26,10 +27,27 @@ export const TransactionSender: React.FC = () => {
   const [amount, setAmount] = useState('1');
   const [memo, setMemo] = useState('');
   const [selectedNetwork, setSelectedNetwork] = useState<string>('');
+  const [selectedToken, setSelectedToken] = useState<string>(''); // Format: "type|symbol|address"
   const [transactionResult, setTransactionResult] = useState<any>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [gasPrice, setGasPrice] = useState('0.1');
   const [gasLimit, setGasLimit] = useState('1000000');
+
+  // Get selected account data and its token balances
+  const selectedAccountData = walletManager.accounts?.find((acc) => acc.address === selectedAccount);
+  
+  // Combine account with its balance (like in WalletOverview)
+  const accountWithBalance = selectedAccountData ? {
+    ...selectedAccountData,
+    balance: walletManager.balances[selectedAccountData.id]
+  } : undefined;
+  
+  const tokens = useTokenBalances(accountWithBalance);
+  
+  // Parse selected token
+  const currentToken = selectedToken 
+    ? tokens.find(t => `${t.type}|${t.symbol}|${t.address || ''}` === selectedToken)
+    : tokens[0]; // Default to first token (ORGON)
 
   // Set default network when networks are loaded
   useEffect(() => {
@@ -37,6 +55,23 @@ export const TransactionSender: React.FC = () => {
       setSelectedNetwork(networkManager.networks[0]?.chainId || '');
     }
   }, [networkManager.networks?.length, selectedNetwork]);
+
+  // Load balance when account is selected
+  useEffect(() => {
+    if (selectedAccountData && !walletManager.balances[selectedAccountData.id]) {
+      walletManager.refreshWalletBalance(selectedAccountData.id);
+    }
+  }, [selectedAccountData?.id]);
+
+  // Set default token when tokens are loaded
+  useEffect(() => {
+    if (tokens.length > 0 && !selectedToken) {
+      const defaultToken = tokens[0];
+      if (defaultToken) {
+        setSelectedToken(`${defaultToken.type}|${defaultToken.symbol}|${defaultToken.address || ''}`);
+      }
+    }
+  }, [tokens.length, selectedToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,16 +83,74 @@ export const TransactionSender: React.FC = () => {
     }
 
     try {
+      // Get network config
+      const networkConfig = selectedNetworkData ? {
+        rpcUrl: selectedNetworkData.rpcUrl,
+        apiKey: (selectedNetworkData as any).apiKey,
+      } : undefined;
+
+      // Create raw transaction based on token type
+      let rawTransaction: any;
+      const memoValue = memo && memo.trim() !== '' ? memo.trim() : undefined;
+      
+      if (currentToken?.type === 'orc10') {
+        // ORC10 transaction
+        if (!currentToken.address) {
+          throw new Error('Token ID is required for ORC10 transactions');
+        }
+        const amountNum = parseFloat(amount);
+        const decimals = currentToken.decimals || 6;
+        const finalAmount = Math.floor(amountNum * Math.pow(10, decimals)).toString();
+        
+        rawTransaction = await createOrc10Transaction(
+          selectedAccount,
+          toAddress,
+          finalAmount,
+          currentToken.address,
+          memoValue,
+          networkConfig,
+        );
+      } else if (currentToken?.type === 'orc20') {
+        // ORC20 transaction
+        if (!currentToken.address) {
+          throw new Error('Contract address is required for ORC20 transactions');
+        }
+        const amountNum = parseFloat(amount);
+        const decimals = currentToken.decimals || 6;
+        const finalAmount = Math.floor(amountNum * Math.pow(10, decimals)).toString();
+        
+        rawTransaction = await createOrc20Transaction(
+          selectedAccount,
+          toAddress,
+          finalAmount,
+          currentToken.address,
+          memoValue,
+          networkConfig,
+        );
+      } else {
+        // Native ORGON transaction
+        rawTransaction = await createOrgonTransaction(
+          selectedAccount,
+          toAddress,
+          amount,
+          memoValue,
+          networkConfig,
+        );
+      }
+
+      // Send to snap for signing and broadcasting
       const transaction: OrgonTransaction = {
         from: selectedAccount,
         to: toAddress,
         amount,
-        memo: memo || '',
         networkId: selectedNetwork || '',
         accountId: walletManager.accounts?.find((acc) => acc.address === selectedAccount)?.id || '',
       };
 
-      const result = await transactionManager.sendTransaction(transaction);
+      const result = await transactionManager.sendTransaction({
+        ...transaction,
+        transaction: rawTransaction,
+      } as any);
       setTransactionResult(result);
 
       // Clear form
@@ -69,7 +162,6 @@ export const TransactionSender: React.FC = () => {
     }
   };
 
-  const selectedAccountData = walletManager.accounts?.find((acc) => acc.address === selectedAccount);
   const selectedNetworkData = networkManager.networks?.find((net) => net.chainId === selectedNetwork);
 
   const isFormValid = selectedAccount && toAddress && amount && parseFloat(amount) > 0;
@@ -80,7 +172,7 @@ export const TransactionSender: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Send size={20} />
-            Send ORGON Transaction
+            Send Transaction
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -100,10 +192,10 @@ export const TransactionSender: React.FC = () => {
           <Send size={32} color="white" />
         </div>
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-          Send ORGON Transaction
+          Send Transaction
         </CardTitle>
         <CardDescription className="text-gray-600 dark:text-gray-300 text-lg">
-          Transfer ORGON to another Orgon address with advanced options
+          Transfer tokens to another Orgon address
         </CardDescription>
       </CardHeader>
       <CardContent className="px-8 pb-8">
@@ -175,6 +267,50 @@ export const TransactionSender: React.FC = () => {
               </Select>
             </div>
 
+            {/* Token Selection */}
+            {selectedAccount && (
+              <div className="flex flex-col gap-3">
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Token</label>
+                {tokens.length > 0 ? (
+                  <Select value={selectedToken} onValueChange={setSelectedToken}>
+                    <SelectTrigger className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400">
+                      <SelectValue placeholder="Select a token" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tokens.map((token) => {
+                        const tokenKey = `${token.type}|${token.symbol}|${token.address || ''}`;
+                        const balance = (token.value / (10 ** token.decimals)).toFixed(token.decimals);
+                        const displaySymbol = token.type === 'orc20' ? formatAddress(token.symbol) : token.symbol;
+                        
+                        return (
+                          <SelectItem key={tokenKey} value={tokenKey}>
+                            <div className="flex items-center justify-between w-full gap-4">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs uppercase">
+                                  {token.type}
+                                </Badge>
+                                <span className="font-medium">{displaySymbol}</span>
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                Balance: {balance}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gray-50 dark:bg-slate-800">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Loading tokens...</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* To Address */}
             <div className="flex flex-col gap-3">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">To Address</label>
@@ -203,7 +339,9 @@ export const TransactionSender: React.FC = () => {
 
             {/* Amount */}
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Amount (ORGON)</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Amount {currentToken && `(${currentToken.type === 'orc20' ? formatAddress(currentToken.symbol) : currentToken.symbol})`}
+              </label>
               <div className="relative">
                 <Input
                   type="number"
@@ -212,12 +350,9 @@ export const TransactionSender: React.FC = () => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.0"
-                  className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 pr-16"
+                  className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 pr-32"
                   required
                 />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <Badge variant="secondary" className="text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white">ORGON</Badge>
-                </div>
               </div>
               {amount && parseFloat(amount) > 0 && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2">
@@ -329,7 +464,13 @@ export const TransactionSender: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-blue-700 dark:text-blue-300">Amount:</span>
                     <span className="font-mono text-blue-900 dark:text-blue-100">
-                      {amount} ORGON
+                      {amount} {currentToken ? (currentToken.type === 'orc20' ? formatAddress(currentToken.symbol) : currentToken.symbol) : 'ORGON'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-700 dark:text-blue-300">Token Type:</span>
+                    <span className="text-blue-900 dark:text-blue-100 uppercase">
+                      {currentToken?.type || 'native'}
                     </span>
                   </div>
                   <div className="flex justify-between">

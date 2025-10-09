@@ -148,7 +148,7 @@ export function getDefaultNetwork(): OrgonNetworkConfig {
 
 
 /**
- * Create an Orgon transaction
+ * Create an Orgon native transaction (ORGON/TRX)
  * @param from - Sender address
  * @param to - Recipient address
  * @param amount - Amount in ORG
@@ -156,58 +156,6 @@ export function getDefaultNetwork(): OrgonNetworkConfig {
  * @param network - Network configuration
  * @returns Unsigned transaction object
  */
-export async function createOrgonTransaction(
-  from: string,
-  to: string,
-  amount: string,
-  memo?: string,
-  network?: OrgonNetworkConfig,
-): Promise<any> {
-  // Validate addresses
-  if (!isValidOrgonAddress(from)) {
-    throw new BlockchainError(`${ERROR_MESSAGES.INVALID_FROM_ADDRESS}: ${from}`);
-  }
-  if (!isValidOrgonAddress(to)) {
-    throw new BlockchainError(`${ERROR_MESSAGES.INVALID_TO_ADDRESS}: ${to}`);
-  }
-
-  const networkConfig: OrgonNetworkConfig = network || getDefaultNetwork();
-
-  try {
-    // Create TronWeb instance with proper configuration
-    const tronWebConfig: any = {
-      fullHost: networkConfig.rpcUrl,
-    };
-
-    if (networkConfig.apiKey) {
-      tronWebConfig.headers = { 'ORGON-PRO-API-KEY': networkConfig.apiKey };
-    }
-
-    const tronWeb = new TronWeb(tronWebConfig);
-
-    // Convert amount to sun
-    const amountSun = tronWeb.toSun(amount);
-
-    // Create transaction
-    const transaction = await tronWeb.transactionBuilder.sendTrx(
-      to,
-      amountSun,
-      from,
-      memo,
-    );
-
-    if (!transaction || !transaction.raw_data) {
-      throw new BlockchainError(ERROR_MESSAGES.TRANSACTION_CREATION_FAILED);
-    }
-
-    return transaction;
-  } catch (error) {
-    throw new BlockchainError(
-      `${ERROR_MESSAGES.TRANSACTION_CREATION_FAILED}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
-  }
-}
-
 /**
  * Sign an Orgon transaction
  * @param transaction - Unsigned transaction object

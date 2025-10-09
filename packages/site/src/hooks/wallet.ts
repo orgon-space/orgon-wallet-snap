@@ -6,9 +6,78 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import type { OrgonAccount } from '../types';
+import type { OrgonAccount, OrgonBalance } from '../types';
 import { useInvokeSnap, useRequest } from './metamask';
 import { useNetworkStore } from './network';
+
+// ============================================================================
+// Token Balance Utilities
+// ============================================================================
+
+export interface TokenBalance {
+  type: 'native' | 'orc10' | 'orc20';
+  symbol: string;
+  address?: string;
+  decimals: number;
+  value: number;
+}
+
+/**
+ * Parse wallet balance into a standardized token balance array
+ */
+export function parseTokenBalances(balance?: OrgonBalance): TokenBalance[] {
+  const tokenBalances: TokenBalance[] = [];
+
+  // Add native ORGON token
+  if (balance) {
+    tokenBalances.push({
+      type: 'native',
+      symbol: 'ORGON',
+      decimals: 6,
+      value: balance.balance || 0,
+    });
+  }
+
+  // Parse AssetV2 tokens (ORC10)
+  if (balance?.assetV2 && Array.isArray(balance.assetV2)) {
+    balance.assetV2.forEach((asset: any) => {
+      tokenBalances.push({
+        type: 'orc10',
+        symbol: asset.key,
+        address: asset.key,
+        decimals: 6,
+        value: asset.value || 0,
+      });
+    });
+  }
+
+  // Parse ORC20 tokens
+  if (balance?.orc20 && Array.isArray(balance.orc20)) {
+    balance.orc20.forEach((tokenObj: any) => {
+      Object.entries(tokenObj).forEach(([address, tokenValue]) => {
+        tokenBalances.push({
+          type: 'orc20',
+          symbol: address,
+          address: address,
+          decimals: 4,
+          value: Number(tokenValue) || 0,
+        });
+      });
+    });
+  }
+
+  return tokenBalances;
+}
+
+/**
+ * Hook to get formatted token balances from a wallet account
+ */
+export function useTokenBalances(account?: OrgonAccount): TokenBalance[] {
+  return useMemo(() => {
+    if (!account?.balance) return [];
+    return parseTokenBalances(account.balance);
+  }, [account?.balance]);
+}
 
 // ============================================================================
 // Wallet Service - Snap Communication
