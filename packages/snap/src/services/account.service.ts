@@ -36,7 +36,7 @@ import {
   showDeleteAccountDialog,
 } from '../ui';
 import { ERROR_MESSAGES } from '../constants';
-import { validateRequired, isValidPrivateKey, isValidMnemonic } from '../utils/validation';
+import { validateRequired, isValidPrivateKey, isValidMnemonic, sanitizePrivateKey } from '../utils/validation';
 import { UserCancelledError } from '../utils/errors';
 
 /**
@@ -112,11 +112,14 @@ export async function importAccount(
 
   validateRequired(privateKey, 'Private key');
 
-  if (!isValidPrivateKey(privateKey)) {
+  // Sanitize private key (remove 0x prefix if present and trim)
+  const cleanPrivateKey = sanitizePrivateKey(privateKey.trim());
+
+  if (!isValidPrivateKey(cleanPrivateKey)) {
     throw new Error(ERROR_MESSAGES.INVALID_PRIVATE_KEY);
   }
 
-  const orgonAccount = createOrgonAccountFromPrivateKey(privateKey);
+  const orgonAccount = createOrgonAccountFromPrivateKey(cleanPrivateKey);
   const storedAccount = await addAccount(orgonAccount, name);
 
   const result: AccountCreationResult = {

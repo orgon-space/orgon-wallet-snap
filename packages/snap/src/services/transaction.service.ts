@@ -272,12 +272,10 @@ export async function signAndBroadcastTransaction(
     throw new Error(ERROR_MESSAGES.ACCOUNT_NOT_FOUND);
   }
 
-  // Show confirmation dialog
+  // Show confirmation dialog with full transaction object
   const confirmed = await showTransactionConfirmDialog(
     storedAccount.account.address,
-    transaction.to_address || transaction.contract?.[0]?.parameter?.value?.to_address || 'Contract Call',
-    transaction.amount || 'N/A',
-    transaction.memo || transaction.data,
+    transaction,
     network,
   );
 

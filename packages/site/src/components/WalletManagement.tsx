@@ -67,7 +67,10 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
     walletManager.clearError();
 
     try {
-      const account = await walletManager.importAccount(privateKey, importName || undefined);
+      // Remove 0x prefix if present
+      const cleanPrivateKey = privateKey.trim().replace(/^0x/i, '');
+      
+      const account = await walletManager.importAccount(cleanPrivateKey, importName || undefined);
       if (account && account.id) {
         setImportedAccount(account);
         setPrivateKey('');

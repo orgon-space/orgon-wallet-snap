@@ -6,6 +6,123 @@
 import { Box, Text, Bold } from '@metamask/snaps-sdk/jsx';
 import type { OrgonNetworkConfig } from '../types';
 
+// Import TronWeb/OrgonWeb for address conversion
+let TronWeb: any;
+try {
+  const tronwebModule = require('orgonweb');
+  TronWeb = tronwebModule.TronWeb || tronwebModule.default || tronwebModule;
+} catch (error) {
+  console.error('Failed to import OrgonWeb library:', error);
+}
+
+/**
+ * Convert hex address to base58 format
+ * @param hexAddress - Hex address to convert
+ * @returns Base58 address or original if conversion fails
+ */
+function convertHexToAddress(hexAddress: string): string {
+  try {
+    if (!TronWeb || !hexAddress) {
+      return hexAddress;
+    }
+    
+    // Create a minimal TronWeb instance for address conversion
+    const tronWeb = new TronWeb({
+      fullHost: 'https://gate.orgon.space',
+    });
+    
+    // Convert from hex to base58
+    return tronWeb.address.fromHex(hexAddress);
+  } catch (error) {
+    // If conversion fails, return original
+    return hexAddress;
+  }
+}
+
+// Словарь популярных методов смарт-контрактов
+const METHOD_SIGNATURES: Record<string, string> = {
+  'a9059cbb': 'transfer(address,uint256)',
+  '095ea7b3': 'approve(address,uint256)',
+  '23b872dd': 'transferFrom(address,address,uint256)',
+  '70a08231': 'balanceOf(address)',
+  'dd62ed3e': 'allowance(address,address)',
+  '18160ddd': 'totalSupply()',
+  '313ce567': 'decimals()',
+  '95d89b41': 'symbol()',
+  '06fdde03': 'name()',
+};
+
+/**
+ * Декодирует data для transfer(address,uint256)
+ * @param {string} dataHex - hex строка (может начинаться с "0x")
+ * @returns {string} - расшифрованные данные транзакции
+ */
+function decodeTransferManual(dataHex: string): string {
+  try {
+    let d = dataHex.startsWith('0x') ? dataHex.slice(2) : dataHex;
+    
+    if (d.length < 8) {
+      return `Unknown data: ${d.substring(0, 40)}...`;
+    }
+    
+    const methodId = d.slice(0, 8);
+    const methodName = METHOD_SIGNATURES[methodId] || `Unknown (0x${methodId})`;
+    const params = d.slice(8);
+
+    // Для методов с параметрами (transfer, approve, transferFrom)
+    if (methodId === 'a9059cbb' || methodId === '095ea7b3') {
+      // transfer(address,uint256) или approve(address,uint256)
+      if (params.length < 128) {
+        return `Method: ${methodName}`;
+      }
+      
+      // первый параметр (32 байта) — адрес, справа выровненный: берем последние 40 hex (20 байт)
+      const toHex = '0x' + params.slice(24, 64);
+      const toAddress = convertHexToAddress(toHex);
+      
+      // второй параметр (следующие 32 байта) — value
+      const valueHex = params.slice(64, 128);
+      const value = BigInt('0x' + valueHex).toString();
+      
+      return `${methodName}\nTo: ${toAddress}\nAmount: ${value}`;
+      
+    } else if (methodId === '23b872dd') {
+      // transferFrom(address,address,uint256)
+      if (params.length < 192) {
+        return `Method: ${methodName}`;
+      }
+      
+      const fromHex = '0x' + params.slice(24, 64);
+      const fromAddress = convertHexToAddress(fromHex);
+      
+      const toHex = '0x' + params.slice(88, 128);
+      const toAddress = convertHexToAddress(toHex);
+      
+      const valueHex = params.slice(128, 192);
+      const value = BigInt('0x' + valueHex).toString();
+      
+      return `${methodName}\nFrom: ${fromAddress}\nTo: ${toAddress}\nAmount: ${value}`;
+      
+    } else if (methodId === '70a08231') {
+      // balanceOf(address)
+      if (params.length < 64) {
+        return `Method: ${methodName}`;
+      }
+      
+      const addressHex = '0x' + params.slice(24, 64);
+      const address = convertHexToAddress(addressHex);
+      
+      return `${methodName}\nAddress: ${address}`;
+      
+    } else {
+      // Для остальных методов просто показываем название
+      return `Method: ${methodName}`;
+    }
+  } catch (error) {
+    return `Unable to decode: ${dataHex.substring(0, 40)}...`;
+  }
+}
+
 /**
  * Show hello/welcome dialog
  * @param origin - Origin domain of the request
@@ -183,18 +300,53 @@ export async function showDeleteAccountDialog(
 /**
  * Show transaction confirmation dialog
  * @param from - Sender address
- * @param to - Recipient address
- * @param amount - Amount in ORG
- * @param memo - Optional memo
+ * @param transaction - Full transaction object
  * @param network - Network configuration
  */
 export async function showTransactionConfirmDialog(
   from: string,
-  to: string,
-  amount: string,
-  memo: string | undefined,
+  transaction: any,
   network: OrgonNetworkConfig,
 ): Promise<boolean> {
+  // Extract transaction parameters
+  const txType = transaction.raw_data?.contract?.[0]?.type || 'Unknown';
+  const contractParam = transaction.raw_data?.contract?.[0]?.parameter?.value;
+  
+  // Determine recipient address based on transaction type
+  let toAddress = '';
+  let amount = '';
+  let tokenInfo = '';
+  let dataInfo = '';
+  if (txType === 'TransferContract') {
+    // Native ORGON transfer
+    toAddress = contractParam?.to_address ? convertHexToAddress(contractParam.to_address) : 'N/A';
+    amount = contractParam?.amount ? String(contractParam.amount) : 'N/A';
+    tokenInfo = "ORGON";
+  } else if (txType === 'TransferAssetContract') {
+    // ORC10 token transfer
+    toAddress = contractParam?.to_address ? convertHexToAddress(contractParam.to_address) : 'N/A';
+    amount = contractParam?.amount ? String(contractParam.amount) : 'N/A';
+    tokenInfo = contractParam?.asset_name 
+      ? String(contractParam.asset_name) 
+      : (contractParam?.asset_id ? String(contractParam.asset_id) : '');
+  } else if (txType === 'TriggerSmartContract') {
+    // ORC20 or smart contract call
+    toAddress = contractParam?.contract_address ? convertHexToAddress(contractParam.contract_address) : 'N/A';
+    tokenInfo = 'Smart Contract';
+    if (contractParam?.data) {
+      dataInfo = decodeTransferManual(String(contractParam.data));
+    }
+  }
+  
+  // Extract other parameters (convert all to strings for JSX compatibility)
+  const expiration = transaction.raw_data?.expiration 
+    ? new Date(transaction.raw_data.expiration).toLocaleString()
+    : 'N/A';
+
+  const data = transaction.raw_data?.data 
+    ? Buffer.from(transaction.raw_data.data, 'hex').toString('utf8')
+    : undefined;
+
   return (await snap.request({
     method: 'snap_dialog',
     params: {
@@ -202,16 +354,59 @@ export async function showTransactionConfirmDialog(
       content: (
         <Box>
           <Text>
-            <Bold>Send Transaction</Bold>
+            <Bold>📤 Confirm Transaction</Bold>
           </Text>
-          <Text>From: {from}</Text>
-          <Text>To: {to}</Text>
-          <Text>Amount: {amount}</Text>
-          {memo ? (
-            <Text>Memo: {memo}</Text>
+          
+          <Text>
+            <Bold>Type:</Bold> {txType}
+          </Text>
+          <Text>
+            <Bold>From:</Bold> {from}
+          </Text>
+          
+          {txType === 'TriggerSmartContract' ? (
+            <Text>
+              <Bold>Contract:</Bold> {toAddress}
+            </Text>
+          ) : (
+            <Text>
+              <Bold>To:</Bold> {toAddress}
+            </Text>
+          )}
+          
+          {amount ? (
+            <Text>
+              <Bold>Amount:</Bold> {amount}
+            </Text>
           ) : null}
-          <Text>Network: {network.name}</Text>
-          <Text>⚠️ Please verify the details before confirming!</Text>
+          
+          {tokenInfo ? (
+            <Text>
+              <Bold>Token:</Bold> {tokenInfo}
+            </Text>
+          ) : null}
+          
+          {dataInfo ? (
+            <Text>
+              <Bold>Call Data:</Bold> {dataInfo}
+            </Text>
+          ) : null}
+          
+          {data ? (
+            <Text>
+              <Bold>Memo:</Bold> {data}
+            </Text>
+          ) : null}
+          
+          <Text>
+            <Bold>Expiration:</Bold> {expiration}
+          </Text>
+          <Text>
+            <Bold>Network:</Bold> {network.name}
+          </Text>
+          
+          
+          <Text>⚠️ Please verify all details before confirming!</Text>
         </Box>
       ),
     },

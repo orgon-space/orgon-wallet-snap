@@ -354,12 +354,6 @@ export const TransactionSender: React.FC = () => {
                   required
                 />
               </div>
-              {amount && parseFloat(amount) > 0 && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-slate-700/50 rounded-lg p-2">
-                  <Calculator size={14} />
-                  <span>≈ ${(parseFloat(amount) * 0.1).toFixed(2)} USD</span>
-                </div>
-              )}
             </div>
 
             {/* Memo */}
