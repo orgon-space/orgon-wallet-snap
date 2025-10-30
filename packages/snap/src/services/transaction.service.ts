@@ -112,7 +112,7 @@ export async function getAccountV1(address: string, networkId?: string): Promise
   }
 
   try {
-    const endpoint = buildEndpoint(API_ENDPOINTS.GETv1_ACCOUNT, { address });
+    const endpoint = buildEndpoint(API_ENDPOINTS.GET_V1_ACCOUNT, { address });
     return await makeRequest(network, endpoint, 'GET');
   } catch (error) {
     const axiosError = error as AxiosError;
@@ -181,7 +181,7 @@ export async function getAccountTransactions(
   }
 
   try {
-    let endpoint = buildEndpoint(API_ENDPOINTS.GETv1_TRANSACTIONS, { address });
+    let endpoint = buildEndpoint(API_ENDPOINTS.GET_V1_TRANSACTIONS, { address });
     if (typeof limit === 'number') {
       endpoint = `${endpoint}?limit=${encodeURIComponent(String(limit))}`;
     }
@@ -302,7 +302,7 @@ export async function signAndBroadcastTransaction(
     );
 
     if (data.result !== true) {
-      throw new ApiError(data.message || ERROR_MESSAGES.TRANSACTION_FAILED);
+      throw new ApiError(data.message ?? ERROR_MESSAGES.TRANSACTION_FAILED);
     }
 
     return {

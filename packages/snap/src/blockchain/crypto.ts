@@ -25,7 +25,7 @@ type TronWebStatic = {
 let TronWeb: (TronWebCtor & TronWebStatic) | undefined;
 try {
   const tronwebModule = require('orgonweb');
-  TronWeb = (tronwebModule.TronWeb || tronwebModule.default || tronwebModule) as unknown as
+  TronWeb = (tronwebModule.TronWeb ?? tronwebModule.default ?? tronwebModule) as unknown as
     TronWebCtor & TronWebStatic;
 } catch {
   throw new BlockchainError('Failed to import OrgonWeb library');
@@ -77,7 +77,7 @@ export function createOrgonAccountFromMnemonic(mnemonic: string): OrgonAccount {
     return {
       address: accountData.address,
       privateKey: accountData.privateKey,
-      mnemonic: accountData.mnemonic?.phrase || sanitized,
+      mnemonic: accountData.mnemonic?.phrase ?? sanitized,
     };
   } catch (error) {
     throw new BlockchainError(
