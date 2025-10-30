@@ -20,7 +20,7 @@ export async function getState(): Promise<SnapState> {
       },
     })) as SnapState | null;
 
-    return state || {};
+    return state ?? {};
   } catch (error) {
     throw new StorageError(
       `${ERROR_MESSAGES.STORAGE_ERROR}: ${error instanceof Error ? error.message : 'Unknown error'}`,

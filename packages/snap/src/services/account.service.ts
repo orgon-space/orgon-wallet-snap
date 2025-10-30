@@ -4,8 +4,6 @@
  */
 
 import type {
-  OrgonAccount,
-  StoredAccount,
   AccountListItem,
   AccountCreationResult,
   AccountExportResult,
@@ -67,7 +65,10 @@ export async function createAccount(
   const orgonAccount = generateOrgonAccountWithMnemonic();
 
   // Show mnemonic phrase to user for confirmation
-  const confirmed = await showMnemonicBackupDialog(orgonAccount.mnemonic!);
+  if (!orgonAccount.mnemonic) {
+    throw new Error('Mnemonic phrase is missing');
+  }
+  const confirmed = await showMnemonicBackupDialog(orgonAccount.mnemonic);
 
   if (!confirmed) {
     throw new UserCancelledError(

@@ -92,6 +92,7 @@ export const MIN_MNEMONIC_WORDS = 12;
 /**
  * API endpoint paths
  */
+/* eslint-disable @typescript-eslint/naming-convention */
 export const API_ENDPOINTS = {
   GET_ACCOUNT: '/wallet/getaccount',
   GET_ACCOUNT_RESOURCES: '/wallet/getaccountresource',
@@ -101,20 +102,19 @@ export const API_ENDPOINTS = {
   GET_TRANSACTION: '/wallet/gettransactionbyid',
   GET_TRANSACTION_INFO: '/wallet/gettransactioninfobyid',
 } as const;
+/* eslint-enable @typescript-eslint/naming-convention */
 
+/* eslint-disable jsdoc/tag-lines, jsdoc/newline-after-description */
 /**
  * Build API endpoint URL with dynamic parameters
  * Replaces {param} placeholders in endpoint templates with actual values
- * 
  * @param endpoint - Endpoint template with {param} placeholders
  * @param params - Object with parameter values to replace placeholders
  * @returns Formatted endpoint URL with placeholders replaced
- * 
  * @example
  * // Single parameter
  * buildEndpoint(API_ENDPOINTS.GETv1_TRANSACTIONS, { address: 'oAbc123...' })
  * // Returns: '/v1/accounts/oAbc123.../transactions'
- * 
  * @example
  * // Multiple parameters
  * buildEndpoint('/v1/{network}/accounts/{address}', { 
@@ -130,6 +130,7 @@ export function buildEndpoint(endpoint: string, params: Record<string, string>):
   }
   return result;
 }
+/* eslint-enable jsdoc/tag-lines, jsdoc/newline-after-description */
 
 // ============================================================================
 // Error Messages

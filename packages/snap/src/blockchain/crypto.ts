@@ -7,24 +7,14 @@ import type {
   OrgonAccount,
   OrgonNetworkConfig,
   OrgonSignedTransaction,
-  OrgonTransactionRequest,
 } from '../types';
-import {
-  ORGON_NETWORKS,
-  DEFAULT_NETWORK_KEY,
-  ORGON_TO_SUN_MULTIPLIER,
-  ERROR_MESSAGES,
-} from '../constants';
-import {
-  isValidOrgonAddress,
-  isValidPrivateKey,
-  sanitizePrivateKey,
-  sanitizeMnemonic,
-  validateTransactionParams,
-} from '../utils/validation';
+import { ORGON_NETWORKS, DEFAULT_NETWORK_KEY, ERROR_MESSAGES } from '../constants';
+import { isValidPrivateKey, sanitizePrivateKey, sanitizeMnemonic } from '../utils/validation';
 import { BlockchainError } from '../utils/errors';
 
 // Import TronWeb/OrgonWeb
+/* eslint-disable @typescript-eslint/no-require-imports */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let TronWeb: any;
 try {
   const tronwebModule = require('orgonweb');
@@ -164,14 +154,15 @@ export function getDefaultNetwork(): OrgonNetworkConfig {
  * @returns Signed transaction ready for broadcast
  */
 export async function signOrgonTransaction(
-  transaction: any,
+  transaction: Record<string, unknown>,
   privateKey: string,
   network?: OrgonNetworkConfig,
 ): Promise<OrgonSignedTransaction> {
   try {
-    const networkConfig = network || getDefaultNetwork();
+    const networkConfig = network ?? getDefaultNetwork();
 
     // Create TronWeb instance with proper configuration
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tronWebConfig: any = {
       fullHost: networkConfig.rpcUrl,
     };
@@ -200,6 +191,7 @@ export async function signOrgonTransaction(
       ? signedTransaction.signature
       : [signedTransaction.signature];
 
+    /* eslint-disable @typescript-eslint/naming-convention */
     return {
       visible: signedTransaction.visible || false,
       txID: signedTransaction.txID,
@@ -207,6 +199,7 @@ export async function signOrgonTransaction(
       raw_data: signedTransaction.raw_data,
       signature: signatureArray,
     };
+    /* eslint-enable @typescript-eslint/naming-convention */
   } catch (error) {
     throw new BlockchainError(
       `${ERROR_MESSAGES.TRANSACTION_SIGNING_FAILED}: ${error instanceof Error ? error.message : 'Unknown error'}`,

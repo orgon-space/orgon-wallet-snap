@@ -7,9 +7,12 @@
  * Base error class for Orgon Snap
  */
 export class OrgonSnapError extends Error {
-  constructor(message: string, public readonly code?: string) {
+  public readonly code?: string;
+
+  constructor(message: string, code?: string) {
     super(message);
     this.name = 'OrgonSnapError';
+    this.code = code;
   }
 }
 
@@ -28,9 +31,12 @@ export class StorageError extends OrgonSnapError {
  * Error for API operations
  */
 export class ApiError extends OrgonSnapError {
-  constructor(message: string, public readonly statusCode?: number) {
+  public readonly statusCode?: number;
+
+  constructor(message: string, statusCode?: number) {
     super(message, 'API_ERROR');
     this.name = 'ApiError';
+    this.statusCode = statusCode;
   }
 }
 

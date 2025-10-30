@@ -84,7 +84,7 @@ export function validateTransactionParams(params: OrgonTransactionRequest): void
  * @param paramName - Name of the parameter for error message
  * @throws Error if value is missing
  */
-export function validateRequired<T>(value: T | undefined | null, paramName: string): asserts value is T {
+export function validateRequired<Value>(value: Value | undefined | null, paramName: string): asserts value is Value {
   if (value === undefined || value === null) {
     throw new Error(`${paramName} is required`);
   }

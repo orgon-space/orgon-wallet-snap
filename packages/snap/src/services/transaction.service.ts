@@ -9,7 +9,6 @@ import type {
   TransactionBroadcastResult,
   SignTransactionParams,
   OrgonNetworkConfig,
-  OrgonSignedTransaction,
 } from '../types';
 import { getAccountById } from '../storage';
 import {
@@ -34,7 +33,7 @@ async function makeRequest(
   network: OrgonNetworkConfig,
   endpoint: string,
   method: 'GET' | 'POST' = 'POST',
-  body?: any,
+  body?: unknown,
 ): Promise<any> {
   const url = `${network.rpcUrl}${endpoint}`;
   const headers: Record<string, string> = {
@@ -182,9 +181,12 @@ export async function getAccountTransactions(
   }
 
   try {
-    const endpoint = buildEndpoint(API_ENDPOINTS.GETv1_TRANSACTIONS, { address });
+    let endpoint = buildEndpoint(API_ENDPOINTS.GETv1_TRANSACTIONS, { address });
+    if (typeof limit === 'number') {
+      endpoint = `${endpoint}?limit=${encodeURIComponent(String(limit))}`;
+    }
     return await makeRequest(network, endpoint, 'GET');
-  } catch (error) {
+  } catch {
     // Return empty array if transactions fetch fails (account might be new)
     return [];
   }

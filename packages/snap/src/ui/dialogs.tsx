@@ -7,12 +7,13 @@ import { Box, Text, Bold } from '@metamask/snaps-sdk/jsx';
 import type { OrgonNetworkConfig } from '../types';
 
 // Import TronWeb/OrgonWeb for address conversion
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let TronWeb: any;
 try {
   const tronwebModule = require('orgonweb');
   TronWeb = tronwebModule.TronWeb || tronwebModule.default || tronwebModule;
 } catch (error) {
-  console.error('Failed to import OrgonWeb library:', error);
+  // Silently ignore; address conversion will fallback gracefully
 }
 
 /**
@@ -305,7 +306,16 @@ export async function showDeleteAccountDialog(
  */
 export async function showTransactionConfirmDialog(
   from: string,
-  transaction: any,
+  transaction: {
+    raw_data?: {
+      contract?: Array<{
+        type?: string;
+        parameter?: { value?: Record<string, unknown> };
+      }>;
+      expiration?: number;
+      data?: string;
+    };
+  },
   network: OrgonNetworkConfig,
 ): Promise<boolean> {
   // Extract transaction parameters
@@ -319,22 +329,25 @@ export async function showTransactionConfirmDialog(
   let dataInfo = '';
   if (txType === 'TransferContract') {
     // Native ORGON transfer
-    toAddress = contractParam?.to_address ? convertHexToAddress(contractParam.to_address) : 'N/A';
-    amount = contractParam?.amount ? String(contractParam.amount) : 'N/A';
+    const p = contractParam as any;
+    toAddress = p?.to_address ? convertHexToAddress(p.to_address as string) : 'N/A';
+    amount = p?.amount ? String(p.amount) : 'N/A';
     tokenInfo = "ORGON";
   } else if (txType === 'TransferAssetContract') {
     // ORC10 token transfer
-    toAddress = contractParam?.to_address ? convertHexToAddress(contractParam.to_address) : 'N/A';
-    amount = contractParam?.amount ? String(contractParam.amount) : 'N/A';
-    tokenInfo = contractParam?.asset_name 
-      ? String(contractParam.asset_name) 
-      : (contractParam?.asset_id ? String(contractParam.asset_id) : '');
+    const p = contractParam as any;
+    toAddress = p?.to_address ? convertHexToAddress(p.to_address as string) : 'N/A';
+    amount = p?.amount ? String(p.amount) : 'N/A';
+    tokenInfo = p?.asset_name 
+      ? String(p.asset_name) 
+      : (p?.asset_id ? String(p.asset_id) : '');
   } else if (txType === 'TriggerSmartContract') {
     // ORC20 or smart contract call
-    toAddress = contractParam?.contract_address ? convertHexToAddress(contractParam.contract_address) : 'N/A';
+    const p = contractParam as any;
+    toAddress = p?.contract_address ? convertHexToAddress(p.contract_address as string) : 'N/A';
     tokenInfo = 'Smart Contract';
-    if (contractParam?.data) {
-      dataInfo = decodeTransferManual(String(contractParam.data));
+    if (p?.data) {
+      dataInfo = decodeTransferManual(String(p.data));
     }
   }
   

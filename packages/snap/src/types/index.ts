@@ -2,6 +2,8 @@
  * Type definitions for Orgon Snap
  * All interfaces and types used throughout the application
  */
+/* eslint-disable @typescript-eslint/consistent-type-definitions */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 // ============================================================================
 // Account Types

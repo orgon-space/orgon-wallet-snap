@@ -4,11 +4,7 @@
  */
 
 import type { OrgonAccount, StoredAccount } from '../types';
-import {
-  STORAGE_KEY_ACCOUNTS,
-  STORAGE_KEY_ACCOUNT_COUNTER,
-  ERROR_MESSAGES,
-} from '../constants';
+import { STORAGE_KEY_ACCOUNTS, STORAGE_KEY_ACCOUNT_COUNTER } from '../constants';
 import { getState, updateState } from './state-storage';
 import { StorageError } from '../utils/errors';
 
@@ -20,7 +16,7 @@ export async function getStoredAccounts(): Promise<StoredAccount[]> {
   try {
     const state = await getState();
     const accounts = state[STORAGE_KEY_ACCOUNTS];
-    return accounts ? JSON.parse(accounts) : [];
+    return JSON.parse(accounts ?? '[]');
   } catch (error) {
     throw new StorageError(
       `Failed to get stored accounts: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -54,7 +50,7 @@ async function getAccountCounter(): Promise<number> {
   try {
     const state = await getState();
     const counter = state[STORAGE_KEY_ACCOUNT_COUNTER];
-    return counter ? parseInt(counter, 10) : 0;
+    return parseInt(counter ?? '0', 10);
   } catch (error) {
     return 0;
   }
@@ -111,13 +107,15 @@ export async function addAccount(
     const { id, counter } = await generateAccountId(existingIds);
     await setAccountCounter(counter);
 
-    const storedAccount: StoredAccount = {
+    const base: Omit<StoredAccount, 'mnemonic' | 'encryptedPrivateKey'> = {
       id,
       name: name || `Orgon Account ${counter}`,
       account,
       createdAt: Date.now(),
-      mnemonic: account.mnemonic,
     };
+    const storedAccount: StoredAccount = account.mnemonic
+      ? { ...base, mnemonic: account.mnemonic }
+      : { ...base } as StoredAccount;
 
     accounts.push(storedAccount);
     await saveAccounts(accounts);

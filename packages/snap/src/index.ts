@@ -31,7 +31,6 @@ import {
 
 /**
  * Handle incoming JSON-RPC requests via wallet_invokeSnap
- *
  * @param args - Request handler arguments
  * @param args.origin - Origin of the request
  * @param args.request - Validated JSON-RPC request object
@@ -159,7 +158,6 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
 
 /**
  * Handle keyring requests for Orgon account management
- *
  * @param args - Keyring request handler arguments
  * @param args.request - Keyring request object
  * @returns Response data

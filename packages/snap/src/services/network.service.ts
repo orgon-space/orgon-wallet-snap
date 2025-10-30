@@ -43,7 +43,7 @@ export async function getCurrentNetwork(): Promise<NetworkSwitchResult> {
       success: true,
       network: defaultNetwork,
     };
-  } catch (error) {
+  } catch {
     // Return default network as fallback
     const defaultNetwork = getDefaultNetwork();
     return {
