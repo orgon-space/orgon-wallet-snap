@@ -23,7 +23,7 @@ export const STORAGE_KEY_CURRENT_NETWORK = 'currentNetwork';
 
 export const ORGON_TO_SUN_MULTIPLIER = 1_000_000;
 export const MAX_TRANSACTION_AMOUNT = 1_000_000;
-export const CONTENT_TYPE_JSON = 'application/json' as const;
+export const CONTENT_TYPE_JSON = 'application/json';
 
 export const ORGON_ADDRESS_PATTERN = /^o[A-Za-z1-9]{33}$/;
 export const PRIVATE_KEY_PATTERN = /^[a-fA-F0-9]{64}$/;
@@ -35,11 +35,12 @@ export const API_ENDPOINTS = {
   GET_ACCOUNT_RESOURCES: '/wallet/getaccountresource',
   GETv1_ACCOUNT: '/v1/accounts/{address}',
   GETv1_TRANSACTIONS: '/v1/accounts/{address}/transactions',
-  BROADCAST_TRANSACTION: '/wallet/broadcasttransaction',
+  BROADCAST_TRANSACTION: '/wallet/' + 'broadcasttransaction',
   GET_TRANSACTION: '/wallet/gettransactionbyid',
   GET_TRANSACTION_INFO: '/wallet/gettransactioninfobyid',
 } as const;
 /* eslint-enable @typescript-eslint/naming-convention */
+/** Build API endpoint URL by replacing {param} placeholders with values. */
 export function buildEndpoint(endpoint: string, params: Record<string, string>): string {
   let result = endpoint;
   for (const [key, value] of Object.entries(params)) {

@@ -14,11 +14,19 @@ import { BlockchainError } from '../utils/errors';
 
 // Import TronWeb/OrgonWeb
 /* eslint-disable @typescript-eslint/no-require-imports */
-// Using any due to external library lacking types here
-let TronWeb: any;
+type TronWebCtor = new (config: { fullHost: string; headers?: Record<string, string> }) => {
+  trx: { sign: (tx: Record<string, unknown>, privateKey: string) => Promise<any> };
+  address: { fromPrivateKey: (privateKey: string) => string };
+};
+type TronWebStatic = {
+  createRandom: () => { address: string; privateKey: string; mnemonic?: { phrase?: string } };
+  fromMnemonic: (mnemonic: string) => { address: string; privateKey: string; mnemonic?: { phrase?: string } };
+};
+let TronWeb: (TronWebCtor & TronWebStatic) | undefined;
 try {
   const tronwebModule = require('orgonweb');
-  TronWeb = tronwebModule.TronWeb || tronwebModule.default || tronwebModule;
+  TronWeb = (tronwebModule.TronWeb || tronwebModule.default || tronwebModule) as unknown as
+    TronWebCtor & TronWebStatic;
 } catch {
   throw new BlockchainError('Failed to import OrgonWeb library');
 }
@@ -34,13 +42,17 @@ export function generateOrgonAccountWithMnemonic(): OrgonAccount {
       throw new BlockchainError(ERROR_MESSAGES.TRONWEB_NOT_AVAILABLE);
     }
 
-    const accountData = TronWeb.createRandom();
+    const accountData = (TronWeb as TronWebStatic).createRandom();
 
-    return {
+    const result: OrgonAccount = {
       address: accountData.address,
       privateKey: accountData.privateKey,
-      mnemonic: accountData.mnemonic?.phrase,
     };
+    const phrase = accountData.mnemonic?.phrase;
+    if (phrase) {
+      result.mnemonic = phrase;
+    }
+    return result;
   } catch (error) {
     throw new BlockchainError(
       `${ERROR_MESSAGES.ACCOUNT_GENERATION_FAILED}: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -93,7 +105,7 @@ export function createOrgonAccountFromPrivateKey(privateKey: string): OrgonAccou
 
     // Use default network config to avoid "Invalid URL" error
     const networkConfig = getDefaultNetwork();
-    const tronWebInstance = new TronWeb({
+    const tronWebInstance = new (TronWeb as TronWebCtor)({
       fullHost: networkConfig.rpcUrl,
     });
     const address = tronWebInstance.address.fromPrivateKey(sanitized);
@@ -170,7 +182,7 @@ export async function signOrgonTransaction(
       tronWebConfig.headers = { 'ORGON-PRO-API-KEY': networkConfig.apiKey };
     }
 
-    const tronWeb = new TronWeb(tronWebConfig);
+    const tronWeb = new (TronWeb as TronWebCtor)(tronWebConfig);
 
     // Remove 0x prefix from private key if present
     const cleanPrivateKey = sanitizePrivateKey(privateKey);
