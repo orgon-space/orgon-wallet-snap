@@ -5,10 +5,6 @@
 /* eslint-disable @typescript-eslint/consistent-type-definitions */
 /* eslint-disable @typescript-eslint/naming-convention */
 
-// ============================================================================
-// Account Types
-// ============================================================================
-
 /**
  * Represents an Orgon blockchain account
  */
@@ -30,10 +26,6 @@ export interface StoredAccount {
   mnemonic?: string;
 }
 
-// ============================================================================
-// Network Types
-// ============================================================================
-
 /**
  * Orgon network configuration
  */
@@ -44,10 +36,6 @@ export interface OrgonNetworkConfig {
   explorerUrl: string;
   apiKey?: string;
 }
-
-// ============================================================================
-// Transaction Types
-// ============================================================================
 
 /**
  * Transaction request parameters
@@ -95,9 +83,6 @@ export interface OrgonTransactionHistory {
   status: 'pending' | 'confirmed' | 'failed';
 }
 
-// ============================================================================
-// Balance Types
-// ============================================================================
 
 /**
  * Account balance information
@@ -106,10 +91,6 @@ export interface OrgonBalance {
   orgon: string;
   usd?: string;
 }
-
-// ============================================================================
-// API Response Types
-// ============================================================================
 
 /**
  * Complete account information from API
@@ -136,10 +117,6 @@ export interface NetworkSwitchResult {
   success: boolean;
   network: OrgonNetworkConfig;
 }
-
-// ============================================================================
-// Handler Parameter Types
-// ============================================================================
 
 /**
  * Parameters for creating an account
@@ -201,10 +178,6 @@ export interface SwitchNetworkParams {
   chainId: string;
 }
 
-// ============================================================================
-// Storage Types
-// ============================================================================
-
 /**
  * Snap state structure
  */
@@ -214,10 +187,6 @@ export interface SnapState {
   currentNetwork?: string;
   [key: string]: any;
 }
-
-// ============================================================================
-// Export Result Types
-// ============================================================================
 
 /**
  * Result of account export
@@ -254,5 +223,3 @@ export interface AccountListItem {
   name: string;
   address: string;
 }
-
-
