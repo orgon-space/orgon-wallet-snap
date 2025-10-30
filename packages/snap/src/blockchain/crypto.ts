@@ -14,8 +14,7 @@ import { BlockchainError } from '../utils/errors';
 
 // Import TronWeb/OrgonWeb
 /* eslint-disable @typescript-eslint/no-require-imports */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let TronWeb: any;
+let TronWeb: unknown;
 try {
   const tronwebModule = require('orgonweb');
   TronWeb = tronwebModule.TronWeb || tronwebModule.default || tronwebModule;
@@ -163,7 +162,7 @@ export async function signOrgonTransaction(
 
     // Create TronWeb instance with proper configuration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tronWebConfig: any = {
+    const tronWebConfig: { fullHost: string; headers?: Record<string, string> } = {
       fullHost: networkConfig.rpcUrl,
     };
 
@@ -171,7 +170,7 @@ export async function signOrgonTransaction(
       tronWebConfig.headers = { 'ORGON-PRO-API-KEY': networkConfig.apiKey };
     }
 
-    const tronWeb = new TronWeb(tronWebConfig);
+    const tronWeb = new (TronWeb as new (config: unknown) => any)(tronWebConfig);
 
     // Remove 0x prefix from private key if present
     const cleanPrivateKey = sanitizePrivateKey(privateKey);
@@ -193,7 +192,7 @@ export async function signOrgonTransaction(
 
     /* eslint-disable @typescript-eslint/naming-convention */
     return {
-      visible: signedTransaction.visible || false,
+      visible: signedTransaction?.visible ?? false,
       txID: signedTransaction.txID,
       raw_data_hex: signedTransaction.raw_data_hex,
       raw_data: signedTransaction.raw_data,

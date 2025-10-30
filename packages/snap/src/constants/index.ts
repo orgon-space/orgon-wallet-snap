@@ -104,7 +104,6 @@ export const API_ENDPOINTS = {
 } as const;
 /* eslint-enable @typescript-eslint/naming-convention */
 
-/* eslint-disable jsdoc/tag-lines, jsdoc/newline-after-description */
 /**
  * Build API endpoint URL with dynamic parameters
  * Replaces {param} placeholders in endpoint templates with actual values
@@ -130,7 +129,6 @@ export function buildEndpoint(endpoint: string, params: Record<string, string>):
   }
   return result;
 }
-/* eslint-enable jsdoc/tag-lines, jsdoc/newline-after-description */
 
 // ============================================================================
 // Error Messages

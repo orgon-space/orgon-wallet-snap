@@ -51,7 +51,7 @@ async function getAccountCounter(): Promise<number> {
     const state = await getState();
     const counter = state[STORAGE_KEY_ACCOUNT_COUNTER];
     return parseInt(counter ?? '0', 10);
-  } catch (error) {
+  } catch {
     return 0;
   }
 }

@@ -7,13 +7,12 @@ import { Box, Text, Bold } from '@metamask/snaps-sdk/jsx';
 import type { OrgonNetworkConfig } from '../types';
 
 // Import TronWeb/OrgonWeb for address conversion
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let TronWeb: any;
+let TronWeb: unknown;
 try {
   const tronwebModule = require('orgonweb');
   TronWeb = tronwebModule.TronWeb || tronwebModule.default || tronwebModule;
 } catch (error) {
-  // Silently ignore; address conversion will fallback gracefully
+  TronWeb = undefined;
 }
 
 /**
@@ -28,7 +27,7 @@ function convertHexToAddress(hexAddress: string): string {
     }
     
     // Create a minimal TronWeb instance for address conversion
-    const tronWeb = new TronWeb({
+    const tronWeb = new (TronWeb as new (config: unknown) => any)({
       fullHost: 'https://gate.orgon.space',
     });
     
