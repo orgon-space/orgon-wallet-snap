@@ -17,7 +17,7 @@ import {
   getDefaultNetwork,
 } from '../blockchain';
 import { showTransactionConfirmDialog } from '../ui';
-import { API_ENDPOINTS, buildEndpoint, ERROR_MESSAGES } from '../constants';
+import { API_ENDPOINTS, buildEndpoint, ERROR_MESSAGES, CONTENT_TYPE_JSON } from '../constants';
 import { validateRequired, isValidOrgonAddress } from '../utils/validation';
 import { UserCancelledError, ApiError } from '../utils/errors';
 
@@ -37,7 +37,7 @@ async function makeRequest(
 ): Promise<any> {
   const url = `${network.rpcUrl}${endpoint}`;
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    'Content-Type': CONTENT_TYPE_JSON,
   };
 
   if (network.apiKey) {

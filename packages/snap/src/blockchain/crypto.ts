@@ -14,11 +14,12 @@ import { BlockchainError } from '../utils/errors';
 
 // Import TronWeb/OrgonWeb
 /* eslint-disable @typescript-eslint/no-require-imports */
-let TronWeb: unknown;
+// Using any due to external library lacking types here
+let TronWeb: any;
 try {
   const tronwebModule = require('orgonweb');
   TronWeb = tronwebModule.TronWeb || tronwebModule.default || tronwebModule;
-} catch (error) {
+} catch {
   throw new BlockchainError('Failed to import OrgonWeb library');
 }
 
@@ -161,7 +162,6 @@ export async function signOrgonTransaction(
     const networkConfig = network ?? getDefaultNetwork();
 
     // Create TronWeb instance with proper configuration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const tronWebConfig: { fullHost: string; headers?: Record<string, string> } = {
       fullHost: networkConfig.rpcUrl,
     };
@@ -170,18 +170,14 @@ export async function signOrgonTransaction(
       tronWebConfig.headers = { 'ORGON-PRO-API-KEY': networkConfig.apiKey };
     }
 
-    const tronWeb = new (TronWeb as new (config: unknown) => any)(tronWebConfig);
+    const tronWeb = new TronWeb(tronWebConfig);
 
     // Remove 0x prefix from private key if present
     const cleanPrivateKey = sanitizePrivateKey(privateKey);
 
     const signedTransaction = await tronWeb.trx.sign(transaction, cleanPrivateKey);
 
-    if (
-      !signedTransaction ||
-      !signedTransaction.raw_data_hex ||
-      !signedTransaction.signature
-    ) {
+    if (!signedTransaction?.raw_data_hex || !signedTransaction?.signature) {
       throw new BlockchainError(ERROR_MESSAGES.TRANSACTION_SIGNING_FAILED);
     }
 

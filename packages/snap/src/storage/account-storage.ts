@@ -109,7 +109,7 @@ export async function addAccount(
 
     const base: Omit<StoredAccount, 'mnemonic' | 'encryptedPrivateKey'> = {
       id,
-      name: name || `Orgon Account ${counter}`,
+      name: name ?? `Orgon Account ${counter}`,
       account,
       createdAt: Date.now(),
     };
@@ -152,7 +152,7 @@ export async function removeAccount(accountId: string): Promise<void> {
 export async function getAccountById(accountId: string): Promise<StoredAccount | null> {
   try {
     const accounts = await getStoredAccounts();
-    return accounts.find((acc) => acc.id === accountId) || null;
+    return accounts.find((acc) => acc.id === accountId) ?? null;
   } catch (error) {
     throw new StorageError(
       `Failed to get account: ${error instanceof Error ? error.message : 'Unknown error'}`,

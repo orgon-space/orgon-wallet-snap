@@ -1,17 +1,5 @@
-/**
- * Application constants
- * Network configurations, storage keys, and other constant values
- */
-
 import type { OrgonNetworkConfig } from '../types';
 
-// ============================================================================
-// Network Configurations
-// ============================================================================
-
-/**
- * Available Orgon network configurations
- */
 export const ORGON_NETWORKS: Record<string, OrgonNetworkConfig> = {
   mainnet: {
     name: 'Orgon Mainnet',
@@ -27,71 +15,20 @@ export const ORGON_NETWORKS: Record<string, OrgonNetworkConfig> = {
   },
 };
 
-/**
- * Default network to use
- */
 export const DEFAULT_NETWORK_KEY = 'mainnet';
 
-// ============================================================================
-// Storage Keys
-// ============================================================================
-
-/**
- * Key for storing accounts in snap state
- */
 export const STORAGE_KEY_ACCOUNTS = 'orgon_accounts';
-
-/**
- * Key for storing account counter
- */
 export const STORAGE_KEY_ACCOUNT_COUNTER = 'orgon_account_counter';
-
-/**
- * Key for storing current network
- */
 export const STORAGE_KEY_CURRENT_NETWORK = 'currentNetwork';
 
-// ============================================================================
-// Conversion Constants
-// ============================================================================
-
-/**
- * Conversion factor: 1 ORG = 1,000,000 sun
- */
 export const ORGON_TO_SUN_MULTIPLIER = 1_000_000;
-
-/**
- * Maximum transaction amount in ORG
- */
 export const MAX_TRANSACTION_AMOUNT = 1_000_000;
+export const CONTENT_TYPE_JSON = 'application/json' as const;
 
-// ============================================================================
-// Validation Constants
-// ============================================================================
-
-/**
- * Orgon address regex pattern
- * Addresses start with 'o' and are 34 characters long
- */
 export const ORGON_ADDRESS_PATTERN = /^o[A-Za-z1-9]{33}$/;
-
-/**
- * Private key regex pattern (64 hex characters)
- */
 export const PRIVATE_KEY_PATTERN = /^[a-fA-F0-9]{64}$/;
-
-/**
- * Minimum mnemonic phrase length (words)
- */
 export const MIN_MNEMONIC_WORDS = 12;
 
-// ============================================================================
-// API Endpoints
-// ============================================================================
-
-/**
- * API endpoint paths
- */
 /* eslint-disable @typescript-eslint/naming-convention */
 export const API_ENDPOINTS = {
   GET_ACCOUNT: '/wallet/getaccount',
@@ -103,25 +40,6 @@ export const API_ENDPOINTS = {
   GET_TRANSACTION_INFO: '/wallet/gettransactioninfobyid',
 } as const;
 /* eslint-enable @typescript-eslint/naming-convention */
-
-/**
- * Build API endpoint URL with dynamic parameters
- * Replaces {param} placeholders in endpoint templates with actual values
- * @param endpoint - Endpoint template with {param} placeholders
- * @param params - Object with parameter values to replace placeholders
- * @returns Formatted endpoint URL with placeholders replaced
- * @example
- * // Single parameter
- * buildEndpoint(API_ENDPOINTS.GETv1_TRANSACTIONS, { address: 'oAbc123...' })
- * // Returns: '/v1/accounts/oAbc123.../transactions'
- * @example
- * // Multiple parameters
- * buildEndpoint('/v1/{network}/accounts/{address}', { 
- *   network: 'mainnet', 
- *   address: 'oAbc123...' 
- * })
- * // Returns: '/v1/mainnet/accounts/oAbc123...'
- */
 export function buildEndpoint(endpoint: string, params: Record<string, string>): string {
   let result = endpoint;
   for (const [key, value] of Object.entries(params)) {
@@ -129,14 +47,6 @@ export function buildEndpoint(endpoint: string, params: Record<string, string>):
   }
   return result;
 }
-
-// ============================================================================
-// Error Messages
-// ============================================================================
-
-/**
- * Standard error messages
- */
 export const ERROR_MESSAGES = {
   // Account errors
   ACCOUNT_NOT_FOUND: 'Account not found',
@@ -183,19 +93,9 @@ export const ERROR_MESSAGES = {
   DELETION_CANCELLED: 'Deletion cancelled by user',
   MNEMONIC_ACCESS_CANCELLED: 'Mnemonic phrase access cancelled',
 } as const;
-
-// ============================================================================
-// UI Text Constants
-// ============================================================================
-
-/**
- * UI text and labels
- */
 export const UI_TEXT = {
   APP_NAME: 'Orgon Snap',
   APP_DESCRIPTION: 'Orgon Network Snap for MetaMask',
   CURRENCY_SYMBOL: 'ORG',
   SUN_UNIT: 'sun',
 } as const;
-
-
