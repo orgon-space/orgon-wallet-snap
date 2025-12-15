@@ -1,10 +1,23 @@
 {
-  "name": "snap",
-  "version": "0.1.0",
-  "description": "The 'Hello, world!' of MetaMask Snaps, now written in TypeScript.",
+  "name": "orgon-snap",
+  "version": "1.0.6",
+  "description": "Orgon Network Wallet Snap for MetaMask - A secure wallet solution for Orgon blockchain",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "https://github.com/orgon-space/orgon-wallet-snap.git"
+  },
+  "keywords": [
+    "metamask",
+    "snap",
+    "orgon",
+    "wallet",
+    "blockchain",
+    "cryptocurrency",
+    "orgonweb"
+  ],
+  "homepage": "https://github.com/orgon-space/orgon-wallet-snap#readme",
+  "bugs": {
+    "url": "https://github.com/orgon-space/orgon-wallet-snap/issues"
   },
   "license": "(MIT-0 OR Apache-2.0)",
   "main": "./dist/bundle.js",

@@ -10,7 +10,7 @@ export const ORGON_NETWORKS: Record<string, OrgonNetworkConfig> = {
   quasar: {
     name: 'Orgon quasar Testnet',
     chainId: 'orgon:quasar',
-    rpcUrl: 'http://5.35.81.72:19667',
+    rpcUrl: 'https://quasargate.orgon.space',
     explorerUrl: 'https://quasar.orgonscan.org',
   },
 };

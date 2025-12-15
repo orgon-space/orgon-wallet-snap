@@ -1,18 +1,18 @@
 {
-  "version": "0.1.0",
+  "version": "1.0.6",
   "description": "Orgon Network Snap for MetaMask",
-  "proposedName": "Orgon Snap",
+  "proposedName": "Orgon",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "https://github.com/orgon-space/orgon-wallet-snap.git"
   },
   "source": {
-    "shasum": "CezuFeQ4BNUfwIdLqzpsbdGASdAeKX207WKarsfdPp4=",
+    "shasum": "IEFAA2Xg60lf0lMPsD6PzI2iXEv11HgkF68BHsO70ZI=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/logo.svg",
-        "packageName": "snap",
+        "packageName": "orgon-snap",
         "registry": "https://registry.npmjs.org/"
       }
     }
