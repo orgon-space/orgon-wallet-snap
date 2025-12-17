@@ -102,12 +102,5 @@ declare module 'styled-components' {
   }
 }
 
-// ============================================================================
-// SVG Module Declaration
-// ============================================================================
-
-declare module '*.svg' {
-  export const ReactComponent: FunctionComponent<SVGProps<SVGSVGElement>>;
-}
 
 

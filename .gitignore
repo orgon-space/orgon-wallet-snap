@@ -75,3 +75,10 @@ node_modules/
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Lock files and IDE directories
+package-lock.json
+yarn.lock
+.yarn/
+.vscode/
+.idea/
