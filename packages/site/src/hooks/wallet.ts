@@ -115,29 +115,29 @@ export class WalletService implements WalletServiceInterface {
   async createAccount(name?: string): Promise<OrgonAccount> {
     try {
       console.log('Creating account with name:', name);
-      
+
       const account = await this.invokeSnap({
         method: 'keyring_createAccount',
         params: { name },
       });
-      
+
       console.log('Account created successfully:', account);
       return account as OrgonAccount;
     } catch (error: any) {
       console.error('Error creating account:', error);
-      
+
       // Check if it's a permissions error
       if (error?.message?.includes('Unauthorized') || error?.code === 4100) {
         try {
           console.log('Requesting keyring permissions...');
           await this.requestKeyringPermissions();
-          
+
           // Retry the account creation after requesting permissions
           const account = await this.invokeSnap({
             method: 'keyring_createAccount',
             params: { name },
           });
-          
+
           console.log('Account created successfully after permission request:', account);
           return account as OrgonAccount;
         } catch (permissionError) {
@@ -220,8 +220,9 @@ export class WalletService implements WalletServiceInterface {
         method: 'orgon_getAccountV1',
         params: { address, networkId },
       }) as Array<{ data: any }>;
-      console.log('Balance result:', data[0]?.data);
-      return data[0]?.data;
+      console.log('Balance result:', data?.data);
+
+      return data?.data;
     } catch (error: any) {
       console.error('Failed to get balance:', error);
       throw new Error(error?.message || 'Failed to get balance');
@@ -381,7 +382,7 @@ export const useWalletActions = () => {
 export const useWalletManager = () => {
   const invokeSnap = useInvokeSnap();
   const request = useRequest();
-  
+
   // Store state
   const accounts = useWalletStore(state => state.accounts);
   const balances = useWalletStore(state => state.balances);
@@ -389,15 +390,15 @@ export const useWalletManager = () => {
   const error = useWalletStore(state => state.error);
   const refreshingWallets = useWalletStore(state => state.refreshingWallets);
   const refreshingAllBalances = useWalletStore(state => state.refreshingAllBalances);
-  
+
   const currentNetwork = useNetworkStore(state => state.currentNetwork);
-  
+
   // Store actions
   const walletActions = useWalletActions();
-  
+
   // Create wallet service (memoized to prevent recreation on every render)
   const walletService = useMemo(() => new WalletService(invokeSnap, request), [invokeSnap, request]);
-  
+
   // Debounce refs
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const refreshAllTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -406,7 +407,7 @@ export const useWalletManager = () => {
     try {
       walletActions.setLoading(true);
       walletActions.clearError();
-      
+
       const accountsData = await walletService.getAccounts();
       walletActions.setAccounts(accountsData);
     } catch (err: any) {
@@ -421,7 +422,7 @@ export const useWalletManager = () => {
     if (!accountsToLoad || accountsToLoad.length === 0) {
       return;
     }
-    
+
     try {
       const balanceResults = await Promise.all(
         accountsToLoad.filter(account => account && account.address).map(async (account) => {
@@ -434,14 +435,14 @@ export const useWalletManager = () => {
           }
         })
       );
-      
+
       const newBalances: Record<string, any> = {};
       balanceResults.forEach(({ accountId, balance }) => {
         if (balance) {
           newBalances[accountId] = balance;
         }
       });
-      
+
       walletActions.updateBalances(newBalances);
     } catch (err) {
       console.error('Failed to load balances:', err);
@@ -452,16 +453,16 @@ export const useWalletManager = () => {
     try {
       walletActions.setLoading(true);
       walletActions.clearError();
-      
+
       const account = await walletService.createAccount(name);
       walletActions.addAccount(account);
-      
+
       // Load balance for the new account
       if (currentNetwork) {
         const balance = await walletService.getBalance(account.address, currentNetwork.chainId);
         walletActions.updateBalance(account.id, balance);
       }
-      
+
       return account;
     } catch (err: any) {
       console.error('Failed to create account:', err);
@@ -476,10 +477,10 @@ export const useWalletManager = () => {
     try {
       walletActions.setLoading(true);
       walletActions.clearError();
-      
+
       const account = await walletService.importAccount(privateKey, name);
       walletActions.addAccount(account);
-      
+
       // Load balance for the imported account
       if (currentNetwork) {
         const balance = await walletService.getBalance(account.address, currentNetwork.chainId);
@@ -499,16 +500,16 @@ export const useWalletManager = () => {
     try {
       walletActions.setLoading(true);
       walletActions.clearError();
-      
+
       const account = await walletService.importAccountFromMnemonic(mnemonic, name);
       walletActions.addAccount(account);
-      
+
       // Load balance for the imported account
       if (currentNetwork) {
         const balance = await walletService.getBalance(account.address, currentNetwork.chainId);
         walletActions.updateBalance(account.id, balance);
       }
-      
+
       return account;
     } catch (err: any) {
       console.error('Failed to import account from mnemonic:', err);
@@ -523,7 +524,7 @@ export const useWalletManager = () => {
     try {
       walletActions.setLoading(true);
       walletActions.clearError();
-      
+
       await walletService.deleteAccount(accountId);
       walletActions.removeAccount(accountId);
     } catch (err: any) {
@@ -539,7 +540,7 @@ export const useWalletManager = () => {
     try {
       walletActions.setLoading(true);
       walletActions.clearError();
-      
+
       const result = await walletService.exportAccount(accountId);
       return result;
     } catch (err: any) {
@@ -555,7 +556,7 @@ export const useWalletManager = () => {
     try {
       walletActions.setLoading(true);
       walletActions.clearError();
-      
+
       const result = await walletService.getAccountMnemonic(accountId);
       return result;
     } catch (err: any) {
@@ -570,18 +571,18 @@ export const useWalletManager = () => {
   const refreshWalletBalance = useCallback(async (accountId: string) => {
     const account = accounts.find(acc => acc.id === accountId);
     if (!account || !currentNetwork) return;
-    
+
     // Clear any existing timeout
     if (refreshTimeoutRef.current) {
       clearTimeout(refreshTimeoutRef.current);
     }
-    
+
     // Debounce the refresh to prevent rapid successive calls
     refreshTimeoutRef.current = setTimeout(async () => {
       try {
         walletActions.setRefreshingWallet(accountId, true);
         walletActions.clearError();
-        
+
         const balance = await walletService.getBalance(account.address, currentNetwork.chainId);
         walletActions.updateBalance(accountId, balance);
       } catch (err: any) {
@@ -596,18 +597,18 @@ export const useWalletManager = () => {
   const refreshAllBalances = useCallback(async (networkChainId?: string) => {
     const chainIdToUse = networkChainId || currentNetwork?.chainId;
     if (!accounts || accounts.length === 0 || !chainIdToUse) return;
-    
+
     // Clear any existing timeout
     if (refreshAllTimeoutRef.current) {
       clearTimeout(refreshAllTimeoutRef.current);
     }
-    
+
     // Debounce the refresh to prevent rapid successive calls
     refreshAllTimeoutRef.current = setTimeout(async () => {
       try {
         walletActions.setRefreshingAllBalances(true);
         walletActions.clearError();
-        
+
         await loadBalancesForAccounts(accounts, chainIdToUse);
       } catch (err: any) {
         console.error('Failed to refresh all balances:', err);
@@ -627,7 +628,7 @@ export const useWalletManager = () => {
     refreshingWallets,
     refreshingAllBalances,
     currentNetwork,
-    
+
     // Actions
     loadAccounts,
     loadBalancesForAccounts,
