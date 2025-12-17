@@ -62,7 +62,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
       return sum;
     }
     const balance = parentBalances[account.id];
-    return sum + (balance ? parseFloat(balance.orgon) : 0);
+    return sum + (balance?.balance ? parseFloat(balance.balance.toString()) : 0);
   }, 0);
 
   const displayBalance = (balance: number) => {
@@ -155,17 +155,20 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {(parentAccounts || [])
                 .filter((account) => account && account.id) // Filter out null/undefined accounts
-                .map((account) => (
-                  <WalletCard
-                    key={account.id}
-                    wallet={{ ...account, balance: parentBalances[account.id] }}
-                    onRefresh={() => onRefreshWallet?.(account.id)}
-                    onDelete={onDeleteWallet}
-                    onExport={onExportWallet}
-                    isRefreshing={refreshingWallets.has(account.id)}
-                    currentNetwork={parentCurrentNetwork}
-                  />
-                ))}
+                .map((account) => {
+                  const balance = parentBalances[account.id];
+                  return (
+                    <WalletCard
+                      key={account.id}
+                      wallet={{ ...account, ...(balance && { balance }) }}
+                      onRefresh={() => onRefreshWallet?.(account.id)}
+                      {...(onDeleteWallet && { onDelete: onDeleteWallet })}
+                      {...(onExportWallet && { onExport: onExportWallet })}
+                      isRefreshing={refreshingWallets.has(account.id)}
+                      currentNetwork={parentCurrentNetwork}
+                    />
+                  );
+                })}
             </div>
             {loading && (
               <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">

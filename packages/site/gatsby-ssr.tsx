@@ -1,7 +1,6 @@
 import type { GatsbySSR } from 'gatsby';
 import { StrictMode } from 'react';
 
-import { App } from './src/App';
 import { Root } from './src/Root';
 
 // Note: Buffer polyfill is only needed in browser (gatsby-browser.tsx)
@@ -13,6 +12,3 @@ export const wrapRootElement: GatsbySSR['wrapRootElement'] = ({ element }) => (
   </StrictMode>
 );
 
-export const wrapPageElement: GatsbySSR['wrapPageElement'] = ({ element }) => (
-  <App>{element}</App>
-);
