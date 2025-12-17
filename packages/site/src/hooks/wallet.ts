@@ -219,7 +219,7 @@ export class WalletService implements WalletServiceInterface {
       const data = await this.invokeSnap({
         method: 'orgon_getAccountV1',
         params: { address, networkId },
-      }) as Array<{ data: any }>;
+      }) as { data: any };
       console.log('Balance result:', data?.data);
 
       return data?.data;
