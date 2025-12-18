@@ -3,6 +3,7 @@ import { Menu, X, Wallet, Settings, RefreshCw, Eye, Plus, Send, Cog } from 'luci
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
+import { CompactNetworkSwitcher } from './CompactNetworkSwitcher';
 
 interface MobileHeaderProps {
   onRefresh?: () => void;
@@ -73,6 +74,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
+            <CompactNetworkSwitcher variant="button" />
             <Button
               variant="ghost"
               size="sm"

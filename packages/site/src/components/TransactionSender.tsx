@@ -26,8 +26,7 @@ export const TransactionSender: React.FC = () => {
   const [toAddress, setToAddress] = useState('oZJ26HNoRGPDJDVezXe5ZWWgy9W49KMoUp');
   const [amount, setAmount] = useState('1');
   const [memo, setMemo] = useState('');
-  const [selectedNetwork, setSelectedNetwork] = useState<string>('');
-  const [selectedToken, setSelectedToken] = useState<string>(''); // Format: "type|symbol|address"
+  const [selectedToken, setSelectedToken] = useState<string>(''); // Format: "type|symbol|address|index"
   const [transactionResult, setTransactionResult] = useState<any>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [gasPrice, setGasPrice] = useState('0.1');
@@ -45,16 +44,13 @@ export const TransactionSender: React.FC = () => {
   const tokens = useTokenBalances(accountWithBalance);
   
   // Parse selected token
-  const currentToken = selectedToken 
-    ? tokens.find(t => `${t.type}|${t.symbol}|${t.address || ''}` === selectedToken)
+  const currentToken = selectedToken
+    ? (() => {
+        const [type, symbol, address] = selectedToken.split('|').slice(0, 3);
+        return tokens.find(t => t.type === type && t.symbol === symbol && (t.address || '') === address);
+      })()
     : tokens[0]; // Default to first token (ORGON)
 
-  // Set default network when networks are loaded
-  useEffect(() => {
-    if (networkManager.networks && networkManager.networks.length > 0 && !selectedNetwork) {
-      setSelectedNetwork(networkManager.networks[0]?.chainId || '');
-    }
-  }, [networkManager.networks?.length, selectedNetwork]);
 
   // Load balance when account is selected
   useEffect(() => {
@@ -68,7 +64,7 @@ export const TransactionSender: React.FC = () => {
     if (tokens.length > 0 && !selectedToken) {
       const defaultToken = tokens[0];
       if (defaultToken) {
-        setSelectedToken(`${defaultToken.type}|${defaultToken.symbol}|${defaultToken.address || ''}`);
+        setSelectedToken(`${defaultToken.type}|${defaultToken.symbol}|${defaultToken.address || ''}|0`);
       }
     }
   }, [tokens.length, selectedToken]);
@@ -143,7 +139,7 @@ export const TransactionSender: React.FC = () => {
         from: selectedAccount,
         to: toAddress,
         amount,
-        networkId: selectedNetwork || '',
+        networkId: networkManager.currentNetwork?.chainId || '',
         accountId: walletManager.accounts?.find((acc) => acc.address === selectedAccount)?.id || '',
       };
 
@@ -162,7 +158,7 @@ export const TransactionSender: React.FC = () => {
     }
   };
 
-  const selectedNetworkData = networkManager.networks?.find((net) => net.chainId === selectedNetwork);
+  const selectedNetworkData = networkManager.currentNetwork;
 
   const isFormValid = selectedAccount && toAddress && amount && parseFloat(amount) > 0;
 
@@ -277,11 +273,11 @@ export const TransactionSender: React.FC = () => {
                       <SelectValue placeholder="Select a token" />
                     </SelectTrigger>
                     <SelectContent>
-                      {tokens.map((token) => {
-                        const tokenKey = `${token.type}|${token.symbol}|${token.address || ''}`;
+                      {tokens.map((token, index) => {
+                        const tokenKey = `${token.type}|${token.symbol}|${token.address || ''}|${index}`;
                         const balance = (token.value / (10 ** token.decimals)).toFixed(token.decimals);
                         const displaySymbol = token.type === 'orc20' ? formatAddress(token.symbol) : token.symbol;
-                        
+
                         return (
                           <SelectItem key={tokenKey} value={tokenKey}>
                             <div className="flex items-center justify-between w-full gap-4">
@@ -373,25 +369,6 @@ export const TransactionSender: React.FC = () => {
               </div>
             </div>
 
-            {/* Network */}
-            <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Network</label>
-              <Select value={selectedNetwork} onValueChange={setSelectedNetwork}>
-                <SelectTrigger className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400">
-                  <SelectValue placeholder="Select a network" />
-                </SelectTrigger>
-                <SelectContent>
-                  {networkManager.networks?.map((network) => (
-                    <SelectItem key={network.chainId} value={network.chainId}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span>{network.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
             {/* Advanced Options */}
             <div className="flex flex-col gap-4">

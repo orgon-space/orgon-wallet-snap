@@ -13,7 +13,6 @@ import {
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 // import { Badge } from './ui/badge';
-import { NetworkSwitcher } from './NetworkSwitcher';
 import { WalletCard } from './WalletCard';
 import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
 import type { OrgonAccount, OrgonBalance, OrgonNetwork } from '../types';
@@ -121,15 +120,6 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
       {/* Wallet List */}
       {parentAccounts && parentAccounts.length > 0 && (
         <div className="flex flex-col gap-4">
-          {/* Network Switcher - positioned above Your Wallets */}
-          <div className="flex justify-center mb-2">
-            <NetworkSwitcher 
-              onNetworkChange={handleNetworkChange}
-              className="w-full max-w-lg"
-              currentNetwork={parentCurrentNetwork}
-            />
-          </div>
-          
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Your Wallets</h3>
             <Button

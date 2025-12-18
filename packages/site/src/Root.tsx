@@ -1,6 +1,7 @@
 import type { FunctionComponent, ReactNode } from 'react';
 import { createContext, useState, useEffect } from 'react';
 import { MetaMaskProvider } from './hooks/metamask';
+import { NetworkProvider } from './hooks/network-provider';
 import { getThemePreference, setLocalStorage } from './utils/helpers';
 import './styles/globals.css';
 
@@ -33,7 +34,9 @@ export const Root: FunctionComponent<RootProps> = ({ children }) => {
 
   return (
     <ToggleThemeContext.Provider value={toggleTheme}>
-      <MetaMaskProvider>{children}</MetaMaskProvider>
+      <MetaMaskProvider>
+        <NetworkProvider>{children}</NetworkProvider>
+      </MetaMaskProvider>
     </ToggleThemeContext.Provider>
   );
 };

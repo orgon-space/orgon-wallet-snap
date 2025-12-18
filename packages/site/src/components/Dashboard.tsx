@@ -10,6 +10,7 @@ import { WalletManagement } from './WalletManagement';
 import { TransactionSender } from './TransactionSender';
 import { ExportWalletModal } from './ExportWalletModal';
 import { MobileHeader } from './MobileHeader';
+import { DesktopHeader } from './DesktopHeader';
 
 import { useMetaMask, useRequestSnap, useMetaMaskContext } from '../hooks/metamask';
 import { useWalletManager } from '../hooks/wallet';
@@ -166,7 +167,15 @@ export const Dashboard: React.FC = () => {
   // Main wallet interface
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
-      <MobileHeader 
+      {/* Desktop Header */}
+      <DesktopHeader
+        onReconnect={requestSnap}
+        showReconnect={shouldDisplayReconnectButton(installedSnap) || false}
+        error={error}
+      />
+
+      {/* Mobile Header */}
+      <MobileHeader
         walletCount={walletManager.accounts?.length || 0}
         totalBalance={Object.values(walletManager.balances)
           .reduce((sum, balance) => sum + parseFloat(balance?.orgon || '0'), 0)
@@ -178,32 +187,8 @@ export const Dashboard: React.FC = () => {
         showReconnect={shouldDisplayReconnectButton(installedSnap) || false}
         onReconnect={requestSnap}
       />
-      
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 lg:pt-8 pt-[120px]">
-        {error && (
-          <Alert className="mb-6" variant="destructive">
-            <AlertCircle size={16} />
-            <AlertDescription>
-              <strong>An error happened:</strong> {error.message}
-            </AlertDescription>
-          </Alert>
-        )}
 
-        {/* Compact Desktop Reconnect Button */}
-        {shouldDisplayReconnectButton(installedSnap) && (
-          <div className="hidden lg:flex justify-end mb-4">
-            <Button
-              onClick={requestSnap}
-              disabled={!installedSnap}
-              variant="outline"
-              size="sm"
-              className="text-xs"
-            >
-              <RefreshCw className="w-3 h-3 mr-1" />
-              Reconnect Snap
-            </Button>
-          </div>
-        )}
+      <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 lg:pt-8 pt-[120px]">
 
         <div className="max-w-full">
           <Tabs value={activeTab} onValueChange={uiActions.setActiveTab}>

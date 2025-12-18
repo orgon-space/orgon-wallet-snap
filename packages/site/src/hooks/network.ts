@@ -1,6 +1,6 @@
 /**
  * Network Layer - Complete network functionality
- * Combines: NetworkService, NetworkStore, and useNetworkManager
+ * Combines: NetworkService, NetworkStore, useNetworkManager, and NetworkProvider
  */
 
 import { useCallback, useMemo } from 'react';
@@ -216,11 +216,12 @@ export const useNetworkManager = () => {
     loading,
     error,
     switching,
-    
+
     // Actions
     loadNetworks,
     switchNetwork,
     clearError: networkActions.clearError,
   };
 };
+
 
