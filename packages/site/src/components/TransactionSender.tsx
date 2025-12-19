@@ -12,10 +12,10 @@ import { Badge } from './ui/badge';
 import { useWalletManager, useTokenBalances, type TokenBalance } from '../hooks/wallet';
 import { useNetworkManager } from '../hooks/network';
 import { useTransactionManager } from '../hooks/transaction';
-import { formatAddress, validateOrgonAddress, calculateTransactionFee, copyToClipboard } from '../utils/helpers';
+import { formatAddress, validateOrgonAddress, calculateTransactionFee, copyToClipboard, formatBalance } from '../utils/helpers';
 import { createOrgonTransaction, createOrc10Transaction, createOrc20Transaction } from '../utils/transaction';
 import { getExplorerUrlForNetwork } from '../utils/orgonWeb';
-import type { OrgonTransaction } from '../types';
+import type { OrgonTransaction, OrgonAccount } from '../types';
 
 export const TransactionSender: React.FC = () => {
   const walletManager = useWalletManager();
@@ -34,7 +34,7 @@ export const TransactionSender: React.FC = () => {
   const [gasLimit, setGasLimit] = useState('1000000');
 
   // Get selected account data and its token balances
-  const selectedAccountData = walletManager.accounts?.find((acc) => acc.address === selectedAccount);
+  const selectedAccountData = walletManager.accounts?.find((acc: OrgonAccount) => acc.address === selectedAccount);
   
   // Combine account with its balance (like in WalletOverview)
   const accountWithBalance = selectedAccountData ? {
@@ -43,7 +43,11 @@ export const TransactionSender: React.FC = () => {
   } : undefined;
   
   const tokens = useTokenBalances(accountWithBalance);
-  
+
+  // Get ORGON balance specifically
+  const orgonToken = tokens.find(token => token.type === 'native' && token.symbol === 'ORGON');
+  const orgonBalance = orgonToken ? (orgonToken.value / (10 ** orgonToken.decimals)).toFixed(orgonToken.decimals) : '0';
+
   // Parse selected token
   const currentToken = selectedToken
     ? (() => {
@@ -141,7 +145,7 @@ export const TransactionSender: React.FC = () => {
         to: toAddress,
         amount,
         networkId: networkManager.currentNetwork?.chainId || '',
-        accountId: walletManager.accounts?.find((acc) => acc.address === selectedAccount)?.id || '',
+        accountId: walletManager.accounts?.find((acc: OrgonAccount) => acc.address === selectedAccount)?.id || '',
       };
 
       const result = await transactionManager.sendTransaction({
@@ -206,7 +210,7 @@ export const TransactionSender: React.FC = () => {
                   <SelectValue placeholder="Select an account" />
                 </SelectTrigger>
                 <SelectContent>
-                  {walletManager.accounts?.map((account) => (
+                  {walletManager.accounts?.map((account: OrgonAccount) => (
                     <SelectItem key={account.id} value={account.address}>
                       <div className="flex items-center justify-between w-full">
                         <span>{account.name || 'Unnamed Wallet'}</span>
@@ -218,6 +222,14 @@ export const TransactionSender: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
+              {selectedAccount && accountWithBalance && (
+                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <span className="text-sm text-green-700 dark:text-green-300">Available Balance:</span>
+                  <span className="font-mono text-sm font-semibold text-green-900 dark:text-green-100">
+                    {orgonBalance} ORGON
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Token Selection */}
