@@ -1,8 +1,3 @@
-/**
- * Transaction creation utilities
- * Creates raw unsigned transactions using OrgonWeb
- */
-
 // Polyfill Buffer for browser environment
 if (typeof window !== 'undefined') {
   try {
@@ -18,15 +13,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Import OrgonWeb (TronWeb)
-// Note: Make sure orgonweb is installed: yarn add orgonweb
-let TronWeb: any;
-try {
-  const tronwebModule = require('orgonweb');
-  TronWeb = tronwebModule.TronWeb || tronwebModule.default || tronwebModule;
-} catch (error) {
-  console.error('Failed to import OrgonWeb library:', error);
-}
+const {TronWeb} = require('orgonweb');
 
 /**
  * Network configuration interface
@@ -68,25 +55,25 @@ export async function createOrgonTransaction(
   network?: NetworkConfig,
 ): Promise<any> {
   if (!TronWeb) {
-    throw new Error('OrgonWeb library not available');
+    throw new Error('TronWeb library not available');
   }
 
   try {
-    const tronWebConfig: any = {
-      fullHost: network?.rpcUrl || 'https://gate.orgon.space',
+    const orgonWebConfig: any = {
+      fullHost: network?.rpcUrl,
     };
 
     if (network?.apiKey) {
-      tronWebConfig.headers = { 'ORGON-PRO-API-KEY': network.apiKey };
+      orgonWebConfig.headers = { 'ORGON-PRO-API-KEY': network.apiKey };
     }
 
-    const tronWeb = new TronWeb(tronWebConfig);
+    const orgonWeb = new TronWeb(orgonWebConfig);
 
     // Convert amount to sun
-    const amountSun = tronWeb.toSun(amount);
+    const amountSun = orgonWeb.toSun(amount);
 
     // Create transaction
-    let transaction = await tronWeb.transactionBuilder.sendTrx(to, amountSun, from);
+    let transaction = await orgonWeb.transactionBuilder.sendTrx(to, amountSun, from);
 
     if (!transaction || !transaction.raw_data) {
       throw new Error('Failed to create transaction');
@@ -94,9 +81,9 @@ export async function createOrgonTransaction(
 
     // Add memo if provided
     if (memo && memo.trim() !== '') {
-      transaction = await tronWeb.transactionBuilder.addUpdateData(
+      transaction = await orgonWeb.transactionBuilder.addUpdateData(
         transaction,
-        tronWeb.toHex(memo.trim()),
+        orgonWeb.toHex(memo.trim()),
         'utf8',
       );
     }
@@ -128,22 +115,22 @@ export async function createOrc10Transaction(
   network?: NetworkConfig,
 ): Promise<any> {
   if (!TronWeb) {
-    throw new Error('OrgonWeb library not available');
+    throw new Error('TronWeb library not available');
   }
 
   try {
-    const tronWebConfig: any = {
-      fullHost: network?.rpcUrl || 'https://gate.orgon.space',
+    const orgonWebConfig: any = {
+      fullHost: network?.rpcUrl,
     };
 
     if (network?.apiKey) {
-      tronWebConfig.headers = { 'ORGON-PRO-API-KEY': network.apiKey };
+      orgonWebConfig.headers = { 'ORGON-PRO-API-KEY': network.apiKey };
     }
 
-    const tronWeb = new TronWeb(tronWebConfig);
+    const orgonWeb = new TronWeb(orgonWebConfig);
 
     // Create TRC10 token transaction
-    let transaction = await tronWeb.transactionBuilder.sendToken(
+    let transaction = await orgonWeb.transactionBuilder.sendToken(
       to,
       Number(amount),
       tokenId,
@@ -156,9 +143,9 @@ export async function createOrc10Transaction(
 
     // Add memo if provided
     if (memo && memo.trim() !== '') {
-      transaction = await tronWeb.transactionBuilder.addUpdateData(
+      transaction = await orgonWeb.transactionBuilder.addUpdateData(
         transaction,
-        tronWeb.toHex(memo.trim()),
+        orgonWeb.toHex(memo.trim()),
         'utf8',
       );
     }
@@ -190,19 +177,19 @@ export async function createOrc20Transaction(
   network?: NetworkConfig,
 ): Promise<any> {
   if (!TronWeb) {
-    throw new Error('OrgonWeb library not available');
+    throw new Error('TronWeb library not available');
   }
 
   try {
-    const tronWebConfig: any = {
-      fullHost: network?.rpcUrl || 'https://gate.orgon.space',
+    const orgonWebConfig: any = {
+      fullHost: network?.rpcUrl,
     };
 
     if (network?.apiKey) {
-      tronWebConfig.headers = { 'ORGON-PRO-API-KEY': network.apiKey };
+      orgonWebConfig.headers = { 'ORGON-PRO-API-KEY': network.apiKey };
     }
 
-    const tronWeb = new TronWeb(tronWebConfig);
+    const orgonWeb = new TronWeb(orgonWebConfig);
 
     // Encode transfer function call
     const parameter = [
@@ -211,7 +198,7 @@ export async function createOrc20Transaction(
     ];
 
     // Create TRC20 transaction using triggerSmartContract
-    const txResponse = await tronWeb.transactionBuilder.triggerSmartContract(
+    const txResponse = await orgonWeb.transactionBuilder.triggerSmartContract(
       contractAddress,
       'transfer(address,uint256)',
       { feeLimit: 100000000 }, // 100 TRX fee limit
@@ -226,9 +213,9 @@ export async function createOrc20Transaction(
     let transaction = txResponse.transaction;
     // Add memo if provided
     if (memo && memo.trim() !== '') {
-      transaction = await tronWeb.transactionBuilder.addUpdateData(
+      transaction = await orgonWeb.transactionBuilder.addUpdateData(
         transaction,
-        tronWeb.toHex(memo.trim()),
+        orgonWeb.toHex(memo.trim()),
         'utf8',
       );
     }

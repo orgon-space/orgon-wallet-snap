@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Wallet, Download, AlertCircle, RefreshCw, Eye, Plus, Send, Cog } from 'lucide-react';
+import { Wallet, Download, AlertCircle, RefreshCw, Eye, Plus, Send, Cog, Snowflake } from 'lucide-react';
 
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { WalletOverview } from './WalletOverview';
 import { WalletManagement } from './WalletManagement';
 import { TransactionSender } from './TransactionSender';
+import { FreezeUnfreeze } from './FreezeUnfreeze';
 import { ExportWalletModal } from './ExportWalletModal';
 import { MobileHeader } from './MobileHeader';
 import { DesktopHeader } from './DesktopHeader';
@@ -207,6 +208,10 @@ export const Dashboard: React.FC = () => {
                   <Send className="w-4 h-4" />
                   Send
                 </TabsTrigger>
+                <TabsTrigger value="staking" className="flex items-center gap-2">
+                  <Snowflake className="w-4 h-4" />
+                  Staking
+                </TabsTrigger>
                 <TabsTrigger value="settings" className="flex items-center gap-2">
                   <Cog className="w-4 h-4" />
                   Settings
@@ -250,6 +255,10 @@ export const Dashboard: React.FC = () => {
 
             <TabsContent value="send">
               <TransactionSender />
+            </TabsContent>
+
+            <TabsContent value="staking">
+              <FreezeUnfreeze />
             </TabsContent>
 
             <TabsContent value="settings">

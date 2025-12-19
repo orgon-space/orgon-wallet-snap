@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, X, Wallet, Settings, RefreshCw, Eye, Plus, Send, Cog } from 'lucide-react';
+import { Menu, X, Wallet, Settings, RefreshCw, Eye, Plus, Send, Cog, Snowflake } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
@@ -113,6 +113,10 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
                    <TabsTrigger value="send" className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
                      <Send className="w-4 h-4" />
                      <span>Send</span>
+                   </TabsTrigger>
+                   <TabsTrigger value="staking" className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
+                     <Snowflake className="w-4 h-4" />
+                     <span>Staking</span>
                    </TabsTrigger>
                    <TabsTrigger value="settings" className="text-sm flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg">
                      <Cog className="w-4 h-4" />
