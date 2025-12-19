@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Send, AlertCircle, CheckCircle, Loader2, Copy, Calculator, Clock, Shield, Zap } from 'lucide-react';
+import { Send, AlertCircle, CheckCircle, Loader2, Copy, Calculator, Clock, Shield, Zap, ExternalLink } from 'lucide-react';
 
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -14,6 +14,7 @@ import { useNetworkManager } from '../hooks/network';
 import { useTransactionManager } from '../hooks/transaction';
 import { formatAddress, validateOrgonAddress, calculateTransactionFee, copyToClipboard } from '../utils/helpers';
 import { createOrgonTransaction, createOrc10Transaction, createOrc20Transaction } from '../utils/transaction';
+import { getExplorerUrlForNetwork } from '../utils/orgonWeb';
 import type { OrgonTransaction } from '../types';
 
 export const TransactionSender: React.FC = () => {
@@ -472,6 +473,14 @@ export const TransactionSender: React.FC = () => {
                           onClick={() => copyToClipboard(transactionResult.txId)}
                         >
                           <Copy size={12} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600"
+                          onClick={() => window.open(`${getExplorerUrlForNetwork(networkManager.currentNetwork?.chainId)}/transaction/${transactionResult.txId}`, '_blank')}
+                        >
+                          <ExternalLink size={12} />
                         </Button>
                       </div>
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Snowflake, Zap, AlertCircle, CheckCircle, Loader2, Copy, Calculator, Clock, Shield } from 'lucide-react';
+import { Snowflake, Zap, AlertCircle, CheckCircle, Loader2, Copy, Calculator, Clock, Shield, ExternalLink } from 'lucide-react';
 
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -16,6 +16,7 @@ import { useNetworkManager } from '../hooks/network';
 import { useTransactionManager } from '../hooks/transaction';
 import { formatAddress, validateOrgonAddress, calculateTransactionFee, copyToClipboard } from '../utils/helpers';
 import { createFreezeTransaction, createUnfreezeTransaction } from '../utils/staking-transactions';
+import { getExplorerUrlForNetwork } from '../utils/orgonWeb';
 import type { OrgonTransaction } from '../types';
 
 type FreezeUnfreezeType = 'freeze' | 'unfreeze';
@@ -403,6 +404,14 @@ export const FreezeUnfreeze: React.FC = () => {
                           onClick={() => copyToClipboard(transactionResult.txId)}
                         >
                           <Copy size={12} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600"
+                          onClick={() => window.open(`${getExplorerUrlForNetwork(networkManager.currentNetwork?.chainId)}/transaction/${transactionResult.txId}`, '_blank')}
+                        >
+                          <ExternalLink size={12} />
                         </Button>
                       </div>
                     </div>
