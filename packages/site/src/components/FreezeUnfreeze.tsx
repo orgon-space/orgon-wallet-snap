@@ -154,50 +154,6 @@ export const FreezeUnfreeze: React.FC = () => {
       </CardHeader>
       <CardContent className="px-8 pb-8">
         <div className="flex flex-col gap-6">
-          {transactionManager.error && (
-            <Alert variant="destructive" className="border-red-200 bg-red-50 dark:bg-red-900/20">
-              <AlertCircle size={16} />
-              <AlertDescription className="text-red-800 dark:text-red-200">
-                {transactionManager.error}
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {transactionResult && (
-            <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
-              <CheckCircle size={16} className="text-green-600" />
-              <AlertDescription className="text-green-800 dark:text-green-200">
-                <strong>Transaction sent successfully!</strong>
-                <div className="mt-3 p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-green-200 dark:border-green-800">
-                  <div className="text-sm flex flex-col gap-2">
-                    <div>
-                      <strong>Transaction ID:</strong>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="font-mono text-xs break-all bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded-lg">
-                          {transactionResult.txId}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600"
-                          onClick={() => copyToClipboard(transactionResult.txId)}
-                        >
-                          <Copy size={12} />
-                        </Button>
-                      </div>
-                    </div>
-                    <div>
-                      <strong>Status:</strong>
-                      <Badge variant={transactionResult.success ? "default" : "destructive"} className="ml-2">
-                        {transactionResult.success ? 'Success' : 'Failed'}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
-
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* From Account */}
             <div className="flex flex-col gap-3">
@@ -417,6 +373,50 @@ export const FreezeUnfreeze: React.FC = () => {
               )}
             </Button>
           </form>
+
+          {transactionManager.error && (
+            <Alert variant="destructive" className="border-red-200 bg-red-50 dark:bg-red-900/20">
+              <AlertCircle size={16} />
+              <AlertDescription className="text-red-800 dark:text-red-200">
+                {transactionManager.error}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {transactionResult && (
+            <Alert className="border-green-200 bg-green-50 dark:bg-green-900/20">
+              <CheckCircle size={16} className="text-green-600" />
+              <AlertDescription className="text-green-800 dark:text-green-200">
+                <strong>Transaction sent successfully!</strong>
+                <div className="mt-3 p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-green-200 dark:border-green-800">
+                  <div className="text-sm flex flex-col gap-2">
+                    <div>
+                      <strong>Transaction ID:</strong>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="font-mono text-xs break-all bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded-lg">
+                          {transactionResult.txId}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600"
+                          onClick={() => copyToClipboard(transactionResult.txId)}
+                        >
+                          <Copy size={12} />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <strong>Status:</strong>
+                      <Badge variant={transactionResult.success ? "default" : "destructive"} className="ml-2">
+                        {transactionResult.success ? 'Success' : 'Failed'}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
       </CardContent>
     </Card>
