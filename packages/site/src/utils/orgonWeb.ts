@@ -1,7 +1,7 @@
 const {TronWeb} = require('orgonweb');
 
-const TESTNET_NODE = 'https://trq80.orgon.space';
-const MAINNET_NODE = 'https://tr80.orgon.space';
+const TESTNET_NODE = 'https://quasargate.orgon.space';
+const MAINNET_NODE = 'https://gate.orgon.space';
 const TESTNET_EXPLORER_URL = 'https://quasar.orgonscan.org';
 const MAINNET_EXPLORER_URL = 'https://orgonscan.org';
 const TESTNET_GATE_API_URL = 'https://quasargate.orgon.space/v1';
