@@ -181,7 +181,7 @@ export const Dashboard: React.FC = () => {
         totalBalance={Object.values(walletManager.balances)
           .reduce((sum, balance) => sum + parseFloat(balance?.orgon || '0'), 0)
           .toString()}
-        onRefresh={walletManager.refreshAllBalances}
+        onRefresh={() => walletManager.refreshAllBalances()}
         activeTab={activeTab}
         onTabChange={uiActions.setActiveTab}
         showTabs={true}
@@ -229,10 +229,10 @@ export const Dashboard: React.FC = () => {
                 onSendTransaction={() => uiActions.setActiveTab('send')}
                 onImportWallet={() => uiActions.setActiveTab('create')}
                 onNetworkChange={handleNetworkChange}
-                onRefreshWallet={walletManager.refreshWalletBalance}
-                onDeleteWallet={walletManager.deleteAccount}
+                onRefreshWallet={(accountId) => walletManager.refreshWalletBalance(accountId)}
+                onDeleteWallet={(accountId) => walletManager.deleteAccount(accountId)}
                 onExportWallet={handleExportWallet}
-                onRefreshAll={walletManager.refreshAllBalances}
+                onRefreshAll={() => walletManager.refreshAllBalances()}
                 currentNetwork={networkManager.currentNetwork}
                 accounts={walletManager.accounts || []}
                 balances={walletManager.balances}
@@ -245,8 +245,8 @@ export const Dashboard: React.FC = () => {
             <TabsContent value="create">
               <WalletManagement
                 onExportWallet={handleExportWallet}
-                onDeleteWallet={walletManager.deleteAccount}
-                onRefreshWallet={walletManager.refreshWalletBalance}
+                onDeleteWallet={(accountId) => walletManager.deleteAccount(accountId)}
+                onRefreshWallet={(accountId) => walletManager.refreshWalletBalance(accountId)}
                 refreshingWallets={walletManager.refreshingWallets}
                 currentNetwork={networkManager.currentNetwork}
                 showCreateForm={true}
