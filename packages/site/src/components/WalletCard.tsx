@@ -21,7 +21,7 @@ import { Card, CardContent } from './ui/card';
 // } from './ui/dropdown-menu';
 // import { Badge } from './ui/badge';
 import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
-import { useTokenBalances } from '../hooks/wallet';
+import { useTokenBalances, calculateBandwidthEnergy, type BandwidthEnergyInfo } from '../hooks/wallet';
 import type { OrgonAccount, OrgonBalance } from '../types';
 
 interface WalletCardProps {
@@ -49,6 +49,15 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   
   // Use the reusable hook to get token balances
   const tokens = useTokenBalances(wallet);
+
+  // Get bandwidth and energy info
+  const bandwidthEnergy: BandwidthEnergyInfo | null = wallet.balance?.bandwidthEnergy || null;
+
+  // Helper function to format timestamp to date
+  const formatDate = (timestamp: number) => {
+    if (!timestamp) return 'N/A';
+    return new Date(timestamp).toLocaleDateString();
+  };
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-[1.02]">
       <CardContent className="p-6">
@@ -116,6 +125,68 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           </div>
         </div>
 
+{/* Bandwidth & Energy Section */}
+{bandwidthEnergy && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+                Bandwidth & Energy
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {/* Bandwidth */}
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    Пропускная способность (Bandwidth)
+                  </span>
+                  <span className="text-lg font-bold text-blue-600">
+                    {bandwidthEnergy.bandwidth.available}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                  <div>Заморожено: {bandwidthEnergy.bandwidth.frozen} bandwidth</div>
+                  {bandwidthEnergy.bandwidth.unfrozen.length > 0 && (
+                    <div>
+                      На разморозке: {bandwidthEnergy.bandwidth.unfrozen.map((item, idx) => (
+                        <div key={idx} className="ml-2">
+                          {item.amount} bandwidth (до {formatDate(item.expireTime)})
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Energy */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">
+                    Энергия (Energy)
+                  </span>
+                  <span className="text-lg font-bold text-green-600">
+                    {bandwidthEnergy.energy.frozen}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                  {bandwidthEnergy.energy.unfrozen.length > 0 ? (
+                    <div>
+                      На разморозке: {bandwidthEnergy.energy.unfrozen.map((item, idx) => (
+                        <div key={idx} className="ml-2">
+                          {item.amount} energy (до {formatDate(item.expireTime)})
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div>Нет энергии на разморозке</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Tokens Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -187,6 +258,8 @@ export const WalletCard: React.FC<WalletCardProps> = ({
             </div>
           )}
         </div>
+
+        
       </CardContent>
     </Card>
   );
