@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { 
-  Wallet, 
-  Copy, 
-  MoreVertical, 
-  Download, 
-  Trash2, 
+import React, { useState, useEffect } from 'react';
+import {
+  Wallet,
+  Copy,
+  MoreVertical,
+  Download,
+  Trash2,
   ExternalLink,
   TrendingUp,
   TrendingDown,
@@ -13,15 +13,15 @@ import {
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 // import {
-//   DropdownMenu, 
-//   DropdownMenuContent, 
-//   DropdownMenuItem, 
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
 //   DropdownMenuTrigger,
-//   DropdownMenuSeparator 
+//   DropdownMenuSeparator
 // } from './ui/dropdown-menu';
 // import { Badge } from './ui/badge';
 import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
-import { useTokenBalances, calculateBandwidthEnergy, type BandwidthEnergyInfo } from '../hooks/wallet';
+import { useTokenBalances, getEnhancedTokenBalances, calculateBandwidthEnergy, type BandwidthEnergyInfo, type TokenBalance, type WalletService } from '../hooks/wallet';
 import type { OrgonAccount, OrgonBalance } from '../types';
 
 interface WalletCardProps {
@@ -31,6 +31,7 @@ interface WalletCardProps {
   onExport?: (id: string) => void;
   isRefreshing?: boolean;
   currentNetwork?: any;
+  walletService?: WalletService;
 }
 
 export const WalletCard: React.FC<WalletCardProps> = ({
@@ -39,19 +40,48 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   onDelete,
   onExport,
   isRefreshing = false,
-  currentNetwork
+  currentNetwork,
+  walletService
 }) => {
   const [showPrivateKey, setShowPrivateKey] = useState(false);
-  
+  const [tokens, setTokens] = useState<TokenBalance[]>([]);
+  const [tokensLoading, setTokensLoading] = useState(false);
+
   const displayAddress = (address: string) => {
     return address; // Always show full address
   };
-  
-  // Use the reusable hook to get token balances
-  const tokens = useTokenBalances(wallet);
+
+  // Load token balances with enhanced metadata
+  useEffect(() => {
+    const loadTokens = async () => {
+      if (!wallet?.balance) {
+        setTokens([]);
+        return;
+      }
+
+      setTokensLoading(true);
+      try {
+        const tokenBalances = await getEnhancedTokenBalances(
+          wallet,
+          currentNetwork?.rpcUrl,
+          walletService
+        );
+        setTokens(tokenBalances);
+      } catch (error) {
+        console.error('Failed to load enhanced token balances:', error);
+        // Fallback to basic token parsing using the hook
+        const basicTokens = useTokenBalances(wallet);
+        setTokens(basicTokens);
+      } finally {
+        setTokensLoading(false);
+      }
+    };
+
+    loadTokens();
+  }, [wallet, currentNetwork?.rpcUrl, walletService]);
 
   // Get bandwidth and energy info
-  const bandwidthEnergy: BandwidthEnergyInfo | null = wallet.balance?.bandwidthEnergy || null;
+  const bandwidthEnergy: BandwidthEnergyInfo | null = (wallet.balance as any)?.bandwidthEnergy || null;
 
   // Helper function to format timestamp to date
   const formatDate = (timestamp: number) => {
@@ -193,20 +223,22 @@ export const WalletCard: React.FC<WalletCardProps> = ({
             <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
               Tokens
             </span>
-            {isRefreshing && (
+            {(isRefreshing || tokensLoading) && (
               <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
             )}
           </div>
-          
+
           {wallet.balance && tokens.length > 0 ? (
             <div className="space-y-2">
               {tokens.map((token, index) => {
                 const balance = (token.value / (10 ** token.decimals)).toFixed(token.decimals);
-                const displaySymbol = token.type === 'orc20' ? formatAddress(token.symbol) : token.symbol;
-                
+                const displaySymbol = token.name && token.name !== token.symbol
+                  ? `${token.name} (${token.symbol})`
+                  : (token.type === 'orc20' ? formatAddress(token.symbol) : token.symbol);
+
                 return (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl p-3 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center justify-between">
@@ -215,21 +247,26 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                           {balance}
                         </span>
                         <div className="flex items-center space-x-2 mt-1">
-                          <span className="text-sm text-gray-600 dark:text-gray-300 font-medium truncate" title={token.symbol}>
+                          <span className="text-sm text-gray-600 dark:text-gray-300 font-medium truncate" title={token.name || token.symbol}>
                             {displaySymbol}
                           </span>
-                          {token.type === 'orc20' && (
+                          {token.type === 'orc20' && token.address && (
                             <Button
                               variant="ghost"
                               size="sm"
                               className="h-5 w-5 p-0 rounded hover:bg-gray-200 dark:hover:bg-slate-600"
-                              onClick={() => copyToClipboard(token.symbol)}
+                              onClick={() => copyToClipboard(token.address!)}
                               title="Copy token address"
                             >
                               <Copy className="w-3 h-3 text-gray-500" />
                             </Button>
                           )}
                         </div>
+                        {token.totalSupply && (
+                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Total Supply: {token.totalSupply.toLocaleString()}
+                          </div>
+                        )}
                       </div>
                       <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md ml-3">
                         {token.type}

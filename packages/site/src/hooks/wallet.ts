@@ -109,15 +109,41 @@ export function calculateBandwidthEnergy(accountDetails: any): BandwidthEnergyIn
 export interface TokenBalance {
   type: 'native' | 'orc10' | 'orc20';
   symbol: string;
+  name?: string; // Human readable name
   address?: string;
   decimals: number;
   value: number;
+  totalSupply?: number;
+  ownerAddress?: string | undefined;
+}
+
+export interface Orc10TokenInfo {
+  id: string;
+  name: string;
+  symbol: string;
+  totalSupply: number;
+  decimals: number;
+  ownerAddress?: string;
+}
+
+export interface Orc20TokenInfo {
+  address: string;
+  name: string;
+  symbol: string;
+  totalSupply: number;
+  decimals: number;
+  ownerAddress?: string;
 }
 
 /**
  * Parse wallet balance into a standardized token balance array
+ * Enhanced version with token metadata fetching
  */
-export function parseTokenBalances(balance?: OrgonBalance): TokenBalance[] {
+export async function parseTokenBalances(
+  balance?: OrgonBalance,
+  networkRpcUrl?: string,
+  walletService?: WalletService
+): Promise<TokenBalance[]> {
   const tokenBalances: TokenBalance[] = [];
 
   // Add native ORGON token
@@ -125,13 +151,51 @@ export function parseTokenBalances(balance?: OrgonBalance): TokenBalance[] {
     tokenBalances.push({
       type: 'native',
       symbol: 'ORGON',
+      name: 'Orgon',
       decimals: 6,
       value: balance.balance || 0,
     });
   }
 
-  // Parse AssetV2 tokens (ORC10)
-  if (balance?.assetV2 && Array.isArray(balance.assetV2)) {
+  // Parse AssetV2 tokens (ORC10) with enhanced metadata
+  if (balance?.assetV2 && Array.isArray(balance.assetV2) && networkRpcUrl && walletService) {
+    for (const asset of balance.assetV2) {
+      try {
+        // Get detailed token info
+        const tokenInfo = await walletService.getOrc10TokenInfo(asset.key, networkRpcUrl);
+
+        const tokenBalance: TokenBalance = {
+          type: 'orc10',
+          symbol: tokenInfo?.symbol || asset.key,
+          name: tokenInfo?.name || asset.key,
+          address: asset.key,
+          decimals: tokenInfo?.decimals || 6,
+          value: asset.value || 0,
+        };
+
+        if (tokenInfo?.totalSupply !== undefined) {
+          tokenBalance.totalSupply = tokenInfo.totalSupply;
+        }
+
+        if (tokenInfo?.ownerAddress !== undefined) {
+          tokenBalance.ownerAddress = tokenInfo.ownerAddress;
+        }
+
+        tokenBalances.push(tokenBalance);
+      } catch (error) {
+        console.warn(`Failed to get ORC-10 token info for ${asset.key}:`, error);
+        // Fallback to basic info
+        tokenBalances.push({
+          type: 'orc10',
+          symbol: asset.key,
+          address: asset.key,
+          decimals: 6,
+          value: asset.value || 0,
+        });
+      }
+    }
+  } else if (balance?.assetV2 && Array.isArray(balance.assetV2)) {
+    // Fallback for when no networkRpcUrl or walletService provided
     balance.assetV2.forEach((asset: any) => {
       tokenBalances.push({
         type: 'orc10',
@@ -143,13 +207,42 @@ export function parseTokenBalances(balance?: OrgonBalance): TokenBalance[] {
     });
   }
 
-  // Parse ORC20 tokens
-  if (balance?.orc20 && Array.isArray(balance.orc20)) {
+  // Parse ORC20 tokens with enhanced metadata
+  if (balance?.orc20 && Array.isArray(balance.orc20) && networkRpcUrl && walletService) {
+    for (const tokenObj of balance.orc20) {
+      for (const [address, tokenValue] of Object.entries(tokenObj)) {
+        try {
+          // Get detailed token balance and info
+          const tokenData = await walletService.getOrc20TokenBalance(address, '', networkRpcUrl);
+
+          tokenBalances.push({
+            type: 'orc20',
+            symbol: tokenData?.symbol || address.substring(0, 8),
+            name: tokenData?.name || `ORC-20 Token ${address.substring(0, 8)}`,
+            address: address,
+            decimals: tokenData?.decimals || 4,
+            value: Number(tokenValue) || 0,
+          });
+        } catch (error) {
+          console.warn(`Failed to get ORC-20 token info for ${address}:`, error);
+          // Fallback to basic info
+          tokenBalances.push({
+            type: 'orc20',
+            symbol: address.substring(0, 8),
+            address: address,
+            decimals: 4,
+            value: Number(tokenValue) || 0,
+          });
+        }
+      }
+    }
+  } else if (balance?.orc20 && Array.isArray(balance.orc20)) {
+    // Fallback for when no networkRpcUrl or walletService provided
     balance.orc20.forEach((tokenObj: any) => {
       Object.entries(tokenObj).forEach(([address, tokenValue]) => {
         tokenBalances.push({
           type: 'orc20',
-          symbol: address,
+          symbol: address.substring(0, 8),
           address: address,
           decimals: 4,
           value: Number(tokenValue) || 0,
@@ -162,13 +255,73 @@ export function parseTokenBalances(balance?: OrgonBalance): TokenBalance[] {
 }
 
 /**
- * Hook to get formatted token balances from a wallet account
+ * Hook to get formatted token balances from a wallet account (synchronous, basic info only)
  */
 export function useTokenBalances(account?: OrgonAccount): TokenBalance[] {
   return useMemo(() => {
     if (!account?.balance) return [];
-    return parseTokenBalances(account.balance);
+    return parseTokenBalancesSync(account.balance);
   }, [account?.balance]);
+}
+
+/**
+ * Async function to get enhanced token balances with metadata fetching
+ */
+export async function getEnhancedTokenBalances(
+  account?: OrgonAccount,
+  networkRpcUrl?: string,
+  walletService?: WalletService
+): Promise<TokenBalance[]> {
+  if (!account?.balance) return [];
+  return await parseTokenBalances(account.balance, networkRpcUrl, walletService);
+}
+
+/**
+ * Synchronous version of parseTokenBalances for basic token info
+ */
+function parseTokenBalancesSync(balance?: OrgonBalance): TokenBalance[] {
+  const tokenBalances: TokenBalance[] = [];
+
+  // Add native ORGON token
+  if (balance) {
+    tokenBalances.push({
+      type: 'native',
+      symbol: 'ORGON',
+      name: 'Orgon',
+      decimals: 6,
+      value: balance.balance || 0,
+    });
+  }
+
+  // Parse AssetV2 tokens (ORC10) - basic info only
+  if (balance?.assetV2 && Array.isArray(balance.assetV2)) {
+    balance.assetV2.forEach((asset: any) => {
+      tokenBalances.push({
+        type: 'orc10',
+        symbol: asset.key,
+        address: asset.key,
+        decimals: 6,
+        value: asset.value || 0,
+      });
+    });
+  }
+
+  // Parse ORC20 tokens - basic info only
+  if (balance?.orc20 && Array.isArray(balance.orc20)) {
+    balance.orc20.forEach((tokenObj: any) => {
+      Object.entries(tokenObj).forEach(([address, tokenValue]) => {
+        tokenBalances.push({
+          type: 'orc20',
+          symbol: address.substring(0, 8),
+          address: address,
+          decimals: 4,
+          value: Number(tokenValue) || 0,
+        });
+      });
+    });
+  }
+
+  return tokenBalances;
 }
 
 // ============================================================================
@@ -185,9 +338,15 @@ export interface WalletServiceInterface {
   getAccountMnemonic(accountId: string): Promise<{ accountId: string; address: string; mnemonic: string }>;
   getBalance(address: string, networkId?: string): Promise<any>;
   getAccountDetails(address: string, networkRpcUrl: string): Promise<any>;
+  getOrc10TokenInfo(tokenId: string, networkRpcUrl: string): Promise<Orc10TokenInfo | null>;
+  getOrc20TokenBalance(contractAddress: string, userAddress: string, networkRpcUrl: string): Promise<{ balance: number; decimals: number; symbol: string; name: string } | null>;
 }
 
 export class WalletService implements WalletServiceInterface {
+  // Cache for token information to avoid repeated API calls
+  private orc10TokenCache = new Map<string, Orc10TokenInfo>();
+  private orc20TokenCache = new Map<string, { balance: number; decimals: number; symbol: string; name: string }>();
+
   constructor(
     private invokeSnap: (params: { method: string; params?: Record<string, unknown> }) => Promise<unknown>,
     private request: (params: { method: string; params?: Record<string, unknown> }) => Promise<unknown>
@@ -348,6 +507,117 @@ export class WalletService implements WalletServiceInterface {
     } catch (error: any) {
       console.error('Failed to get account details:', error);
       throw new Error(error?.message || 'Failed to get account details');
+    }
+  }
+
+  async getOrc10TokenInfo(tokenId: string, networkRpcUrl: string): Promise<Orc10TokenInfo | null> {
+    try {
+      // Check cache first
+      const cacheKey = `${networkRpcUrl}:${tokenId}`;
+      const cachedToken = this.orc10TokenCache.get(cacheKey);
+      if (cachedToken) {
+        console.log('Using cached ORC-10 token info for:', tokenId);
+        return cachedToken;
+      }
+
+      console.log('Getting ORC-10 token info for:', { tokenId, networkRpcUrl });
+
+      const response = await fetch(`${networkRpcUrl}/wallet/getassetissuebyid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          value: tokenId
+        })
+      });
+
+      if (!response.ok) {
+        console.warn(`Failed to get ORC-10 token info for ${tokenId}, status: ${response.status}`);
+        return null;
+      }
+
+      const token = await response.json();
+      console.log('ORC-10 token info result:', token);
+
+      if (!token || !token.id) {
+        return null;
+      }
+
+      // Decode name and symbol from hex
+      const decodedName = token.name ? Buffer.from(token.name, 'hex').toString('utf-8') : tokenId;
+      const decodedSymbol = token.abbr ? Buffer.from(token.abbr, 'hex').toString('utf-8') : tokenId;
+
+      const tokenInfo: Orc10TokenInfo = {
+        id: token.id,
+        name: decodedName,
+        symbol: decodedSymbol,
+        totalSupply: token.total_supply ? parseInt(token.total_supply) / Math.pow(10, token.precision || 6) : 0,
+        decimals: token.precision || 6,
+        ownerAddress: token.owner_address
+      };
+
+      // Cache the result
+      this.orc10TokenCache.set(cacheKey, tokenInfo);
+
+      return tokenInfo;
+    } catch (error: any) {
+      console.error('Failed to get ORC-10 token info:', error);
+      return null;
+    }
+  }
+
+  async getOrc20TokenBalance(contractAddress: string, userAddress: string, networkRpcUrl: string): Promise<{ balance: number; decimals: number; symbol: string; name: string } | null> {
+    try {
+      console.log('Getting ORC-20 token balance for:', { contractAddress, userAddress, networkRpcUrl });
+
+      // Check cache first (for token metadata, not balance)
+      const cacheKey = `${networkRpcUrl}:${contractAddress}`;
+      const cachedToken = this.orc20TokenCache.get(cacheKey);
+
+      // For ORC-20 tokens, we need to make contract calls
+      // This is a simplified version - in real implementation you'd use OrgonWeb or similar
+      // For now, we'll return mock data or try to get basic info
+
+      // Note: This is a placeholder implementation
+      // In a real implementation, you would:
+      // 1. Load the contract ABI
+      // 2. Create contract instance with OrgonWeb
+      // 3. Call balanceOf(userAddress)
+      // 4. Call decimals(), symbol(), name() methods
+
+      if (cachedToken) {
+        // Update balance but keep cached metadata
+        console.log('Using cached ORC-20 token metadata for:', contractAddress);
+        return {
+          ...cachedToken,
+          balance: 0 // This should be fetched from contract.balanceOf(userAddress)
+        };
+      }
+
+      console.warn('ORC-20 token balance fetching not fully implemented - returning mock data');
+
+      // Mock implementation for now
+      const tokenData = {
+        balance: 0, // This should be fetched from contract.balanceOf(userAddress)
+        decimals: 6, // This should be fetched from contract.decimals()
+        symbol: contractAddress.substring(0, 8), // This should be fetched from contract.symbol()
+        name: `ORC-20 Token ${contractAddress.substring(0, 8)}` // This should be fetched from contract.name()
+      };
+
+      // Cache the token metadata (but not balance, as it can change)
+      this.orc20TokenCache.set(cacheKey, {
+        balance: 0,
+        decimals: tokenData.decimals,
+        symbol: tokenData.symbol,
+        name: tokenData.name
+      });
+
+      return tokenData;
+
+    } catch (error: any) {
+      console.error('Failed to get ORC-20 token balance:', error);
+      return null;
     }
   }
 
@@ -849,6 +1119,7 @@ export const useWalletManager = () => {
     refreshingWallets,
     refreshingAllBalances,
     currentNetwork,
+    walletService,
 
     // Actions
     loadAccounts,

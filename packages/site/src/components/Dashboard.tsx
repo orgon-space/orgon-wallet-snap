@@ -238,6 +238,7 @@ export const Dashboard: React.FC = () => {
                 balances={walletManager.balances}
                 loading={walletManager.loading || walletManager.refreshingAllBalances || networkManager.switching}
                 refreshingWallets={walletManager.refreshingWallets}
+                walletService={walletManager.walletService}
               />
             </TabsContent>
 

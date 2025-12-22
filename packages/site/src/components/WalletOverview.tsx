@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { WalletCard } from './WalletCard';
 import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
 import type { OrgonAccount, OrgonBalance, OrgonNetwork } from '../types';
+import type { WalletService } from '../hooks/wallet';
 
 interface WalletOverviewProps {
   onCreateWallet: () => void;
@@ -31,6 +32,7 @@ interface WalletOverviewProps {
   balances?: Record<string, OrgonBalance>;
   loading?: boolean;
   refreshingWallets?: Set<string>;
+  walletService?: WalletService;
 }
 
 export const WalletOverview: React.FC<WalletOverviewProps> = ({
@@ -46,7 +48,8 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
   accounts: parentAccounts = [],
   balances: parentBalances = {},
   loading = false,
-  refreshingWallets = new Set()
+  refreshingWallets = new Set(),
+  walletService
 }) => {
 
   const handleNetworkChange = (network: any) => {
@@ -156,6 +159,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
                       {...(onExportWallet && { onExport: onExportWallet })}
                       isRefreshing={refreshingWallets.has(account.id)}
                       currentNetwork={parentCurrentNetwork}
+                      walletService={walletService}
                     />
                   );
                 })}
