@@ -8,7 +8,9 @@ import {
   ExternalLink,
   TrendingUp,
   TrendingDown,
-  RefreshCw
+  RefreshCw,
+  CheckCircle,
+  HelpCircle
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
@@ -29,6 +31,7 @@ interface WalletCardProps {
   onRefresh?: () => void;
   onDelete?: (id: string) => void;
   onExport?: (id: string) => void;
+  onWithdrawExpireUnfreeze?: (walletId: string, resourceType: 'BANDWIDTH' | 'ENERGY') => void;
   isRefreshing?: boolean;
   currentNetwork?: any;
   walletService?: WalletService;
@@ -39,6 +42,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   onRefresh,
   onDelete,
   onExport,
+  onWithdrawExpireUnfreeze,
   isRefreshing = false,
   currentNetwork,
   walletService
@@ -46,6 +50,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [tokens, setTokens] = useState<TokenBalance[]>([]);
   const [tokensLoading, setTokensLoading] = useState(false);
+  const [showTooltip, setShowTooltip] = useState<string | null>(null);
 
   const displayAddress = (address: string) => {
     return address; // Always show full address
@@ -88,6 +93,15 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     if (!timestamp) return 'N/A';
     return new Date(timestamp).toLocaleString();
   };
+
+  // Helper function to check if unfreeze time has expired
+  const isExpired = (expireTime: number) => {
+    return Date.now() > expireTime;
+  };
+
+  // Helper functions for tooltip
+  const showTooltipFor = (id: string) => setShowTooltip(id);
+  const hideTooltip = () => setShowTooltip(null);
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-[1.02]">
       <CardContent className="p-6">
@@ -180,8 +194,33 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                   {bandwidthEnergy.bandwidth.unfrozen.length > 0 && (
                     <div>
                       На разморозке: {bandwidthEnergy.bandwidth.unfrozen.map((item, idx) => (
-                        <div key={idx} className="ml-2">
-                          {item.amount} Bandwidth (до {formatDate(item.expireTime)})
+                        <div key={idx} className="ml-2 flex items-center justify-between">
+                          <span>{item.amount} Bandwidth (до {formatDate(item.expireTime)})</span>
+                          {onWithdrawExpireUnfreeze && (
+                            <div className="relative flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-6 px-2 text-xs"
+                                disabled={!isExpired(item.expireTime)}
+                                onClick={() => onWithdrawExpireUnfreeze(wallet.id, 'BANDWIDTH')}
+                              >
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Забрать
+                              </Button>
+                              <HelpCircle
+                                className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help"
+                                onMouseEnter={() => showTooltipFor(`bandwidth-${idx}`)}
+                                onMouseLeave={hideTooltip}
+                              />
+                              {showTooltip === `bandwidth-${idx}` && (
+                                <div className="absolute z-10 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-2 whitespace-nowrap">
+                                  По истечении этого времени можно забрать размороженные ресурсы обратно на баланс аккаунта.
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -203,8 +242,32 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                   {bandwidthEnergy.energy.unfrozen.length > 0 ? (
                     <div>
                       На разморозке: {bandwidthEnergy.energy.unfrozen.map((item, idx) => (
-                        <div key={idx} className="ml-2">
-                          {item.amount} Energy (до {formatDate(item.expireTime)})
+                        <div key={idx} className="ml-2 flex items-center justify-between">
+                          <span>{item.amount} Energy (до {formatDate(item.expireTime)})</span>
+                          {onWithdrawExpireUnfreeze && (
+                            <div className="relative flex items-center gap-1">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-6 px-2 text-xs"
+                                disabled={!isExpired(item.expireTime)}
+                                onClick={() => onWithdrawExpireUnfreeze(wallet.id, 'ENERGY')}
+                              >
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Забрать
+                              </Button>
+                              <HelpCircle
+                                className="w-4 h-4 text-gray-400 hover:text-gray-600 cursor-help"
+                                onMouseEnter={() => showTooltipFor(`energy-${idx}`)}
+                                onMouseLeave={hideTooltip}
+                              />
+                              {showTooltip === `energy-${idx}` && (
+                                <div className="absolute z-10 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg bottom-full left-1/2 transform -translate-x-1/2 mb-2 whitespace-nowrap">                                  По истечении этого времени можно забрать размороженные ресурсы обратно на баланс аккаунта.
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

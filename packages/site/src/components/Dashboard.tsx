@@ -16,7 +16,9 @@ import { DesktopHeader } from './DesktopHeader';
 import { useMetaMask, useRequestSnap, useMetaMaskContext } from '../hooks/metamask';
 import { useWalletManager } from '../hooks/wallet';
 import { useNetworkManager } from '../hooks/network';
+import { useTransactionManager } from '../hooks/transaction';
 import { useUIStore, useUIActions, useExportModal } from '../hooks/uiStore';
+import { createWithdrawExpireUnfreezeTransaction } from '../utils/staking-transactions';
 import { defaultSnapOrigin } from '../config';
 import { isLocalSnap, shouldDisplayReconnectButton } from '../utils/helpers';
 
@@ -27,6 +29,7 @@ export const Dashboard: React.FC = () => {
   
   const walletManager = useWalletManager();
   const networkManager = useNetworkManager();
+  const transactionManager = useTransactionManager();
   
   const activeTab = useUIStore(state => state.activeTab);
   const exportModal = useExportModal();
@@ -67,7 +70,7 @@ export const Dashboard: React.FC = () => {
     try {
       const result = await walletManager.exportAccount(walletId);
       const wallet = walletManager.accounts?.find(acc => acc.id === walletId);
-      
+
       if (wallet) {
         uiActions.setExportWalletData({
           name: wallet.name || 'Unnamed Wallet',
@@ -78,6 +81,44 @@ export const Dashboard: React.FC = () => {
       }
     } catch (err) {
       console.error('Failed to export wallet:', err);
+    }
+  };
+
+  // Handle withdraw expire unfreeze
+  const handleWithdrawExpireUnfreeze = async (walletId: string, resourceType: 'BANDWIDTH' | 'ENERGY') => {
+    try {
+      const wallet = walletManager.accounts?.find(acc => acc.id === walletId);
+      if (!wallet) {
+        throw new Error('Wallet not found');
+      }
+
+      // Create withdraw expire unfreeze transaction
+      const rawTransaction = await createWithdrawExpireUnfreezeTransaction(
+        wallet.address,
+        { rpcUrl: networkManager.currentNetwork?.rpcUrl }
+      );
+
+      // Create transaction object
+      const transaction = {
+        from: wallet.address,
+        to: wallet.address, // withdrawExpireUnfreeze is sent to self
+        amount: '0', // No amount needed for withdraw
+        memo: `Withdraw expired unfreeze for ${resourceType}`,
+        networkId: networkManager.currentNetwork?.chainId,
+        accountId: walletId,
+        transaction: rawTransaction,
+      };
+
+      // Send transaction
+      const result = await transactionManager.sendTransaction(transaction);
+      console.log('Withdraw expire unfreeze transaction sent:', result);
+
+      // Refresh wallet balance after transaction
+      await walletManager.refreshWalletBalance(walletId);
+
+    } catch (err) {
+      console.error('Failed to withdraw expire unfreeze:', err);
+      transactionManager.setError(err instanceof Error ? err.message : 'Failed to withdraw expired unfreeze');
     }
   };
 
@@ -232,6 +273,7 @@ export const Dashboard: React.FC = () => {
                 onRefreshWallet={(accountId) => walletManager.refreshWalletBalance(accountId)}
                 onDeleteWallet={(accountId) => walletManager.deleteAccount(accountId)}
                 onExportWallet={handleExportWallet}
+                onWithdrawExpireUnfreeze={handleWithdrawExpireUnfreeze}
                 onRefreshAll={() => walletManager.refreshAllBalances()}
                 currentNetwork={networkManager.currentNetwork}
                 accounts={walletManager.accounts || []}

@@ -123,3 +123,32 @@ export async function createUnfreezeTransaction(
   }
 }
 
+/**
+ * Create a withdraw expire unfreeze transaction (withdrawExpireUnfreeze)
+ * @param from - Sender address
+ * @param network - Network configuration
+ * @returns Unsigned transaction object
+ */
+export async function createWithdrawExpireUnfreezeTransaction(
+  from: string,
+  network?: NetworkConfig,
+): Promise<any> {
+  try {
+    // Create OrgonWeb service
+    const orgonWebService = createOrgonWebService(network?.rpcUrl, undefined);
+
+    // Create withdraw expire unfreeze transaction
+    const transaction = await orgonWebService.orgonWeb.transactionBuilder.withdrawExpireUnfreeze(from);
+
+    if (!transaction || !transaction.raw_data) {
+      throw new Error('Failed to create withdraw expire unfreeze transaction');
+    }
+
+    return transaction;
+  } catch (error) {
+    throw new Error(
+      `Failed to create withdraw expire unfreeze transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+}
+

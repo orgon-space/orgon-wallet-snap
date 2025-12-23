@@ -26,6 +26,7 @@ interface WalletOverviewProps {
   onRefreshWallet?: (id: string) => void;
   onDeleteWallet?: (id: string) => void;
   onExportWallet?: (id: string) => void;
+  onWithdrawExpireUnfreeze?: (walletId: string, resourceType: 'BANDWIDTH' | 'ENERGY') => void;
   onRefreshAll?: () => void;
   currentNetwork?: any;
   accounts?: OrgonAccount[];
@@ -43,6 +44,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
   onRefreshWallet,
   onDeleteWallet,
   onExportWallet,
+  onWithdrawExpireUnfreeze,
   onRefreshAll,
   currentNetwork: parentCurrentNetwork,
   accounts: parentAccounts = [],
@@ -157,6 +159,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
                       onRefresh={() => onRefreshWallet?.(account.id)}
                       {...(onDeleteWallet && { onDelete: onDeleteWallet })}
                       {...(onExportWallet && { onExport: onExportWallet })}
+                      {...(onWithdrawExpireUnfreeze && { onWithdrawExpireUnfreeze })}
                       isRefreshing={refreshingWallets.has(account.id)}
                       currentNetwork={parentCurrentNetwork}
                       walletService={walletService}
