@@ -83,10 +83,10 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   // Get bandwidth and energy info
   const bandwidthEnergy: BandwidthEnergyInfo | null = (wallet.balance as any)?.bandwidthEnergy || null;
 
-  // Helper function to format timestamp to date
+  // Helper function to format timestamp to date and time
   const formatDate = (timestamp: number) => {
     if (!timestamp) return 'N/A';
-    return new Date(timestamp).toLocaleDateString();
+    return new Date(timestamp).toLocaleString();
   };
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-[1.02]">
@@ -108,9 +108,9 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               </h3>
             </div>
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="h-9 w-9 p-0 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30"
                 onClick={() => onRefresh?.()}
                 disabled={isRefreshing}
@@ -118,18 +118,18 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               >
                 <RefreshCw className={`w-4 h-4 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="h-9 w-9 p-0 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30"
                 onClick={() => onExport?.(wallet.id)}
                 title="Export Private Key"
               >
                 <Download className="w-4 h-4 text-green-600" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 className="h-9 w-9 p-0 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30"
                 onClick={() => onDelete?.(wallet.id)}
                 title="Delete Wallet"
@@ -138,7 +138,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               </Button>
             </div>
           </div>
-          
+
           {/* Address section */}
           <div className="flex items-center space-x-3 bg-gray-50 dark:bg-slate-700/50 rounded-xl p-3">
             <span className="text-sm text-gray-600 dark:text-gray-300 font-mono break-all flex-1">
@@ -176,12 +176,12 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                   </span>
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                  <div>Заморожено: {bandwidthEnergy.bandwidth.frozen} bandwidth</div>
+                  <div>Заморожено: {bandwidthEnergy.bandwidth.frozen} Bandwidth</div>
                   {bandwidthEnergy.bandwidth.unfrozen.length > 0 && (
                     <div>
                       На разморозке: {bandwidthEnergy.bandwidth.unfrozen.map((item, idx) => (
                         <div key={idx} className="ml-2">
-                          {item.amount} bandwidth (до {formatDate(item.expireTime)})
+                          {item.amount} Bandwidth (до {formatDate(item.expireTime)})
                         </div>
                       ))}
                     </div>
@@ -204,7 +204,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                     <div>
                       На разморозке: {bandwidthEnergy.energy.unfrozen.map((item, idx) => (
                         <div key={idx} className="ml-2">
-                          {item.amount} energy (до {formatDate(item.expireTime)})
+                          {item.amount} Energy (до {formatDate(item.expireTime)})
                         </div>
                       ))}
                     </div>
@@ -216,7 +216,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
             </div>
           </div>
         )}
-        
+
         {/* Tokens Section */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -296,7 +296,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           )}
         </div>
 
-        
+
       </CardContent>
     </Card>
   );
