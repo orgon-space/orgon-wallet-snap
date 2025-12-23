@@ -1,4 +1,10 @@
-import React, { useMemo, createContext, useContext, ReactNode, FunctionComponent } from 'react';
+import React, {
+  createContext,
+  FunctionComponent,
+  ReactNode,
+  useContext,
+  useMemo,
+} from 'react';
 import { useNetworkManager } from './network';
 import type { OrgonNetwork } from '../types';
 
@@ -15,39 +21,49 @@ export interface NetworkContextType {
   switching: boolean;
 
   // Actions
-  loadNetworks: () => Promise<{ networks: OrgonNetwork[]; currentNetwork: OrgonNetwork | null }>;
+  loadNetworks: () => Promise<{
+    networks: OrgonNetwork[];
+    currentNetwork: OrgonNetwork | null;
+  }>;
   switchNetwork: (chainId: string) => Promise<OrgonNetwork | null>;
   clearError: () => void;
 }
 
-export const NetworkContext = createContext<NetworkContextType | undefined>(undefined);
+export const NetworkContext = createContext<NetworkContextType | undefined>(
+  undefined,
+);
 
 export interface NetworkProviderProps {
   children: ReactNode;
 }
 
-export const NetworkProvider: FunctionComponent<NetworkProviderProps> = ({ children }) => {
+export const NetworkProvider: FunctionComponent<NetworkProviderProps> = ({
+  children,
+}) => {
   const networkManager = useNetworkManager();
 
-  const contextValue = useMemo<NetworkContextType>(() => ({
-    networks: networkManager.networks,
-    currentNetwork: networkManager.currentNetwork,
-    loading: networkManager.loading,
-    error: networkManager.error,
-    switching: networkManager.switching,
-    loadNetworks: networkManager.loadNetworks,
-    switchNetwork: networkManager.switchNetwork,
-    clearError: networkManager.clearError,
-  }), [
-    networkManager.networks,
-    networkManager.currentNetwork,
-    networkManager.loading,
-    networkManager.error,
-    networkManager.switching,
-    networkManager.loadNetworks,
-    networkManager.switchNetwork,
-    networkManager.clearError,
-  ]);
+  const contextValue = useMemo<NetworkContextType>(
+    () => ({
+      networks: networkManager.networks,
+      currentNetwork: networkManager.currentNetwork,
+      loading: networkManager.loading,
+      error: networkManager.error,
+      switching: networkManager.switching,
+      loadNetworks: networkManager.loadNetworks,
+      switchNetwork: networkManager.switchNetwork,
+      clearError: networkManager.clearError,
+    }),
+    [
+      networkManager.networks,
+      networkManager.currentNetwork,
+      networkManager.loading,
+      networkManager.error,
+      networkManager.switching,
+      networkManager.loadNetworks,
+      networkManager.switchNetwork,
+      networkManager.clearError,
+    ],
+  );
 
   return (
     <NetworkContext.Provider value={contextValue}>

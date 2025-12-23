@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Wallet, 
-  TrendingUp, 
-  TrendingDown, 
-  Send, 
-  Plus, 
-  RefreshCw,
-  Copy,
-  ExternalLink,
-  Globe
-} from 'lucide-react';
+import React from 'react';
+import { ExternalLink, Plus, RefreshCw, Send } from 'lucide-react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-// import { Badge } from './ui/badge';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card'; // import { Badge } from './ui/badge';
 import { WalletCard } from './WalletCard';
-import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
-import type { OrgonAccount, OrgonBalance, OrgonNetwork } from '../types';
+import { formatBalance } from '../utils/helpers';
+import type { OrgonAccount, OrgonBalance } from '../types';
 import type { WalletService } from '../hooks/wallet';
 
 interface WalletOverviewProps {
@@ -26,7 +21,10 @@ interface WalletOverviewProps {
   onRefreshWallet?: (id: string) => void;
   onDeleteWallet?: (id: string) => void;
   onExportWallet?: (id: string) => void;
-  onWithdrawExpireUnfreeze?: (walletId: string, resourceType: 'BANDWIDTH' | 'ENERGY') => void;
+  onWithdrawExpireUnfreeze?: (
+    walletId: string,
+    resourceType: 'BANDWIDTH' | 'ENERGY',
+  ) => void;
   onRefreshAll?: () => void;
   currentNetwork?: any;
   accounts?: OrgonAccount[];
@@ -51,9 +49,8 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
   balances: parentBalances = {},
   loading = false,
   refreshingWallets = new Set(),
-  walletService
+  walletService,
 }) => {
-
   const handleNetworkChange = (network: any) => {
     // Call parent's network change handler if provided
     if (onNetworkChange) {
@@ -66,19 +63,22 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
       return sum;
     }
     const balance = parentBalances[account.id];
-    return sum + (balance?.balance ? parseFloat(balance.balance.toString()) : 0);
+    return (
+      sum + (balance?.balance ? parseFloat(balance.balance.toString()) : 0)
+    );
   }, 0);
 
   const displayBalance = (balance: number) => {
     return formatBalance(balance.toString());
   };
 
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Wallet Overview</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Wallet Overview
+        </h2>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Manage your Orgon wallets across different networks
         </p>
@@ -159,10 +159,12 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
                       onRefresh={() => onRefreshWallet?.(account.id)}
                       {...(onDeleteWallet && { onDelete: onDeleteWallet })}
                       {...(onExportWallet && { onExport: onExportWallet })}
-                      {...(onWithdrawExpireUnfreeze && { onWithdrawExpireUnfreeze })}
+                      {...(onWithdrawExpireUnfreeze && {
+                        onWithdrawExpireUnfreeze,
+                      })}
                       isRefreshing={refreshingWallets.has(account.id)}
                       currentNetwork={parentCurrentNetwork}
-                      walletService={walletService}
+                      {...(walletService && { walletService })}
                     />
                   );
                 })}

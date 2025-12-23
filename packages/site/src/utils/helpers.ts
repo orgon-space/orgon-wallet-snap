@@ -112,12 +112,12 @@ export const formatBalance = (balance: string): string => {
   // For blockchain applications, show full precision
   const num = parseFloat(balance);
   if (isNaN(num)) return '0';
-  
+
   // For very small numbers, use scientific notation to preserve precision
   if (num > 0 && num < 0.000001) {
     return num.toExponential(6);
   }
-  
+
   // For normal numbers, show up to 18 decimal places (common for blockchain tokens)
   // but remove trailing zeros for cleaner display
   const formatted = num.toFixed(18);
@@ -153,10 +153,13 @@ export const validateOrgonAddress = (address: string): boolean => {
 /**
  * Calculate transaction fee
  */
-export const calculateTransactionFee = (gasPrice: string, gasLimit: string): string => {
+export const calculateTransactionFee = (
+  gasPrice: string,
+  gasLimit: string,
+): string => {
   const gasPriceNum = parseFloat(gasPrice);
   const gasLimitNum = parseFloat(gasLimit);
-  return (gasPriceNum * gasLimitNum / 1000000).toFixed(6);
+  return ((gasPriceNum * gasLimitNum) / 1000000).toFixed(6);
 };
 
 /**
@@ -200,5 +203,3 @@ export const copyToClipboard = async (text: string): Promise<void> => {
     throw err;
   }
 };
-
-

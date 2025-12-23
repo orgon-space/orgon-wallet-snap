@@ -12,4 +12,3 @@ const CatchAllPage = () => {
 };
 
 export default CatchAllPage;
-

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Wallet, Home, ArrowLeft, Sparkles, Search, Zap } from 'lucide-react';
+import { ArrowLeft, Home, Search, Sparkles, Wallet, Zap } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 
@@ -39,7 +39,11 @@ const NotFoundPage = () => {
           {/* Hero section with animated logo */}
           <div className="mb-16 wallet-animate-in">
             <div className="relative inline-flex items-center justify-center w-28 h-28 sm:w-32 sm:h-32 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-3xl mb-8 shadow-2xl hover:scale-110 transition-transform duration-300 group">
-              <Wallet size={64} color="white" className="group-hover:rotate-12 transition-transform duration-300" />
+              <Wallet
+                size={64}
+                color="white"
+                className="group-hover:rotate-12 transition-transform duration-300"
+              />
               <div className="absolute -inset-2 bg-gradient-to-r from-blue-400 to-purple-500 rounded-3xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
             </div>
 
@@ -75,8 +79,9 @@ const NotFoundPage = () => {
                 </h3>
               </div>
               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                The page you're looking for might have been moved, deleted, or you might have mistyped the URL.
-                Don't worry though - let's get you back on track!
+                The page you're looking for might have been moved, deleted, or
+                you might have mistyped the URL. Don't worry though - let's get
+                you back on track!
               </p>
             </CardContent>
           </Card>

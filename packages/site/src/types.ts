@@ -8,7 +8,6 @@ import type {
   EIP6963RequestProviderEvent,
   MetaMaskInpageProvider,
 } from '@metamask/providers';
-import type { FunctionComponent, SVGProps } from 'react';
 
 // ============================================================================
 // MetaMask & Snap Types
@@ -144,6 +143,3 @@ declare module 'styled-components' {
     colors: Record<string, Record<string, string>>;
   }
 }
-
-
-

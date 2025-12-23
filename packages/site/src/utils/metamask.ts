@@ -3,10 +3,7 @@
  * EIP-6963 provider discovery and snap support detection
  */
 
-import type {
-  EIP6963AnnounceProviderEvent,
-  MetaMaskInpageProvider,
-} from '@metamask/providers';
+import type { EIP6963AnnounceProviderEvent, MetaMaskInpageProvider, } from '@metamask/providers';
 
 /**
  * Check if the current provider supports snaps by calling `wallet_getSnaps`.
@@ -123,5 +120,3 @@ export async function getSnapsProvider() {
 
   return null;
 }
-
-

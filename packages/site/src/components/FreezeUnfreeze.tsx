@@ -1,23 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { Snowflake, Zap, AlertCircle, CheckCircle, Loader2, Copy, Calculator, Clock, Shield, ExternalLink } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import {
+  AlertCircle,
+  Calculator,
+  CheckCircle,
+  Clock,
+  Copy,
+  ExternalLink,
+  Loader2,
+  Shield,
+  Snowflake,
+  Zap,
+} from 'lucide-react';
 
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 
-import { useWalletManager, useTokenBalances } from '../hooks/wallet';
+import { useTokenBalances, useWalletManager } from '../hooks/wallet';
 import { useNetworkManager } from '../hooks/network';
 import { useTransactionManager } from '../hooks/transaction';
-import { formatAddress, validateOrgonAddress, calculateTransactionFee, copyToClipboard, formatBalance } from '../utils/helpers';
-import { createFreezeTransaction, createUnfreezeTransaction } from '../utils/staking-transactions';
+import {
+  calculateTransactionFee,
+  copyToClipboard,
+  formatAddress,
+} from '../utils/helpers';
+import {
+  createFreezeTransaction,
+  createUnfreezeTransaction,
+} from '../utils/staking-transactions';
 import { getExplorerUrlForNetwork } from '../utils/orgonWeb';
-import type { OrgonTransaction, OrgonAccount } from '../types';
+import type { OrgonAccount, OrgonTransaction } from '../types';
 
 type FreezeUnfreezeType = 'freeze' | 'unfreeze';
 type ResourceType = 'ENERGY' | 'BANDWIDTH';
@@ -29,7 +59,8 @@ export const FreezeUnfreeze: React.FC = () => {
 
   // Form state
   const [selectedAccount, setSelectedAccount] = useState<string>('');
-  const [operationType, setOperationType] = useState<FreezeUnfreezeType>('freeze');
+  const [operationType, setOperationType] =
+    useState<FreezeUnfreezeType>('freeze');
   const [resourceType, setResourceType] = useState<ResourceType>('ENERGY');
   const [amount, setAmount] = useState('1');
   const [memo, setMemo] = useState('');
@@ -39,24 +70,37 @@ export const FreezeUnfreeze: React.FC = () => {
   const [gasLimit, setGasLimit] = useState('1000000');
 
   // Get selected account data
-  const selectedAccountData = walletManager.accounts?.find((acc: OrgonAccount) => acc.address === selectedAccount);
+  const selectedAccountData = walletManager.accounts?.find(
+    (acc: OrgonAccount) => acc.address === selectedAccount,
+  );
 
   // Combine account with its balance (like in WalletOverview)
-  const accountWithBalance = selectedAccountData ? {
-    ...selectedAccountData,
-    balance: walletManager.balances[selectedAccountData.id]
-  } : undefined;
+  const accountWithBalance = selectedAccountData
+    ? {
+        ...selectedAccountData,
+        balance: walletManager.balances[selectedAccountData.id],
+      }
+    : undefined;
 
   // Get token balances for the selected account
   const tokens = useTokenBalances(accountWithBalance);
 
   // Get ORGON balance specifically for freeze/unfreeze operations
-  const orgonToken = tokens.find(token => token.type === 'native' && token.symbol === 'ORGON');
-  const orgonBalance = orgonToken ? (orgonToken.value / (10 ** orgonToken.decimals)).toFixed(orgonToken.decimals) : '0';
+  const orgonToken = tokens.find(
+    (token) => token.type === 'native' && token.symbol === 'ORGON',
+  );
+  const orgonBalance = orgonToken
+    ? (orgonToken.value / 10 ** orgonToken.decimals).toFixed(
+        orgonToken.decimals,
+      )
+    : '0';
 
   // Load balance when account is selected
   useEffect(() => {
-    if (selectedAccountData && !walletManager.balances[selectedAccountData.id]) {
+    if (
+      selectedAccountData &&
+      !walletManager.balances[selectedAccountData.id]
+    ) {
       walletManager.refreshWalletBalance(selectedAccountData.id);
     }
   }, [selectedAccountData?.id]);
@@ -83,9 +127,11 @@ export const FreezeUnfreeze: React.FC = () => {
 
     try {
       // Get network config
-      const networkConfig = networkManager.currentNetwork ? {
-        rpcUrl: networkManager.currentNetwork.rpcUrl,
-      } : undefined;
+      const networkConfig = networkManager.currentNetwork
+        ? {
+            rpcUrl: networkManager.currentNetwork.rpcUrl,
+          }
+        : undefined;
 
       // Create raw transaction based on operation type
       let rawTransaction: any;
@@ -114,7 +160,10 @@ export const FreezeUnfreeze: React.FC = () => {
         to: '', // Not used for freeze/unfreeze
         amount,
         networkId: networkManager.currentNetwork?.chainId || '',
-        accountId: walletManager.accounts?.find((acc: OrgonAccount) => acc.address === selectedAccount)?.id || '',
+        accountId:
+          walletManager.accounts?.find(
+            (acc: OrgonAccount) => acc.address === selectedAccount,
+          )?.id || '',
       };
 
       const result = await transactionManager.sendTransaction({
@@ -131,7 +180,11 @@ export const FreezeUnfreeze: React.FC = () => {
     }
   };
 
-  const isFormValid = selectedAccount && amount && parseFloat(amount) > 0 && parseFloat(amount) >= 1;
+  const isFormValid =
+    selectedAccount &&
+    amount &&
+    parseFloat(amount) > 0 &&
+    parseFloat(amount) >= 1;
   const selectedNetworkData = networkManager.currentNetwork;
 
   if (walletManager.loading || networkManager.loading) {
@@ -171,8 +224,13 @@ export const FreezeUnfreeze: React.FC = () => {
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* From Account */}
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">From Account</label>
-              <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                From Account
+              </label>
+              <Select
+                value={selectedAccount}
+                onValueChange={setSelectedAccount}
+              >
                 <SelectTrigger className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400">
                   <SelectValue placeholder="Select an account" />
                 </SelectTrigger>
@@ -191,7 +249,9 @@ export const FreezeUnfreeze: React.FC = () => {
               </Select>
               {selectedAccount && accountWithBalance && (
                 <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <span className="text-sm text-blue-700 dark:text-blue-300">Available Balance:</span>
+                  <span className="text-sm text-blue-700 dark:text-blue-300">
+                    Available Balance:
+                  </span>
                   <span className="font-mono text-sm font-semibold text-blue-900 dark:text-blue-100">
                     {orgonBalance} ORGON
                   </span>
@@ -201,18 +261,32 @@ export const FreezeUnfreeze: React.FC = () => {
 
             {/* Operation Type */}
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Operation Type</label>
-              <RadioGroup value={operationType} onValueChange={(value) => setOperationType(value as FreezeUnfreezeType)} className="flex gap-6">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Operation Type
+              </label>
+              <RadioGroup
+                value={operationType}
+                onValueChange={(value) =>
+                  setOperationType(value as FreezeUnfreezeType)
+                }
+                className="flex gap-6"
+              >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="freeze" id="freeze" />
-                  <Label htmlFor="freeze" className="flex items-center gap-2 cursor-pointer">
+                  <Label
+                    htmlFor="freeze"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <Snowflake size={16} className="text-blue-500" />
                     Freeze
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="unfreeze" id="unfreeze" />
-                  <Label htmlFor="unfreeze" className="flex items-center gap-2 cursor-pointer">
+                  <Label
+                    htmlFor="unfreeze"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <Zap size={16} className="text-orange-500" />
                     Unfreeze
                   </Label>
@@ -222,18 +296,32 @@ export const FreezeUnfreeze: React.FC = () => {
 
             {/* Resource Type */}
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Resource Type</label>
-              <RadioGroup value={resourceType} onValueChange={(value) => setResourceType(value as ResourceType)} className="flex gap-6">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Resource Type
+              </label>
+              <RadioGroup
+                value={resourceType}
+                onValueChange={(value) =>
+                  setResourceType(value as ResourceType)
+                }
+                className="flex gap-6"
+              >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="ENERGY" id="energy" />
-                  <Label htmlFor="energy" className="flex items-center gap-2 cursor-pointer">
+                  <Label
+                    htmlFor="energy"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <Zap size={16} className="text-yellow-500" />
                     Energy
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="BANDWIDTH" id="bandwidth" />
-                  <Label htmlFor="bandwidth" className="flex items-center gap-2 cursor-pointer">
+                  <Label
+                    htmlFor="bandwidth"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <Shield size={16} className="text-green-500" />
                     Bandwidth
                   </Label>
@@ -251,26 +339,28 @@ export const FreezeUnfreeze: React.FC = () => {
                   </span>
                 )}
               </label>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="0.000001"
-                    min="1"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="1.0"
-                    className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 pr-32"
-                    required
-                  />
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Minimum amount is 1 ORGON
-                </p>
+              <div className="relative">
+                <Input
+                  type="number"
+                  step="0.000001"
+                  min="1"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="1.0"
+                  className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 pr-32"
+                  required
+                />
               </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Minimum amount is 1 ORGON
+              </p>
+            </div>
 
             {/* Memo */}
             <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">Memo (Optional)</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Memo (Optional)
+              </label>
               <Textarea
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
@@ -300,7 +390,9 @@ export const FreezeUnfreeze: React.FC = () => {
               {showAdvanced && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">Gas Price (ORGON)</label>
+                    <label className="text-sm font-medium">
+                      Gas Price (ORGON)
+                    </label>
                     <Input
                       type="number"
                       step="0.01"
@@ -323,7 +415,10 @@ export const FreezeUnfreeze: React.FC = () => {
                   <div className="col-span-full">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Clock size={16} />
-                      <span>Estimated Fee: {calculateTransactionFee(gasPrice, gasLimit)} ORGON</span>
+                      <span>
+                        Estimated Fee:{' '}
+                        {calculateTransactionFee(gasPrice, gasLimit)} ORGON
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -333,42 +428,57 @@ export const FreezeUnfreeze: React.FC = () => {
             {/* Transaction Preview */}
             {isFormValid && selectedAccountData && selectedNetworkData && (
               <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="font-medium mb-3 text-blue-900 dark:text-blue-100">Transaction Preview</h4>
+                <h4 className="font-medium mb-3 text-blue-900 dark:text-blue-100">
+                  Transaction Preview
+                </h4>
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">From:</span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      From:
+                    </span>
                     <span className="font-mono text-blue-900 dark:text-blue-100">
-                      {selectedAccountData.name} ({formatAddress(selectedAccountData.address)})
+                      {selectedAccountData.name} (
+                      {formatAddress(selectedAccountData.address)})
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">Operation:</span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      Operation:
+                    </span>
                     <span className="text-blue-900 dark:text-blue-100 uppercase">
                       {operationType} {resourceType}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">Amount:</span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      Amount:
+                    </span>
                     <span className="font-mono text-blue-900 dark:text-blue-100">
                       {amount} ORGON
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">Network:</span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      Network:
+                    </span>
                     <span className="text-blue-900 dark:text-blue-100">
                       {selectedNetworkData.name}
                     </span>
                   </div>
                   {memo && (
                     <div className="flex justify-between">
-                      <span className="text-blue-700 dark:text-blue-300">Memo:</span>
+                      <span className="text-blue-700 dark:text-blue-300">
+                        Memo:
+                      </span>
                       <span className="font-mono text-blue-900 dark:text-blue-100 text-xs">
                         {memo}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">Fee:</span>
+                    <span className="text-blue-700 dark:text-blue-300">
+                      Fee:
+                    </span>
                     <span className="font-mono text-blue-900 dark:text-blue-100">
                       {calculateTransactionFee(gasPrice, gasLimit)} ORGON
                     </span>
@@ -390,14 +500,19 @@ export const FreezeUnfreeze: React.FC = () => {
               ) : (
                 <>
                   <Snowflake size={20} className="mr-2" />
-                  {operationType === 'freeze' ? 'Freeze ORGON' : 'Unfreeze ORGON'}
+                  {operationType === 'freeze'
+                    ? 'Freeze ORGON'
+                    : 'Unfreeze ORGON'}
                 </>
               )}
             </Button>
           </form>
 
           {transactionManager.error && (
-            <Alert variant="destructive" className="border-red-200 bg-red-50 dark:bg-red-900/20">
+            <Alert
+              variant="destructive"
+              className="border-red-200 bg-red-50 dark:bg-red-900/20"
+            >
               <AlertCircle size={16} />
               <AlertDescription className="text-red-800 dark:text-red-200">
                 {transactionManager.error}
@@ -422,7 +537,9 @@ export const FreezeUnfreeze: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           className="h-7 w-7 p-0 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600"
-                          onClick={() => copyToClipboard(transactionResult.txId)}
+                          onClick={() =>
+                            copyToClipboard(transactionResult.txId)
+                          }
                         >
                           <Copy size={12} />
                         </Button>
@@ -430,7 +547,12 @@ export const FreezeUnfreeze: React.FC = () => {
                           variant="ghost"
                           size="sm"
                           className="h-7 w-7 p-0 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600"
-                          onClick={() => window.open(`${getExplorerUrlForNetwork(networkManager.currentNetwork?.chainId)}/transaction/${transactionResult.txId}`, '_blank')}
+                          onClick={() =>
+                            window.open(
+                              `${getExplorerUrlForNetwork(networkManager.currentNetwork?.chainId)}/transaction/${transactionResult.txId}`,
+                              '_blank',
+                            )
+                          }
                         >
                           <ExternalLink size={12} />
                         </Button>
@@ -438,7 +560,12 @@ export const FreezeUnfreeze: React.FC = () => {
                     </div>
                     <div>
                       <strong>Status:</strong>
-                      <Badge variant={transactionResult.success ? "default" : "destructive"} className="ml-2">
+                      <Badge
+                        variant={
+                          transactionResult.success ? 'default' : 'destructive'
+                        }
+                        className="ml-2"
+                      >
                         {transactionResult.success ? 'Success' : 'Failed'}
                       </Badge>
                     </div>

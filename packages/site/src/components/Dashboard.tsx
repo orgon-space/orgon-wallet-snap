@@ -1,8 +1,24 @@
 import React, { useEffect } from 'react';
-import { Wallet, Download, AlertCircle, RefreshCw, Eye, Plus, Send, Cog, Snowflake } from 'lucide-react';
+import {
+  AlertCircle,
+  Cog,
+  Download,
+  Eye,
+  Plus,
+  RefreshCw,
+  Send,
+  Snowflake,
+  Wallet,
+} from 'lucide-react';
 
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { WalletOverview } from './WalletOverview';
@@ -13,12 +29,17 @@ import { ExportWalletModal } from './ExportWalletModal';
 import { MobileHeader } from './MobileHeader';
 import { DesktopHeader } from './DesktopHeader';
 
-import { useMetaMask, useRequestSnap, useMetaMaskContext } from '../hooks/metamask';
+import {
+  useMetaMask,
+  useMetaMaskContext,
+  useRequestSnap,
+} from '../hooks/metamask';
 import { useWalletManager } from '../hooks/wallet';
 import { useNetworkManager } from '../hooks/network';
 import { useTransactionManager } from '../hooks/transaction';
-import { useUIStore, useUIActions, useExportModal } from '../hooks/uiStore';
+import { useExportModal, useUIActions, useUIStore } from '../hooks/uiStore';
 import { createWithdrawExpireUnfreezeTransaction } from '../utils/staking-transactions';
+import type { OrgonTransaction } from '../types';
 import { defaultSnapOrigin } from '../config';
 import { isLocalSnap, shouldDisplayReconnectButton } from '../utils/helpers';
 
@@ -26,12 +47,12 @@ export const Dashboard: React.FC = () => {
   const { error } = useMetaMaskContext();
   const { isFlask, snapsDetected, installedSnap } = useMetaMask();
   const requestSnap = useRequestSnap();
-  
+
   const walletManager = useWalletManager();
   const networkManager = useNetworkManager();
   const transactionManager = useTransactionManager();
-  
-  const activeTab = useUIStore(state => state.activeTab);
+
+  const activeTab = useUIStore((state) => state.activeTab);
   const exportModal = useExportModal();
   const uiActions = useUIActions();
 
@@ -49,7 +70,11 @@ export const Dashboard: React.FC = () => {
 
   // Load balances when accounts and network are available
   useEffect(() => {
-    if (walletManager.accounts && walletManager.accounts.length > 0 && networkManager.currentNetwork) {
+    if (
+      walletManager.accounts &&
+      walletManager.accounts.length > 0 &&
+      networkManager.currentNetwork
+    ) {
       walletManager.refreshAllBalances();
     }
   }, [walletManager.accounts?.length, networkManager.currentNetwork?.chainId]);
@@ -69,7 +94,7 @@ export const Dashboard: React.FC = () => {
   const handleExportWallet = async (walletId: string) => {
     try {
       const result = await walletManager.exportAccount(walletId);
-      const wallet = walletManager.accounts?.find(acc => acc.id === walletId);
+      const wallet = walletManager.accounts?.find((acc) => acc.id === walletId);
 
       if (wallet) {
         uiActions.setExportWalletData({
@@ -85,9 +110,12 @@ export const Dashboard: React.FC = () => {
   };
 
   // Handle withdraw expire unfreeze
-  const handleWithdrawExpireUnfreeze = async (walletId: string, resourceType: 'BANDWIDTH' | 'ENERGY') => {
+  const handleWithdrawExpireUnfreeze = async (
+    walletId: string,
+    resourceType: 'BANDWIDTH' | 'ENERGY',
+  ) => {
     try {
-      const wallet = walletManager.accounts?.find(acc => acc.id === walletId);
+      const wallet = walletManager.accounts?.find((acc) => acc.id === walletId);
       if (!wallet) {
         throw new Error('Wallet not found');
       }
@@ -95,18 +123,22 @@ export const Dashboard: React.FC = () => {
       // Create withdraw expire unfreeze transaction
       const rawTransaction = await createWithdrawExpireUnfreezeTransaction(
         wallet.address,
-        { rpcUrl: networkManager.currentNetwork?.rpcUrl }
+        networkManager.currentNetwork
+          ? { rpcUrl: networkManager.currentNetwork.rpcUrl }
+          : undefined,
       );
 
       // Create transaction object
-      const transaction = {
+      const transaction: OrgonTransaction = {
         from: wallet.address,
         to: wallet.address, // withdrawExpireUnfreeze is sent to self
         amount: '0', // No amount needed for withdraw
         memo: `Withdraw expired unfreeze for ${resourceType}`,
-        networkId: networkManager.currentNetwork?.chainId,
         accountId: walletId,
         transaction: rawTransaction,
+        ...(networkManager.currentNetwork?.chainId && {
+          networkId: networkManager.currentNetwork.chainId,
+        }),
       };
 
       // Send transaction
@@ -115,10 +147,10 @@ export const Dashboard: React.FC = () => {
 
       // Refresh wallet balance after transaction
       await walletManager.refreshWalletBalance(walletId);
-
     } catch (err) {
       console.error('Failed to withdraw expire unfreeze:', err);
-      transactionManager.setError(err instanceof Error ? err.message : 'Failed to withdraw expired unfreeze');
+      // Error is handled by transactionManager internally
+      throw err; // Re-throw to let UI handle it if needed
     }
   };
 
@@ -133,10 +165,14 @@ export const Dashboard: React.FC = () => {
                 <Wallet size={48} color="white" />
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
-                Welcome to <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent">Orgon Snap</span>
+                Welcome to{' '}
+                <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent">
+                  Orgon Snap
+                </span>
               </h1>
               <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                Connect to MetaMask and install the Orgon Snap to manage your Orgon wallets with ease
+                Connect to MetaMask and install the Orgon Snap to manage your
+                Orgon wallets with ease
               </p>
             </div>
 
@@ -160,12 +196,14 @@ export const Dashboard: React.FC = () => {
                       Install MetaMask Flask
                     </CardTitle>
                     <CardDescription className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                      Snaps is pre-release software only available in MetaMask Flask, a canary distribution for developers with access to upcoming features.
+                      Snaps is pre-release software only available in MetaMask
+                      Flask, a canary distribution for developers with access to
+                      upcoming features.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <Button 
-                      className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200" 
+                    <Button
+                      className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
                       size="lg"
                     >
                       Install MetaMask Flask
@@ -184,7 +222,8 @@ export const Dashboard: React.FC = () => {
                       Connect Orgon Snap
                     </CardTitle>
                     <CardDescription className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                      Get started by connecting to and installing the Orgon Snap to manage your Orgon wallets.
+                      Get started by connecting to and installing the Orgon Snap
+                      to manage your Orgon wallets.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
@@ -231,13 +270,15 @@ export const Dashboard: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 lg:pt-8 pt-[120px]">
-
         <div className="max-w-full">
           <Tabs value={activeTab} onValueChange={uiActions.setActiveTab}>
             {/* Desktop Tabs - Hidden on mobile */}
             <div className="hidden lg:block overflow-x-auto scrollbar-hide tab-scroll-container">
               <TabsList className="inline-flex w-max min-w-full">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="overview"
+                  className="flex items-center gap-2"
+                >
                   <Eye className="w-4 h-4" />
                   Overview
                 </TabsTrigger>
@@ -249,15 +290,24 @@ export const Dashboard: React.FC = () => {
                   <Send className="w-4 h-4" />
                   Send
                 </TabsTrigger>
-                <TabsTrigger value="staking" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="staking"
+                  className="flex items-center gap-2"
+                >
                   <Snowflake className="w-4 h-4" />
                   Staking
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="settings"
+                  className="flex items-center gap-2"
+                >
                   <Cog className="w-4 h-4" />
                   Settings
                 </TabsTrigger>
-                <TabsTrigger value="history" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="history"
+                  className="flex items-center gap-2"
+                >
                   <RefreshCw className="w-4 h-4" />
                   History
                 </TabsTrigger>
@@ -270,15 +320,23 @@ export const Dashboard: React.FC = () => {
                 onSendTransaction={() => uiActions.setActiveTab('send')}
                 onImportWallet={() => uiActions.setActiveTab('create')}
                 onNetworkChange={handleNetworkChange}
-                onRefreshWallet={(accountId) => walletManager.refreshWalletBalance(accountId)}
-                onDeleteWallet={(accountId) => walletManager.deleteAccount(accountId)}
+                onRefreshWallet={(accountId) =>
+                  walletManager.refreshWalletBalance(accountId)
+                }
+                onDeleteWallet={(accountId) =>
+                  walletManager.deleteAccount(accountId)
+                }
                 onExportWallet={handleExportWallet}
                 onWithdrawExpireUnfreeze={handleWithdrawExpireUnfreeze}
                 onRefreshAll={() => walletManager.refreshAllBalances()}
                 currentNetwork={networkManager.currentNetwork}
                 accounts={walletManager.accounts || []}
                 balances={walletManager.balances}
-                loading={walletManager.loading || walletManager.refreshingAllBalances || networkManager.switching}
+                loading={
+                  walletManager.loading ||
+                  walletManager.refreshingAllBalances ||
+                  networkManager.switching
+                }
                 refreshingWallets={walletManager.refreshingWallets}
                 walletService={walletManager.walletService}
               />
@@ -287,8 +345,12 @@ export const Dashboard: React.FC = () => {
             <TabsContent value="create">
               <WalletManagement
                 onExportWallet={handleExportWallet}
-                onDeleteWallet={(accountId) => walletManager.deleteAccount(accountId)}
-                onRefreshWallet={(accountId) => walletManager.refreshWalletBalance(accountId)}
+                onDeleteWallet={(accountId) =>
+                  walletManager.deleteAccount(accountId)
+                }
+                onRefreshWallet={(accountId) =>
+                  walletManager.refreshWalletBalance(accountId)
+                }
                 refreshingWallets={walletManager.refreshingWallets}
                 currentNetwork={networkManager.currentNetwork}
                 showCreateForm={true}
@@ -312,7 +374,8 @@ export const Dashboard: React.FC = () => {
                     Settings
                   </CardTitle>
                   <CardDescription>
-                    Configure your Orgon Snap preferences and manage your account settings.
+                    Configure your Orgon Snap preferences and manage your
+                    account settings.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -323,14 +386,14 @@ export const Dashboard: React.FC = () => {
                         Settings Coming Soon
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400">
-                        We're working on bringing you comprehensive settings to customize your Orgon Snap experience.
+                        We're working on bringing you comprehensive settings to
+                        customize your Orgon Snap experience.
                       </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
-
 
             <TabsContent value="history">
               <Card>
@@ -340,7 +403,8 @@ export const Dashboard: React.FC = () => {
                     History
                   </CardTitle>
                   <CardDescription>
-                    Browse your complete transaction history and wallet activity.
+                    Browse your complete transaction history and wallet
+                    activity.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -350,7 +414,8 @@ export const Dashboard: React.FC = () => {
                       History Coming Soon
                     </h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      View all your past transactions and wallet activities in one place.
+                      View all your past transactions and wallet activities in
+                      one place.
                     </p>
                   </div>
                 </CardContent>

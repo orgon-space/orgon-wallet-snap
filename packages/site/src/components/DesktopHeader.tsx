@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wallet, RefreshCw, AlertCircle } from 'lucide-react';
+import { AlertCircle, RefreshCw, Wallet } from 'lucide-react';
 import { Button } from './ui/button';
 import { Alert, AlertDescription } from './ui/alert';
 import { CompactNetworkSwitcher } from './CompactNetworkSwitcher';
@@ -13,7 +13,7 @@ interface DesktopHeaderProps {
 export const DesktopHeader: React.FC<DesktopHeaderProps> = ({
   onReconnect,
   showReconnect = false,
-  error
+  error,
 }) => {
   return (
     <div className="hidden lg:block">

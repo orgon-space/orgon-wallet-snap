@@ -13,7 +13,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-const {TronWeb} = require('orgonweb');
+const { TronWeb } = require('orgonweb');
 
 /**
  * Network configuration interface
@@ -73,7 +73,11 @@ export async function createOrgonTransaction(
     const amountSun = orgonWeb.toSun(amount);
 
     // Create transaction
-    let transaction = await orgonWeb.transactionBuilder.sendTrx(to, amountSun, from);
+    let transaction = await orgonWeb.transactionBuilder.sendTrx(
+      to,
+      amountSun,
+      from,
+    );
 
     if (!transaction || !transaction.raw_data) {
       throw new Error('Failed to create transaction');
@@ -206,7 +210,11 @@ export async function createOrc20Transaction(
       from,
     );
 
-    if (!txResponse || !txResponse.transaction || !txResponse.transaction.raw_data) {
+    if (
+      !txResponse ||
+      !txResponse.transaction ||
+      !txResponse.transaction.raw_data
+    ) {
       throw new Error('Failed to create transaction');
     }
 
@@ -227,4 +235,3 @@ export async function createOrc20Transaction(
     );
   }
 }
-

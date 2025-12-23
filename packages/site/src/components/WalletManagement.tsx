@@ -1,8 +1,22 @@
 import React, { useState } from 'react';
-import { Plus, Download, AlertCircle, CheckCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle,
+  Download,
+  Eye,
+  EyeOff,
+  Loader2,
+  Plus,
+} from 'lucide-react';
 
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Alert, AlertDescription } from './ui/alert';
@@ -28,10 +42,10 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
   refreshingWallets,
   currentNetwork,
   showCreateForm = false,
-  showImportForm = false
+  showImportForm = false,
 }) => {
   const walletManager = useWalletManager();
-  
+
   // Create/Import states
   const [accountName, setAccountName] = useState('');
   const [privateKey, setPrivateKey] = useState('');
@@ -39,23 +53,28 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [createdAccount, setCreatedAccount] = useState<any>(null);
   const [importedAccount, setImportedAccount] = useState<any>(null);
-  
+
   // Mnemonic import states
   const [mnemonicPhrase, setMnemonicPhrase] = useState('');
   const [mnemonicImportName, setMnemonicImportName] = useState('');
-  const [importedMnemonicAccount, setImportedMnemonicAccount] = useState<any>(null);
+  const [importedMnemonicAccount, setImportedMnemonicAccount] =
+    useState<any>(null);
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     walletManager.clearError();
 
     try {
-      const account = await walletManager.createAccount(accountName || undefined);
+      const account = await walletManager.createAccount(
+        accountName || undefined,
+      );
       if (account && account.id) {
         setCreatedAccount(account);
         setAccountName('');
       } else {
-        throw new Error('Failed to create account: Invalid account data returned');
+        throw new Error(
+          'Failed to create account: Invalid account data returned',
+        );
       }
     } catch (err) {
       console.error('Failed to create account:', err);
@@ -69,14 +88,19 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
     try {
       // Remove 0x prefix if present
       const cleanPrivateKey = privateKey.trim().replace(/^0x/i, '');
-      
-      const account = await walletManager.importAccount(cleanPrivateKey, importName || undefined);
+
+      const account = await walletManager.importAccount(
+        cleanPrivateKey,
+        importName || undefined,
+      );
       if (account && account.id) {
         setImportedAccount(account);
         setPrivateKey('');
         setImportName('');
       } else {
-        throw new Error('Failed to import account: Invalid account data returned');
+        throw new Error(
+          'Failed to import account: Invalid account data returned',
+        );
       }
     } catch (err) {
       console.error('Failed to import account:', err);
@@ -88,13 +112,18 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
     walletManager.clearError();
 
     try {
-      const account = await walletManager.importAccountFromMnemonic(mnemonicPhrase, mnemonicImportName || undefined);
+      const account = await walletManager.importAccountFromMnemonic(
+        mnemonicPhrase,
+        mnemonicImportName || undefined,
+      );
       if (account && account.id) {
         setImportedMnemonicAccount(account);
         setMnemonicPhrase('');
         setMnemonicImportName('');
       } else {
-        throw new Error('Failed to import account from mnemonic: Invalid account data returned');
+        throw new Error(
+          'Failed to import account from mnemonic: Invalid account data returned',
+        );
       }
     } catch (err) {
       console.error('Failed to import account from mnemonic:', err);
@@ -117,11 +146,15 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               Create New Wallet
             </CardTitle>
             <CardDescription>
-              Generate a new Orgon wallet with a secure recovery phrase (mnemonic)
+              Generate a new Orgon wallet with a secure recovery phrase
+              (mnemonic)
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleCreateAccount} className="flex flex-col gap-4">
+            <form
+              onSubmit={handleCreateAccount}
+              className="flex flex-col gap-4"
+            >
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   Wallet Name (Optional)
@@ -136,7 +169,11 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
                 </p>
               </div>
 
-              <Button type="submit" disabled={walletManager.loading} className="w-full">
+              <Button
+                type="submit"
+                disabled={walletManager.loading}
+                className="w-full"
+              >
                 {walletManager.loading ? (
                   <>
                     <Loader2 size={16} className="mr-2 animate-spin" />
@@ -180,7 +217,10 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleImportAccount} className="flex flex-col gap-4">
+            <form
+              onSubmit={handleImportAccount}
+              className="flex flex-col gap-4"
+            >
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   Private Key
@@ -267,11 +307,15 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               Import from Recovery Phrase
             </CardTitle>
             <CardDescription>
-              Import an existing Orgon wallet using your recovery phrase (mnemonic)
+              Import an existing Orgon wallet using your recovery phrase
+              (mnemonic)
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleImportFromMnemonic} className="flex flex-col gap-4">
+            <form
+              onSubmit={handleImportFromMnemonic}
+              className="flex flex-col gap-4"
+            >
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   Recovery Phrase
@@ -284,7 +328,8 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Enter your 12-word recovery phrase (mnemonic) separated by spaces
+                  Enter your 12-word recovery phrase (mnemonic) separated by
+                  spaces
                 </p>
               </div>
 
@@ -326,7 +371,9 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
                   <AlertDescription>
                     <strong>Wallet imported successfully!</strong>
                     <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div className="font-medium">{importedMnemonicAccount.name}</div>
+                      <div className="font-medium">
+                        {importedMnemonicAccount.name}
+                      </div>
                       <div className="text-sm text-gray-600 dark:text-gray-300 font-mono break-all">
                         {formatAddress(importedMnemonicAccount.address)}
                       </div>
@@ -340,36 +387,42 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
       </div>
 
       {/* Wallet List - Only show when not in create/import mode */}
-      {!showCreateForm && !showImportForm && walletManager.accounts && walletManager.accounts.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Your Wallets</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefreshAll}
-              disabled={walletManager.loading}
-            >
-              Refresh All
-            </Button>
+      {!showCreateForm &&
+        !showImportForm &&
+        walletManager.accounts &&
+        walletManager.accounts.length > 0 && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Your Wallets</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefreshAll}
+                disabled={walletManager.loading}
+              >
+                Refresh All
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {(walletManager.accounts || [])
+                .filter((account) => account && account.id) // Filter out null/undefined accounts
+                .map((account) => (
+                  <WalletCard
+                    key={account.id}
+                    wallet={{
+                      ...account,
+                      balance: walletManager.balances[account.id],
+                    }}
+                    onRefresh={() => onRefreshWallet(account.id)}
+                    onDelete={onDeleteWallet}
+                    onExport={onExportWallet}
+                    isRefreshing={refreshingWallets.has(account.id)}
+                    currentNetwork={currentNetwork}
+                  />
+                ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(walletManager.accounts || [])
-              .filter((account) => account && account.id) // Filter out null/undefined accounts
-              .map((account) => (
-                <WalletCard
-                  key={account.id}
-                  wallet={{ ...account, balance: walletManager.balances[account.id] }}
-                  onRefresh={() => onRefreshWallet(account.id)}
-                  onDelete={onDeleteWallet}
-                  onExport={onExportWallet}
-                  isRefreshing={refreshingWallets.has(account.id)}
-                  currentNetwork={currentNetwork}
-                />
-              ))}
-          </div>
-        </div>
-      )}
+        )}
 
       {/* Error Display */}
       {walletManager.error && (

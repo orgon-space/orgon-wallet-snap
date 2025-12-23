@@ -1,5 +1,5 @@
 import type { FunctionComponent, ReactNode } from 'react';
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { MetaMaskProvider } from './hooks/metamask';
 import { NetworkProvider } from './hooks/network-provider';
 import { getThemePreference, setLocalStorage } from './utils/helpers';

@@ -40,11 +40,12 @@ export async function createFreezeTransaction(
     const amountSun = orgonWebService.orgonWeb.toSun(amountNum.toString());
 
     // Create freeze transaction
-    let transaction = await orgonWebService.orgonWeb.transactionBuilder.freezeBalanceV2(
-      amountSun,
-      resource,
-      from
-    );
+    let transaction =
+      await orgonWebService.orgonWeb.transactionBuilder.freezeBalanceV2(
+        amountSun,
+        resource,
+        from,
+      );
 
     if (!transaction || !transaction.raw_data) {
       throw new Error('Failed to create freeze transaction');
@@ -52,11 +53,12 @@ export async function createFreezeTransaction(
 
     // Add memo if provided
     if (memo && memo.trim() !== '') {
-      transaction = await orgonWebService.orgonWeb.transactionBuilder.addUpdateData(
-        transaction,
-        orgonWebService.orgonWeb.toHex(memo.trim()),
-        'utf8',
-      );
+      transaction =
+        await orgonWebService.orgonWeb.transactionBuilder.addUpdateData(
+          transaction,
+          orgonWebService.orgonWeb.toHex(memo.trim()),
+          'utf8',
+        );
     }
 
     return transaction;
@@ -96,11 +98,12 @@ export async function createUnfreezeTransaction(
     const amountSun = OrgonWebService.orgonWeb.toSun(amountNum.toString());
 
     // Create unfreeze transaction
-    let transaction = await OrgonWebService.orgonWeb.transactionBuilder.unfreezeBalanceV2(
-      amountSun,
-      resource,
-      from
-    );
+    let transaction =
+      await OrgonWebService.orgonWeb.transactionBuilder.unfreezeBalanceV2(
+        amountSun,
+        resource,
+        from,
+      );
 
     if (!transaction || !transaction.raw_data) {
       throw new Error('Failed to create unfreeze transaction');
@@ -108,11 +111,12 @@ export async function createUnfreezeTransaction(
 
     // Add memo if provided
     if (memo && memo.trim() !== '') {
-      transaction = await OrgonWebService.orgonWeb.transactionBuilder.addUpdateData(
-        transaction,
-        OrgonWebService.orgonWeb.toHex(memo.trim()),
-        'utf8',
-      );
+      transaction =
+        await OrgonWebService.orgonWeb.transactionBuilder.addUpdateData(
+          transaction,
+          OrgonWebService.orgonWeb.toHex(memo.trim()),
+          'utf8',
+        );
     }
 
     return transaction;
@@ -138,7 +142,10 @@ export async function createWithdrawExpireUnfreezeTransaction(
     const orgonWebService = createOrgonWebService(network?.rpcUrl, undefined);
 
     // Create withdraw expire unfreeze transaction
-    const transaction = await orgonWebService.orgonWeb.transactionBuilder.withdrawExpireUnfreeze(from);
+    const transaction =
+      await orgonWebService.orgonWeb.transactionBuilder.withdrawExpireUnfreeze(
+        from,
+      );
 
     if (!transaction || !transaction.raw_data) {
       throw new Error('Failed to create withdraw expire unfreeze transaction');
@@ -151,4 +158,3 @@ export async function createWithdrawExpireUnfreezeTransaction(
     );
   }
 }
-

@@ -47,8 +47,13 @@ interface UnfrozenItem {
 /**
  * Calculate bandwidth and energy from account details
  */
-export function calculateBandwidthEnergy(accountDetails: any): BandwidthEnergyInfo {
-  console.log('Calculating bandwidth and energy from account details:', accountDetails);
+export function calculateBandwidthEnergy(
+  accountDetails: any,
+): BandwidthEnergyInfo {
+  console.log(
+    'Calculating bandwidth and energy from account details:',
+    accountDetails,
+  );
 
   const bandwidthLimit = 600; // Daily bandwidth limit
   const freeNetUsage = accountDetails?.free_net_usage || 0;
@@ -56,7 +61,9 @@ export function calculateBandwidthEnergy(accountDetails: any): BandwidthEnergyIn
 
   // Calculate frozen bandwidth (amount without type or with TRON_POWER type)
   const frozenBandwidth = (accountDetails?.frozenV2 || [])
-    .filter((frozen: FrozenItem) => !frozen.type || frozen.type === 'TRON_POWER')
+    .filter(
+      (frozen: FrozenItem) => !frozen.type || frozen.type === 'TRON_POWER',
+    )
     .reduce((sum: number, frozen: FrozenItem) => sum + (frozen.amount || 0), 0);
 
   // Calculate frozen energy
@@ -65,37 +72,39 @@ export function calculateBandwidthEnergy(accountDetails: any): BandwidthEnergyIn
     .reduce((sum: number, frozen: FrozenItem) => sum + (frozen.amount || 0), 0);
 
   // Calculate unfrozen bandwidth (entries without type)
-  const unfrozenBandwidthRaw: UnfrozenItem[] = (accountDetails?.unfrozenV2 || [])
-    .filter((unfrozen: UnfrozenItem) => !unfrozen.type);
+  const unfrozenBandwidthRaw: UnfrozenItem[] = (
+    accountDetails?.unfrozenV2 || []
+  ).filter((unfrozen: UnfrozenItem) => !unfrozen.type);
   const unfrozenBandwidth = unfrozenBandwidthRaw.map((item) => ({
-    amount: (item.unfreeze_amount || item.amount || 0),
-    expireTime: (item.unfreeze_expire_time || 0)
+    amount: item.unfreeze_amount || item.amount || 0,
+    expireTime: item.unfreeze_expire_time || 0,
   }));
 
   // Calculate unfrozen energy
-  const unfrozenEnergyRaw: UnfrozenItem[] = (accountDetails?.unfrozenV2 || [])
-    .filter((unfrozen: UnfrozenItem) => unfrozen.type === 'ENERGY');
+  const unfrozenEnergyRaw: UnfrozenItem[] = (
+    accountDetails?.unfrozenV2 || []
+  ).filter((unfrozen: UnfrozenItem) => unfrozen.type === 'ENERGY');
   const unfrozenEnergy = unfrozenEnergyRaw.map((item) => ({
-    amount: (item.unfreeze_amount || item.amount || 0),
-    expireTime: (item.unfreeze_expire_time || 0)
+    amount: item.unfreeze_amount || item.amount || 0,
+    expireTime: item.unfreeze_expire_time || 0,
   }));
 
   const result: BandwidthEnergyInfo = {
     bandwidth: {
       available: availableBandwidth, // Available bandwidth is already in correct units (600 - free_net_usage)
       frozen: frozenBandwidth / 1e6, // Convert from SUN to ORGON
-      unfrozen: unfrozenBandwidth.map(item => ({
+      unfrozen: unfrozenBandwidth.map((item) => ({
         amount: item.amount / 1e6,
-        expireTime: item.expireTime
-      }))
+        expireTime: item.expireTime,
+      })),
     },
     energy: {
       frozen: frozenEnergy / 1e6,
-      unfrozen: unfrozenEnergy.map(item => ({
+      unfrozen: unfrozenEnergy.map((item) => ({
         amount: item.amount / 1e6,
-        expireTime: item.expireTime
-      }))
-    }
+        expireTime: item.expireTime,
+      })),
+    },
   };
 
   console.log('Calculated bandwidth and energy:', result);
@@ -142,7 +151,7 @@ export interface Orc20TokenInfo {
 export async function parseTokenBalances(
   balance?: OrgonBalance,
   networkRpcUrl?: string,
-  walletService?: WalletService
+  walletService?: WalletService,
 ): Promise<TokenBalance[]> {
   const tokenBalances: TokenBalance[] = [];
 
@@ -158,11 +167,19 @@ export async function parseTokenBalances(
   }
 
   // Parse AssetV2 tokens (ORC10) with enhanced metadata
-  if (balance?.assetV2 && Array.isArray(balance.assetV2) && networkRpcUrl && walletService) {
+  if (
+    balance?.assetV2 &&
+    Array.isArray(balance.assetV2) &&
+    networkRpcUrl &&
+    walletService
+  ) {
     for (const asset of balance.assetV2) {
       try {
         // Get detailed token info
-        const tokenInfo = await walletService.getOrc10TokenInfo(asset.key, networkRpcUrl);
+        const tokenInfo = await walletService.getOrc10TokenInfo(
+          asset.key,
+          networkRpcUrl,
+        );
 
         const tokenBalance: TokenBalance = {
           type: 'orc10',
@@ -183,7 +200,10 @@ export async function parseTokenBalances(
 
         tokenBalances.push(tokenBalance);
       } catch (error) {
-        console.warn(`Failed to get ORC-10 token info for ${asset.key}:`, error);
+        console.warn(
+          `Failed to get ORC-10 token info for ${asset.key}:`,
+          error,
+        );
         // Fallback to basic info
         tokenBalances.push({
           type: 'orc10',
@@ -208,12 +228,21 @@ export async function parseTokenBalances(
   }
 
   // Parse ORC20 tokens with enhanced metadata
-  if (balance?.orc20 && Array.isArray(balance.orc20) && networkRpcUrl && walletService) {
+  if (
+    balance?.orc20 &&
+    Array.isArray(balance.orc20) &&
+    networkRpcUrl &&
+    walletService
+  ) {
     for (const tokenObj of balance.orc20) {
       for (const [address, tokenValue] of Object.entries(tokenObj)) {
         try {
           // Get detailed token balance and info
-          const tokenData = await walletService.getOrc20TokenBalance(address, '', networkRpcUrl);
+          const tokenData = await walletService.getOrc20TokenBalance(
+            address,
+            '',
+            networkRpcUrl,
+          );
 
           tokenBalances.push({
             type: 'orc20',
@@ -224,7 +253,10 @@ export async function parseTokenBalances(
             value: Number(tokenValue) || 0,
           });
         } catch (error) {
-          console.warn(`Failed to get ORC-20 token info for ${address}:`, error);
+          console.warn(
+            `Failed to get ORC-20 token info for ${address}:`,
+            error,
+          );
           // Fallback to basic info
           tokenBalances.push({
             type: 'orc20',
@@ -270,10 +302,14 @@ export function useTokenBalances(account?: OrgonAccount): TokenBalance[] {
 export async function getEnhancedTokenBalances(
   account?: OrgonAccount,
   networkRpcUrl?: string,
-  walletService?: WalletService
+  walletService?: WalletService,
 ): Promise<TokenBalance[]> {
   if (!account?.balance) return [];
-  return await parseTokenBalances(account.balance, networkRpcUrl, walletService);
+  return await parseTokenBalances(
+    account.balance,
+    networkRpcUrl,
+    walletService,
+  );
 }
 
 /**
@@ -332,24 +368,52 @@ export interface WalletServiceInterface {
   getAccounts(): Promise<OrgonAccount[]>;
   createAccount(name?: string): Promise<OrgonAccount>;
   importAccount(privateKey: string, name?: string): Promise<OrgonAccount>;
-  importAccountFromMnemonic(mnemonic: string, name?: string): Promise<OrgonAccount>;
+  importAccountFromMnemonic(
+    mnemonic: string,
+    name?: string,
+  ): Promise<OrgonAccount>;
   deleteAccount(accountId: string): Promise<void>;
-  exportAccount(accountId: string): Promise<{ privateKey: string; address: string }>;
-  getAccountMnemonic(accountId: string): Promise<{ accountId: string; address: string; mnemonic: string }>;
+  exportAccount(
+    accountId: string,
+  ): Promise<{ privateKey: string; address: string }>;
+  getAccountMnemonic(
+    accountId: string,
+  ): Promise<{ accountId: string; address: string; mnemonic: string }>;
   getBalance(address: string, networkId?: string): Promise<any>;
   getAccountDetails(address: string, networkRpcUrl: string): Promise<any>;
-  getOrc10TokenInfo(tokenId: string, networkRpcUrl: string): Promise<Orc10TokenInfo | null>;
-  getOrc20TokenBalance(contractAddress: string, userAddress: string, networkRpcUrl: string): Promise<{ balance: number; decimals: number; symbol: string; name: string } | null>;
+  getOrc10TokenInfo(
+    tokenId: string,
+    networkRpcUrl: string,
+  ): Promise<Orc10TokenInfo | null>;
+  getOrc20TokenBalance(
+    contractAddress: string,
+    userAddress: string,
+    networkRpcUrl: string,
+  ): Promise<{
+    balance: number;
+    decimals: number;
+    symbol: string;
+    name: string;
+  } | null>;
 }
 
 export class WalletService implements WalletServiceInterface {
   // Cache for token information to avoid repeated API calls
   private orc10TokenCache = new Map<string, Orc10TokenInfo>();
-  private orc20TokenCache = new Map<string, { balance: number; decimals: number; symbol: string; name: string }>();
+  private orc20TokenCache = new Map<
+    string,
+    { balance: number; decimals: number; symbol: string; name: string }
+  >();
 
   constructor(
-    private invokeSnap: (params: { method: string; params?: Record<string, unknown> }) => Promise<unknown>,
-    private request: (params: { method: string; params?: Record<string, unknown> }) => Promise<unknown>
+    private invokeSnap: (params: {
+      method: string;
+      params?: Record<string, unknown>;
+    }) => Promise<unknown>,
+    private request: (params: {
+      method: string;
+      params?: Record<string, unknown>;
+    }) => Promise<unknown>,
   ) {}
 
   async getAccounts(): Promise<OrgonAccount[]> {
@@ -390,10 +454,15 @@ export class WalletService implements WalletServiceInterface {
             params: { name },
           });
 
-          console.log('Account created successfully after permission request:', account);
+          console.log(
+            'Account created successfully after permission request:',
+            account,
+          );
           return account as OrgonAccount;
         } catch (permissionError) {
-          throw new Error('Please grant the required permissions to create Orgon accounts. You may need to reinstall the snap.');
+          throw new Error(
+            'Please grant the required permissions to create Orgon accounts. You may need to reinstall the snap.',
+          );
         }
       } else {
         throw new Error(error?.message || 'Failed to create account');
@@ -401,7 +470,10 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async importAccount(privateKey: string, name?: string): Promise<OrgonAccount> {
+  async importAccount(
+    privateKey: string,
+    name?: string,
+  ): Promise<OrgonAccount> {
     try {
       const account = await this.invokeSnap({
         method: 'keyring_importAccount',
@@ -414,7 +486,10 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async importAccountFromMnemonic(mnemonic: string, name?: string): Promise<OrgonAccount> {
+  async importAccountFromMnemonic(
+    mnemonic: string,
+    name?: string,
+  ): Promise<OrgonAccount> {
     try {
       const account = await this.invokeSnap({
         method: 'keyring_importAccountFromMnemonic',
@@ -423,7 +498,9 @@ export class WalletService implements WalletServiceInterface {
       return account as OrgonAccount;
     } catch (error: any) {
       console.error('Failed to import account from mnemonic:', error);
-      throw new Error(error?.message || 'Failed to import account from mnemonic');
+      throw new Error(
+        error?.message || 'Failed to import account from mnemonic',
+      );
     }
   }
 
@@ -439,7 +516,9 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async exportAccount(accountId: string): Promise<{ privateKey: string; address: string }> {
+  async exportAccount(
+    accountId: string,
+  ): Promise<{ privateKey: string; address: string }> {
     try {
       const result = await this.invokeSnap({
         method: 'keyring_exportAccount',
@@ -452,7 +531,9 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async getAccountMnemonic(accountId: string): Promise<{ accountId: string; address: string; mnemonic: string }> {
+  async getAccountMnemonic(
+    accountId: string,
+  ): Promise<{ accountId: string; address: string; mnemonic: string }> {
     try {
       const result = await this.invokeSnap({
         method: 'keyring_getAccountMnemonic',
@@ -468,10 +549,10 @@ export class WalletService implements WalletServiceInterface {
   async getBalance(address: string, networkId?: string): Promise<any> {
     try {
       console.log('Getting balance for:', { address, networkId });
-      const data = await this.invokeSnap({
+      const data = (await this.invokeSnap({
         method: 'orgon_getAccountV1',
         params: { address, networkId },
-      }) as { data: any };
+      })) as { data: any };
       console.log('Balance result:', data?.data);
 
       return data?.data;
@@ -481,7 +562,10 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async getAccountDetails(address: string, networkRpcUrl: string): Promise<any> {
+  async getAccountDetails(
+    address: string,
+    networkRpcUrl: string,
+  ): Promise<any> {
     try {
       console.log('Getting account details for:', { address, networkRpcUrl });
 
@@ -492,8 +576,8 @@ export class WalletService implements WalletServiceInterface {
         },
         body: JSON.stringify({
           address,
-          visible: true
-        })
+          visible: true,
+        }),
       });
 
       if (!response.ok) {
@@ -510,7 +594,10 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async getOrc10TokenInfo(tokenId: string, networkRpcUrl: string): Promise<Orc10TokenInfo | null> {
+  async getOrc10TokenInfo(
+    tokenId: string,
+    networkRpcUrl: string,
+  ): Promise<Orc10TokenInfo | null> {
     try {
       // Check cache first
       const cacheKey = `${networkRpcUrl}:${tokenId}`;
@@ -522,18 +609,23 @@ export class WalletService implements WalletServiceInterface {
 
       console.log('Getting ORC-10 token info for:', { tokenId, networkRpcUrl });
 
-      const response = await fetch(`${networkRpcUrl}/wallet/getassetissuebyid`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${networkRpcUrl}/wallet/getassetissuebyid`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            value: tokenId,
+          }),
         },
-        body: JSON.stringify({
-          value: tokenId
-        })
-      });
+      );
 
       if (!response.ok) {
-        console.warn(`Failed to get ORC-10 token info for ${tokenId}, status: ${response.status}`);
+        console.warn(
+          `Failed to get ORC-10 token info for ${tokenId}, status: ${response.status}`,
+        );
         return null;
       }
 
@@ -545,16 +637,22 @@ export class WalletService implements WalletServiceInterface {
       }
 
       // Decode name and symbol from hex
-      const decodedName = token.name ? Buffer.from(token.name, 'hex').toString('utf-8') : tokenId;
-      const decodedSymbol = token.abbr ? Buffer.from(token.abbr, 'hex').toString('utf-8') : tokenId;
+      const decodedName = token.name
+        ? Buffer.from(token.name, 'hex').toString('utf-8')
+        : tokenId;
+      const decodedSymbol = token.abbr
+        ? Buffer.from(token.abbr, 'hex').toString('utf-8')
+        : tokenId;
 
       const tokenInfo: Orc10TokenInfo = {
         id: token.id,
         name: decodedName,
         symbol: decodedSymbol,
-        totalSupply: token.total_supply ? parseInt(token.total_supply) / Math.pow(10, token.precision || 6) : 0,
+        totalSupply: token.total_supply
+          ? parseInt(token.total_supply) / Math.pow(10, token.precision || 6)
+          : 0,
         decimals: token.precision || 6,
-        ownerAddress: token.owner_address
+        ownerAddress: token.owner_address,
       };
 
       // Cache the result
@@ -567,9 +665,22 @@ export class WalletService implements WalletServiceInterface {
     }
   }
 
-  async getOrc20TokenBalance(contractAddress: string, userAddress: string, networkRpcUrl: string): Promise<{ balance: number; decimals: number; symbol: string; name: string } | null> {
+  async getOrc20TokenBalance(
+    contractAddress: string,
+    userAddress: string,
+    networkRpcUrl: string,
+  ): Promise<{
+    balance: number;
+    decimals: number;
+    symbol: string;
+    name: string;
+  } | null> {
     try {
-      console.log('Getting ORC-20 token balance for:', { contractAddress, userAddress, networkRpcUrl });
+      console.log('Getting ORC-20 token balance for:', {
+        contractAddress,
+        userAddress,
+        networkRpcUrl,
+      });
 
       // Check cache first (for token metadata, not balance)
       const cacheKey = `${networkRpcUrl}:${contractAddress}`;
@@ -591,18 +702,20 @@ export class WalletService implements WalletServiceInterface {
         console.log('Using cached ORC-20 token metadata for:', contractAddress);
         return {
           ...cachedToken,
-          balance: 0 // This should be fetched from contract.balanceOf(userAddress)
+          balance: 0, // This should be fetched from contract.balanceOf(userAddress)
         };
       }
 
-      console.warn('ORC-20 token balance fetching not fully implemented - returning mock data');
+      console.warn(
+        'ORC-20 token balance fetching not fully implemented - returning mock data',
+      );
 
       // Mock implementation for now
       const tokenData = {
         balance: 0, // This should be fetched from contract.balanceOf(userAddress)
         decimals: 6, // This should be fetched from contract.decimals()
         symbol: contractAddress.substring(0, 8), // This should be fetched from contract.symbol()
-        name: `ORC-20 Token ${contractAddress.substring(0, 8)}` // This should be fetched from contract.name()
+        name: `ORC-20 Token ${contractAddress.substring(0, 8)}`, // This should be fetched from contract.name()
       };
 
       // Cache the token metadata (but not balance, as it can change)
@@ -610,11 +723,10 @@ export class WalletService implements WalletServiceInterface {
         balance: 0,
         decimals: tokenData.decimals,
         symbol: tokenData.symbol,
-        name: tokenData.name
+        name: tokenData.name,
       });
 
       return tokenData;
-
     } catch (error: any) {
       console.error('Failed to get ORC-20 token balance:', error);
       return null;
@@ -625,9 +737,11 @@ export class WalletService implements WalletServiceInterface {
     try {
       await this.request({
         method: 'wallet_requestPermissions',
-        params: [{
-          'wallet_snap': {}
-        }] as any
+        params: [
+          {
+            wallet_snap: {},
+          },
+        ] as any,
       });
     } catch (error) {
       console.error('Error requesting keyring permissions:', error);
@@ -678,79 +792,111 @@ export const useWalletStore = create<WalletState>()(
       setAccounts: (accounts) => set({ accounts }, false, 'setAccounts'),
 
       addAccount: (account) =>
-        set((state) => ({
-          accounts: [...state.accounts, account]
-        }), false, 'addAccount'),
+        set(
+          (state) => ({
+            accounts: [...state.accounts, account],
+          }),
+          false,
+          'addAccount',
+        ),
 
       removeAccount: (accountId) =>
-        set((state) => ({
-          accounts: state.accounts.filter(acc => acc.id !== accountId),
-          balances: Object.fromEntries(
-            Object.entries(state.balances).filter(([id]) => id !== accountId)
-          ),
-          refreshingWallets: new Set(
-            Array.from(state.refreshingWallets).filter(id => id !== accountId)
-          )
-        }), false, 'removeAccount'),
+        set(
+          (state) => ({
+            accounts: state.accounts.filter((acc) => acc.id !== accountId),
+            balances: Object.fromEntries(
+              Object.entries(state.balances).filter(([id]) => id !== accountId),
+            ),
+            refreshingWallets: new Set(
+              Array.from(state.refreshingWallets).filter(
+                (id) => id !== accountId,
+              ),
+            ),
+          }),
+          false,
+          'removeAccount',
+        ),
 
       updateBalance: (accountId, balance) =>
-        set((state) => ({
-          balances: { ...state.balances, [accountId]: balance }
-        }), false, 'updateBalance'),
+        set(
+          (state) => ({
+            balances: { ...state.balances, [accountId]: balance },
+          }),
+          false,
+          'updateBalance',
+        ),
 
-      updateBalances: (balances) =>
-        set({ balances }, false, 'updateBalances'),
+      updateBalances: (balances) => set({ balances }, false, 'updateBalances'),
 
       setLoading: (loading) => set({ loading }, false, 'setLoading'),
 
       setError: (error) => set({ error }, false, 'setError'),
 
       setRefreshingWallet: (accountId, refreshing) =>
-        set((state) => {
-          const newSet = new Set(state.refreshingWallets);
-          if (refreshing) {
-            newSet.add(accountId);
-          } else {
-            newSet.delete(accountId);
-          }
-          return { refreshingWallets: newSet };
-        }, false, 'setRefreshingWallet'),
+        set(
+          (state) => {
+            const newSet = new Set(state.refreshingWallets);
+            if (refreshing) {
+              newSet.add(accountId);
+            } else {
+              newSet.delete(accountId);
+            }
+            return { refreshingWallets: newSet };
+          },
+          false,
+          'setRefreshingWallet',
+        ),
 
       setRefreshingAllBalances: (refreshing) =>
-        set({ refreshingAllBalances: refreshing }, false, 'setRefreshingAllBalances'),
+        set(
+          { refreshingAllBalances: refreshing },
+          false,
+          'setRefreshingAllBalances',
+        ),
 
       clearError: () => set({ error: null }, false, 'clearError'),
 
-      reset: () => set({
-        accounts: [],
-        balances: {},
-        loading: false,
-        error: null,
-        refreshingWallets: new Set(),
-        refreshingAllBalances: false
-      }, false, 'reset')
+      reset: () =>
+        set(
+          {
+            accounts: [],
+            balances: {},
+            loading: false,
+            error: null,
+            refreshingWallets: new Set(),
+            refreshingAllBalances: false,
+          },
+          false,
+          'reset',
+        ),
     }),
-    { name: 'wallet-store' }
-  )
+    { name: 'wallet-store' },
+  ),
 );
 
 // Selectors for better performance
-export const useWalletAccounts = () => useWalletStore(state => state.accounts);
-export const useWalletBalances = () => useWalletStore(state => state.balances);
-export const useWalletLoading = () => useWalletStore(state => state.loading);
-export const useWalletError = () => useWalletStore(state => state.error);
+export const useWalletAccounts = () =>
+  useWalletStore((state) => state.accounts);
+export const useWalletBalances = () =>
+  useWalletStore((state) => state.balances);
+export const useWalletLoading = () => useWalletStore((state) => state.loading);
+export const useWalletError = () => useWalletStore((state) => state.error);
 export const useWalletActions = () => {
-  const setAccounts = useWalletStore(state => state.setAccounts);
-  const addAccount = useWalletStore(state => state.addAccount);
-  const removeAccount = useWalletStore(state => state.removeAccount);
-  const updateBalance = useWalletStore(state => state.updateBalance);
-  const updateBalances = useWalletStore(state => state.updateBalances);
-  const setLoading = useWalletStore(state => state.setLoading);
-  const setError = useWalletStore(state => state.setError);
-  const setRefreshingWallet = useWalletStore(state => state.setRefreshingWallet);
-  const setRefreshingAllBalances = useWalletStore(state => state.setRefreshingAllBalances);
-  const clearError = useWalletStore(state => state.clearError);
-  const reset = useWalletStore(state => state.reset);
+  const setAccounts = useWalletStore((state) => state.setAccounts);
+  const addAccount = useWalletStore((state) => state.addAccount);
+  const removeAccount = useWalletStore((state) => state.removeAccount);
+  const updateBalance = useWalletStore((state) => state.updateBalance);
+  const updateBalances = useWalletStore((state) => state.updateBalances);
+  const setLoading = useWalletStore((state) => state.setLoading);
+  const setError = useWalletStore((state) => state.setError);
+  const setRefreshingWallet = useWalletStore(
+    (state) => state.setRefreshingWallet,
+  );
+  const setRefreshingAllBalances = useWalletStore(
+    (state) => state.setRefreshingAllBalances,
+  );
+  const clearError = useWalletStore((state) => state.clearError);
+  const reset = useWalletStore((state) => state.reset);
 
   return {
     setAccounts,
@@ -763,7 +909,7 @@ export const useWalletActions = () => {
     setRefreshingWallet,
     setRefreshingAllBalances,
     clearError,
-    reset
+    reset,
   };
 };
 
@@ -776,20 +922,25 @@ export const useWalletManager = () => {
   const request = useRequest();
 
   // Store state
-  const accounts = useWalletStore(state => state.accounts);
-  const balances = useWalletStore(state => state.balances);
-  const loading = useWalletStore(state => state.loading);
-  const error = useWalletStore(state => state.error);
-  const refreshingWallets = useWalletStore(state => state.refreshingWallets);
-  const refreshingAllBalances = useWalletStore(state => state.refreshingAllBalances);
+  const accounts = useWalletStore((state) => state.accounts);
+  const balances = useWalletStore((state) => state.balances);
+  const loading = useWalletStore((state) => state.loading);
+  const error = useWalletStore((state) => state.error);
+  const refreshingWallets = useWalletStore((state) => state.refreshingWallets);
+  const refreshingAllBalances = useWalletStore(
+    (state) => state.refreshingAllBalances,
+  );
 
-  const currentNetwork = useNetworkStore(state => state.currentNetwork);
+  const currentNetwork = useNetworkStore((state) => state.currentNetwork);
 
   // Store actions
   const walletActions = useWalletActions();
 
   // Create wallet service (memoized to prevent recreation on every render)
-  const walletService = useMemo(() => new WalletService(invokeSnap, request), [invokeSnap, request]);
+  const walletService = useMemo(
+    () => new WalletService(invokeSnap, request),
+    [invokeSnap, request],
+  );
 
   // Debounce refs
   const refreshTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -810,285 +961,32 @@ export const useWalletManager = () => {
     }
   }, [walletService, walletActions]);
 
-  const loadBalancesForAccounts = useCallback(async (accountsToLoad: OrgonAccount[], networkId?: string) => {
-    if (!accountsToLoad || accountsToLoad.length === 0) {
-      return;
-    }
-
-    try {
-      const balanceResults = await Promise.all(
-        accountsToLoad.filter(account => account && account.address).map(async (account) => {
-          try {
-            const balance = await walletService.getBalance(account.address, networkId);
-            return { accountId: account.id, balance };
-          } catch (err) {
-            console.error(`Failed to get balance for ${account.address}:`, err);
-            return { accountId: account.id, balance: null };
-          }
-        })
-      );
-
-      const newBalances: Record<string, any> = {};
-      balanceResults.forEach(({ accountId, balance }) => {
-        if (balance) {
-          newBalances[accountId] = balance;
-        }
-      });
-
-      walletActions.updateBalances(newBalances);
-    } catch (err) {
-      console.error('Failed to load balances:', err);
-    }
-  }, [walletService, walletActions]);
-
-  const loadAccountDetailsForAccounts = useCallback(async (accountsToLoad: OrgonAccount[], networkRpcUrl: string) => {
-    if (!accountsToLoad || accountsToLoad.length === 0 || !networkRpcUrl) {
-      return;
-    }
-
-    try {
-      console.log('Loading account details for accounts:', accountsToLoad.length);
-
-      const detailResults = await Promise.all(
-        accountsToLoad.filter(account => account && account.address).map(async (account) => {
-          try {
-            const accountDetails = await walletService.getAccountDetails(account.address, networkRpcUrl);
-            const bandwidthEnergy = calculateBandwidthEnergy(accountDetails);
-            return {
-              accountId: account.id,
-              balance: accountDetails,
-              bandwidthEnergy
-            };
-          } catch (err) {
-            console.error(`Failed to get account details for ${account.address}:`, err);
-            return { accountId: account.id, balance: null, bandwidthEnergy: null };
-          }
-        })
-      );
-
-      const newBalances: Record<string, any> = {};
-      detailResults.forEach(({ accountId, balance, bandwidthEnergy }) => {
-        if (balance) {
-          // Merge account details with existing balance data
-          newBalances[accountId] = {
-            ...balance,
-            bandwidthEnergy
-          };
-        }
-      });
-
-      if (Object.keys(newBalances).length > 0) {
-        walletActions.updateBalances(newBalances);
-        console.log('Account details loaded and merged with balances');
-      }
-    } catch (err) {
-      console.error('Failed to load account details:', err);
-    }
-  }, [walletService, walletActions]);
-
-  const createAccount = useCallback(async (name?: string) => {
-    try {
-      walletActions.setLoading(true);
-      walletActions.clearError();
-
-      const account = await walletService.createAccount(name);
-      walletActions.addAccount(account);
-
-      // Load balance for the new account
-      if (currentNetwork) {
-        const balance = await walletService.getBalance(account.address, currentNetwork.chainId);
-        walletActions.updateBalance(account.id, balance);
+  const loadBalancesForAccounts = useCallback(
+    async (accountsToLoad: OrgonAccount[], networkId?: string) => {
+      if (!accountsToLoad || accountsToLoad.length === 0) {
+        return;
       }
 
-      return account;
-    } catch (err: any) {
-      console.error('Failed to create account:', err);
-      walletActions.setError(err.message || 'Failed to create account');
-      throw err;
-    } finally {
-      walletActions.setLoading(false);
-    }
-  }, [walletService, walletActions, currentNetwork]);
-
-  const importAccount = useCallback(async (privateKey: string, name?: string) => {
-    try {
-      walletActions.setLoading(true);
-      walletActions.clearError();
-
-      const account = await walletService.importAccount(privateKey, name);
-      walletActions.addAccount(account);
-
-      // Load balance for the imported account
-      if (currentNetwork) {
-        const balance = await walletService.getBalance(account.address, currentNetwork.chainId);
-        walletActions.updateBalance(account.id, balance);
-      }
-      return account;
-    } catch (err: any) {
-      console.error('Failed to import account:', err);
-      walletActions.setError(err.message || 'Failed to import account');
-      throw err;
-    } finally {
-      walletActions.setLoading(false);
-    }
-  }, [walletService, walletActions, currentNetwork]);
-
-  const importAccountFromMnemonic = useCallback(async (mnemonic: string, name?: string) => {
-    try {
-      walletActions.setLoading(true);
-      walletActions.clearError();
-
-      const account = await walletService.importAccountFromMnemonic(mnemonic, name);
-      walletActions.addAccount(account);
-
-      // Load balance for the imported account
-      if (currentNetwork) {
-        const balance = await walletService.getBalance(account.address, currentNetwork.chainId);
-        walletActions.updateBalance(account.id, balance);
-      }
-
-      return account;
-    } catch (err: any) {
-      console.error('Failed to import account from mnemonic:', err);
-      walletActions.setError(err.message || 'Failed to import account from mnemonic');
-      throw err;
-    } finally {
-      walletActions.setLoading(false);
-    }
-  }, [walletService, walletActions, currentNetwork]);
-
-  const deleteAccount = useCallback(async (accountId: string) => {
-    try {
-      walletActions.setLoading(true);
-      walletActions.clearError();
-
-      await walletService.deleteAccount(accountId);
-      walletActions.removeAccount(accountId);
-    } catch (err: any) {
-      console.error('Failed to delete account:', err);
-      walletActions.setError(err.message || 'Failed to delete account');
-      throw err;
-    } finally {
-      walletActions.setLoading(false);
-    }
-  }, [walletService, walletActions]);
-
-  const exportAccount = useCallback(async (accountId: string) => {
-    try {
-      walletActions.setLoading(true);
-      walletActions.clearError();
-
-      const result = await walletService.exportAccount(accountId);
-      return result;
-    } catch (err: any) {
-      console.error('Failed to export account:', err);
-      walletActions.setError(err.message || 'Failed to export account');
-      throw err;
-    } finally {
-      walletActions.setLoading(false);
-    }
-  }, [walletService, walletActions]);
-
-  const getAccountMnemonic = useCallback(async (accountId: string) => {
-    try {
-      walletActions.setLoading(true);
-      walletActions.clearError();
-
-      const result = await walletService.getAccountMnemonic(accountId);
-      return result;
-    } catch (err: any) {
-      console.error('Failed to get account mnemonic:', err);
-      walletActions.setError(err.message || 'Failed to get account mnemonic');
-      throw err;
-    } finally {
-      walletActions.setLoading(false);
-    }
-  }, [walletService, walletActions]);
-
-  const refreshWalletBalance = useCallback(async (accountId: string) => {
-    const account = accounts.find(acc => acc.id === accountId);
-    if (!account || !currentNetwork) return;
-
-    // Clear any existing timeout
-    if (refreshTimeoutRef.current) {
-      clearTimeout(refreshTimeoutRef.current);
-    }
-
-    // Debounce the refresh to prevent rapid successive calls
-    refreshTimeoutRef.current = setTimeout(async () => {
       try {
-        walletActions.setRefreshingWallet(accountId, true);
-        walletActions.clearError();
-
-        // Load both balance and account details
-        const [balance, accountDetails] = await Promise.all([
-          walletService.getBalance(account.address, currentNetwork.chainId),
-          walletService.getAccountDetails(account.address, currentNetwork.rpcUrl)
-        ]);
-
-        const bandwidthEnergy = calculateBandwidthEnergy(accountDetails);
-
-        // Merge balance with account details
-        const mergedBalance = {
-          ...balance,
-          ...accountDetails,
-          bandwidthEnergy
-        };
-
-        walletActions.updateBalance(accountId, mergedBalance);
-        console.log(`Refreshed balance and details for ${accountId}`);
-      } catch (err: any) {
-        console.error(`Failed to refresh balance for ${accountId}:`, err);
-        walletActions.setError(err.message || `Failed to refresh balance for ${accountId}`);
-      } finally {
-        walletActions.setRefreshingWallet(accountId, false);
-      }
-    }, 300); // 300ms debounce
-  }, [accounts, currentNetwork, walletService, walletActions]);
-
-  const refreshAllBalances = useCallback(async (networkChainId?: string) => {
-    const chainIdToUse = networkChainId || currentNetwork?.chainId;
-    const rpcUrlToUse = currentNetwork?.rpcUrl;
-    if (!accounts || accounts.length === 0 || !chainIdToUse || !rpcUrlToUse) return;
-
-    // Clear any existing timeout
-    if (refreshAllTimeoutRef.current) {
-      clearTimeout(refreshAllTimeoutRef.current);
-    }
-
-    // Debounce the refresh to prevent rapid successive calls
-    refreshAllTimeoutRef.current = setTimeout(async () => {
-      try {
-        walletActions.setRefreshingAllBalances(true);
-        walletActions.clearError();
-
-        // Load both balances and account details
-        const balancePromises = accounts
-          .filter(account => account && account.address)
-          .map(async (account) => {
-            try {
-              const [balance, accountDetails] = await Promise.all([
-                walletService.getBalance(account.address, chainIdToUse),
-                walletService.getAccountDetails(account.address, rpcUrlToUse)
-              ]);
-
-              const bandwidthEnergy = calculateBandwidthEnergy(accountDetails);
-
-              return {
-                accountId: account.id,
-                balance: {
-                  ...balance,
-                  ...accountDetails,
-                  bandwidthEnergy
-                }
-              };
-            } catch (err) {
-              console.error(`Failed to refresh data for ${account.address}:`, err);
-              return { accountId: account.id, balance: null };
-            }
-          });
-
-        const balanceResults = await Promise.all(balancePromises);
+        const balanceResults = await Promise.all(
+          accountsToLoad
+            .filter((account) => account && account.address)
+            .map(async (account) => {
+              try {
+                const balance = await walletService.getBalance(
+                  account.address,
+                  networkId,
+                );
+                return { accountId: account.id, balance };
+              } catch (err) {
+                console.error(
+                  `Failed to get balance for ${account.address}:`,
+                  err,
+                );
+                return { accountId: account.id, balance: null };
+              }
+            }),
+        );
 
         const newBalances: Record<string, any> = {};
         balanceResults.forEach(({ accountId, balance }) => {
@@ -1097,18 +995,351 @@ export const useWalletManager = () => {
           }
         });
 
+        walletActions.updateBalances(newBalances);
+      } catch (err) {
+        console.error('Failed to load balances:', err);
+      }
+    },
+    [walletService, walletActions],
+  );
+
+  const loadAccountDetailsForAccounts = useCallback(
+    async (accountsToLoad: OrgonAccount[], networkRpcUrl: string) => {
+      if (!accountsToLoad || accountsToLoad.length === 0 || !networkRpcUrl) {
+        return;
+      }
+
+      try {
+        console.log(
+          'Loading account details for accounts:',
+          accountsToLoad.length,
+        );
+
+        const detailResults = await Promise.all(
+          accountsToLoad
+            .filter((account) => account && account.address)
+            .map(async (account) => {
+              try {
+                const accountDetails = await walletService.getAccountDetails(
+                  account.address,
+                  networkRpcUrl,
+                );
+                const bandwidthEnergy =
+                  calculateBandwidthEnergy(accountDetails);
+                return {
+                  accountId: account.id,
+                  balance: accountDetails,
+                  bandwidthEnergy,
+                };
+              } catch (err) {
+                console.error(
+                  `Failed to get account details for ${account.address}:`,
+                  err,
+                );
+                return {
+                  accountId: account.id,
+                  balance: null,
+                  bandwidthEnergy: null,
+                };
+              }
+            }),
+        );
+
+        const newBalances: Record<string, any> = {};
+        detailResults.forEach(({ accountId, balance, bandwidthEnergy }) => {
+          if (balance) {
+            // Merge account details with existing balance data
+            newBalances[accountId] = {
+              ...balance,
+              bandwidthEnergy,
+            };
+          }
+        });
+
         if (Object.keys(newBalances).length > 0) {
           walletActions.updateBalances(newBalances);
-          console.log('Refreshed all balances and account details');
+          console.log('Account details loaded and merged with balances');
         }
-      } catch (err: any) {
-        console.error('Failed to refresh all balances:', err);
-        walletActions.setError(err.message || 'Failed to refresh all balances');
-      } finally {
-        walletActions.setRefreshingAllBalances(false);
+      } catch (err) {
+        console.error('Failed to load account details:', err);
       }
-    }, 500); // 500ms debounce for all balances
-  }, [accounts, currentNetwork, walletService, walletActions]);
+    },
+    [walletService, walletActions],
+  );
+
+  const createAccount = useCallback(
+    async (name?: string) => {
+      try {
+        walletActions.setLoading(true);
+        walletActions.clearError();
+
+        const account = await walletService.createAccount(name);
+        walletActions.addAccount(account);
+
+        // Load balance for the new account
+        if (currentNetwork) {
+          const balance = await walletService.getBalance(
+            account.address,
+            currentNetwork.chainId,
+          );
+          walletActions.updateBalance(account.id, balance);
+        }
+
+        return account;
+      } catch (err: any) {
+        console.error('Failed to create account:', err);
+        walletActions.setError(err.message || 'Failed to create account');
+        throw err;
+      } finally {
+        walletActions.setLoading(false);
+      }
+    },
+    [walletService, walletActions, currentNetwork],
+  );
+
+  const importAccount = useCallback(
+    async (privateKey: string, name?: string) => {
+      try {
+        walletActions.setLoading(true);
+        walletActions.clearError();
+
+        const account = await walletService.importAccount(privateKey, name);
+        walletActions.addAccount(account);
+
+        // Load balance for the imported account
+        if (currentNetwork) {
+          const balance = await walletService.getBalance(
+            account.address,
+            currentNetwork.chainId,
+          );
+          walletActions.updateBalance(account.id, balance);
+        }
+        return account;
+      } catch (err: any) {
+        console.error('Failed to import account:', err);
+        walletActions.setError(err.message || 'Failed to import account');
+        throw err;
+      } finally {
+        walletActions.setLoading(false);
+      }
+    },
+    [walletService, walletActions, currentNetwork],
+  );
+
+  const importAccountFromMnemonic = useCallback(
+    async (mnemonic: string, name?: string) => {
+      try {
+        walletActions.setLoading(true);
+        walletActions.clearError();
+
+        const account = await walletService.importAccountFromMnemonic(
+          mnemonic,
+          name,
+        );
+        walletActions.addAccount(account);
+
+        // Load balance for the imported account
+        if (currentNetwork) {
+          const balance = await walletService.getBalance(
+            account.address,
+            currentNetwork.chainId,
+          );
+          walletActions.updateBalance(account.id, balance);
+        }
+
+        return account;
+      } catch (err: any) {
+        console.error('Failed to import account from mnemonic:', err);
+        walletActions.setError(
+          err.message || 'Failed to import account from mnemonic',
+        );
+        throw err;
+      } finally {
+        walletActions.setLoading(false);
+      }
+    },
+    [walletService, walletActions, currentNetwork],
+  );
+
+  const deleteAccount = useCallback(
+    async (accountId: string) => {
+      try {
+        walletActions.setLoading(true);
+        walletActions.clearError();
+
+        await walletService.deleteAccount(accountId);
+        walletActions.removeAccount(accountId);
+      } catch (err: any) {
+        console.error('Failed to delete account:', err);
+        walletActions.setError(err.message || 'Failed to delete account');
+        throw err;
+      } finally {
+        walletActions.setLoading(false);
+      }
+    },
+    [walletService, walletActions],
+  );
+
+  const exportAccount = useCallback(
+    async (accountId: string) => {
+      try {
+        walletActions.setLoading(true);
+        walletActions.clearError();
+
+        const result = await walletService.exportAccount(accountId);
+        return result;
+      } catch (err: any) {
+        console.error('Failed to export account:', err);
+        walletActions.setError(err.message || 'Failed to export account');
+        throw err;
+      } finally {
+        walletActions.setLoading(false);
+      }
+    },
+    [walletService, walletActions],
+  );
+
+  const getAccountMnemonic = useCallback(
+    async (accountId: string) => {
+      try {
+        walletActions.setLoading(true);
+        walletActions.clearError();
+
+        const result = await walletService.getAccountMnemonic(accountId);
+        return result;
+      } catch (err: any) {
+        console.error('Failed to get account mnemonic:', err);
+        walletActions.setError(err.message || 'Failed to get account mnemonic');
+        throw err;
+      } finally {
+        walletActions.setLoading(false);
+      }
+    },
+    [walletService, walletActions],
+  );
+
+  const refreshWalletBalance = useCallback(
+    async (accountId: string) => {
+      const account = accounts.find((acc) => acc.id === accountId);
+      if (!account || !currentNetwork) return;
+
+      // Clear any existing timeout
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+
+      // Debounce the refresh to prevent rapid successive calls
+      refreshTimeoutRef.current = setTimeout(async () => {
+        try {
+          walletActions.setRefreshingWallet(accountId, true);
+          walletActions.clearError();
+
+          // Load both balance and account details
+          const [balance, accountDetails] = await Promise.all([
+            walletService.getBalance(account.address, currentNetwork.chainId),
+            walletService.getAccountDetails(
+              account.address,
+              currentNetwork.rpcUrl,
+            ),
+          ]);
+
+          const bandwidthEnergy = calculateBandwidthEnergy(accountDetails);
+
+          // Merge balance with account details
+          const mergedBalance = {
+            ...balance,
+            ...accountDetails,
+            bandwidthEnergy,
+          };
+
+          walletActions.updateBalance(accountId, mergedBalance);
+          console.log(`Refreshed balance and details for ${accountId}`);
+        } catch (err: any) {
+          console.error(`Failed to refresh balance for ${accountId}:`, err);
+          walletActions.setError(
+            err.message || `Failed to refresh balance for ${accountId}`,
+          );
+        } finally {
+          walletActions.setRefreshingWallet(accountId, false);
+        }
+      }, 300); // 300ms debounce
+    },
+    [accounts, currentNetwork, walletService, walletActions],
+  );
+
+  const refreshAllBalances = useCallback(
+    async (networkChainId?: string) => {
+      const chainIdToUse = networkChainId || currentNetwork?.chainId;
+      const rpcUrlToUse = currentNetwork?.rpcUrl;
+      if (!accounts || accounts.length === 0 || !chainIdToUse || !rpcUrlToUse)
+        return;
+
+      // Clear any existing timeout
+      if (refreshAllTimeoutRef.current) {
+        clearTimeout(refreshAllTimeoutRef.current);
+      }
+
+      // Debounce the refresh to prevent rapid successive calls
+      refreshAllTimeoutRef.current = setTimeout(async () => {
+        try {
+          walletActions.setRefreshingAllBalances(true);
+          walletActions.clearError();
+
+          // Load both balances and account details
+          const balancePromises = accounts
+            .filter((account) => account && account.address)
+            .map(async (account) => {
+              try {
+                const [balance, accountDetails] = await Promise.all([
+                  walletService.getBalance(account.address, chainIdToUse),
+                  walletService.getAccountDetails(account.address, rpcUrlToUse),
+                ]);
+
+                const bandwidthEnergy =
+                  calculateBandwidthEnergy(accountDetails);
+
+                return {
+                  accountId: account.id,
+                  balance: {
+                    ...balance,
+                    ...accountDetails,
+                    bandwidthEnergy,
+                  },
+                };
+              } catch (err) {
+                console.error(
+                  `Failed to refresh data for ${account.address}:`,
+                  err,
+                );
+                return { accountId: account.id, balance: null };
+              }
+            });
+
+          const balanceResults = await Promise.all(balancePromises);
+
+          const newBalances: Record<string, any> = {};
+          balanceResults.forEach(({ accountId, balance }) => {
+            if (balance) {
+              newBalances[accountId] = balance;
+            }
+          });
+
+          if (Object.keys(newBalances).length > 0) {
+            walletActions.updateBalances(newBalances);
+            console.log('Refreshed all balances and account details');
+          }
+        } catch (err: any) {
+          console.error('Failed to refresh all balances:', err);
+          walletActions.setError(
+            err.message || 'Failed to refresh all balances',
+          );
+        } finally {
+          walletActions.setRefreshingAllBalances(false);
+        }
+      }, 500); // 500ms debounce for all balances
+    },
+    [accounts, currentNetwork, walletService, walletActions],
+  );
 
   return {
     // State
@@ -1136,4 +1367,3 @@ export const useWalletManager = () => {
     clearError: walletActions.clearError,
   };
 };
-

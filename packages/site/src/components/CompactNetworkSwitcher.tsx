@@ -1,18 +1,12 @@
-import React, { useState } from 'react';
-import {
-  Globe,
-  Check,
-  ChevronDown,
-  Loader2,
-  AlertCircle,
-} from 'lucide-react';
+import React from 'react';
+import { AlertCircle, Check, ChevronDown, Globe, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from './ui/select';
 import {
   DropdownMenu,
@@ -29,9 +23,10 @@ interface CompactNetworkSwitcherProps {
 
 export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
   className = '',
-  variant = 'button'
+  variant = 'button',
 }) => {
-  const { networks, currentNetwork, loading, error, switching, switchNetwork } = useNetwork();
+  const { networks, currentNetwork, loading, error, switching, switchNetwork } =
+    useNetwork();
 
   const handleNetworkSwitch = async (chainId: string) => {
     if (chainId === currentNetwork?.chainId) return;
@@ -46,7 +41,10 @@ export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
   const getNetworkIcon = (network: any) => {
     if (network.chainId.includes('mainnet')) {
       return <div className="w-2 h-2 bg-green-500 rounded-full"></div>;
-    } else if (network.chainId.includes('shasta') || network.chainId.includes('nile')) {
+    } else if (
+      network.chainId.includes('shasta') ||
+      network.chainId.includes('nile')
+    ) {
       return <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>;
     }
     return <div className="w-2 h-2 bg-blue-500 rounded-full"></div>;
@@ -106,7 +104,9 @@ export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
             {currentNetwork && (
               <div className="flex items-center gap-1">
                 {getNetworkIcon(currentNetwork)}
-                <span className="text-xs font-medium">{formatNetworkName(currentNetwork.name)}</span>
+                <span className="text-xs font-medium">
+                  {formatNetworkName(currentNetwork.name)}
+                </span>
                 {switching && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
               </div>
             )}
@@ -150,7 +150,9 @@ export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
             {currentNetwork && getNetworkIcon(currentNetwork)}
             <Globe className="w-3 h-3" />
             <span className="text-xs font-medium">
-              {currentNetwork ? formatNetworkName(currentNetwork.name) : 'Network'}
+              {currentNetwork
+                ? formatNetworkName(currentNetwork.name)
+                : 'Network'}
             </span>
             {switching && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
             <ChevronDown className="w-3 h-3 ml-1" />

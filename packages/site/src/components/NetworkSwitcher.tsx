@@ -1,20 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Globe, 
-  Check, 
-  ChevronDown, 
-  Loader2, 
-  AlertCircle,
-  Wifi,
-  WifiOff
-} from 'lucide-react';
-import { Button } from './ui/button';
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import React from 'react';
+import { AlertCircle, Check, Globe, Loader2, Wifi } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from './ui/select';
 import { Card, CardContent } from './ui/card';
 import { useNetworkManager } from '../hooks/network';
@@ -35,16 +26,16 @@ interface NetworkSwitcherProps {
 export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
   onNetworkChange,
   className = '',
-  currentNetwork: parentCurrentNetwork
+  currentNetwork: parentCurrentNetwork,
 }) => {
   const networkManager = useNetworkManager();
 
   const handleNetworkSwitch = async (chainId: string) => {
     if (chainId === networkManager.currentNetwork?.chainId) return;
-    
+
     try {
       const result = await networkManager.switchNetwork(chainId);
-      
+
       if (onNetworkChange && result) {
         onNetworkChange(result);
       }
@@ -56,7 +47,10 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
   const getNetworkIcon = (network: Network) => {
     if (network.chainId.includes('mainnet')) {
       return <div className="w-2 h-2 bg-green-500 rounded-full"></div>;
-    } else if (network.chainId.includes('shasta') || network.chainId.includes('nile')) {
+    } else if (
+      network.chainId.includes('shasta') ||
+      network.chainId.includes('nile')
+    ) {
       return <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>;
     }
     return <div className="w-2 h-2 bg-blue-500 rounded-full"></div>;
@@ -64,13 +58,29 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
 
   const getNetworkBadge = (network: Network) => {
     if (network.chainId.includes('mainnet')) {
-      return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">Mainnet</span>;
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+          Mainnet
+        </span>
+      );
     } else if (network.chainId.includes('shasta')) {
-      return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">Shasta</span>;
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+          Shasta
+        </span>
+      );
     } else if (network.chainId.includes('nile')) {
-      return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">Nile</span>;
+      return (
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+          Nile
+        </span>
+      );
     }
-    return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">Custom</span>;
+    return (
+      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
+        Custom
+      </span>
+    );
   };
 
   const formatNetworkName = (name: string) => {
@@ -97,13 +107,17 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-gray-600" />
             <span className="text-sm font-medium">Network</span>
-            {networkManager.switching && <Loader2 className="w-3 h-3 animate-spin" />}
+            {networkManager.switching && (
+              <Loader2 className="w-3 h-3 animate-spin" />
+            )}
           </div>
 
           {networkManager.error && (
             <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded-lg">
               <AlertCircle className="w-4 h-4 text-red-500" />
-              <span className="text-xs text-red-600 dark:text-red-400">{networkManager.error}</span>
+              <span className="text-xs text-red-600 dark:text-red-400">
+                {networkManager.error}
+              </span>
             </div>
           )}
 
@@ -117,7 +131,9 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
                 {networkManager.currentNetwork && (
                   <div className="flex items-center gap-2">
                     {getNetworkIcon(networkManager.currentNetwork)}
-                    <span className="text-sm">{formatNetworkName(networkManager.currentNetwork.name)}</span>
+                    <span className="text-sm">
+                      {formatNetworkName(networkManager.currentNetwork.name)}
+                    </span>
                     {getNetworkBadge(networkManager.currentNetwork)}
                   </div>
                 )}
@@ -139,7 +155,8 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
                         {network.chainId}
                       </div>
                     </div>
-                    {networkManager.currentNetwork?.chainId === network.chainId && (
+                    {networkManager.currentNetwork?.chainId ===
+                      network.chainId && (
                       <Check className="w-4 h-4 text-green-500" />
                     )}
                   </div>
@@ -156,7 +173,9 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
               </div>
               <div className="flex items-center gap-1">
                 <Globe className="w-3 h-3" />
-                <span>Explorer: {networkManager.currentNetwork.explorerUrl}</span>
+                <span>
+                  Explorer: {networkManager.currentNetwork.explorerUrl}
+                </span>
               </div>
             </div>
           )}

@@ -3,9 +3,18 @@
  * Combines: Context, Request, InvokeSnap, RequestSnap, and MetaMask detection hooks
  */
 
-import type { MetaMaskInpageProvider, RequestArguments } from '@metamask/providers';
+import type {
+  MetaMaskInpageProvider,
+  RequestArguments,
+} from '@metamask/providers';
 import type { ReactNode } from 'react';
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import type { GetSnapsResponse, Snap } from '../types';
 import { defaultSnapOrigin } from '../config';
 import { getSnapsProvider } from '../utils/metamask';
@@ -88,21 +97,24 @@ export type Request = (params: RequestArguments) => Promise<unknown | null>;
 export const useRequest = () => {
   const { provider, setError } = useMetaMaskContext();
 
-  const request: Request = useCallback(async ({ method, params }) => {
-    try {
-      const data =
-        (await provider?.request({
-          method,
-          params,
-        } as RequestArguments)) ?? null;
+  const request: Request = useCallback(
+    async ({ method, params }) => {
+      try {
+        const data =
+          (await provider?.request({
+            method,
+            params,
+          } as RequestArguments)) ?? null;
 
-      return data;
-    } catch (requestError: any) {
-      setError(requestError);
+        return data;
+      } catch (requestError: any) {
+        setError(requestError);
 
-      return null;
-    }
-  }, [provider, setError]);
+        return null;
+      }
+    },
+    [provider, setError],
+  );
 
   return request;
 };
@@ -122,14 +134,17 @@ export type InvokeSnapParams = {
 export const useInvokeSnap = (snapId = defaultSnapOrigin) => {
   const request = useRequest();
 
-  const invokeSnap = useCallback(async ({ method, params }: InvokeSnapParams) =>
-    request({
-      method: 'wallet_invokeSnap',
-      params: {
-        snapId,
-        request: params ? { method, params } : { method },
-      },
-    }), [request, snapId]);
+  const invokeSnap = useCallback(
+    async ({ method, params }: InvokeSnapParams) =>
+      request({
+        method: 'wallet_invokeSnap',
+        params: {
+          snapId,
+          request: params ? { method, params } : { method },
+        },
+      }),
+    [request, snapId],
+  );
 
   return invokeSnap;
 };
@@ -214,4 +229,3 @@ export const useMetaMask = () => {
 
   return { isFlask, snapsDetected, installedSnap, getSnap };
 };
-
