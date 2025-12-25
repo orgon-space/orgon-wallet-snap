@@ -8,6 +8,7 @@ import {
   RefreshCw,
   Send,
   Snowflake,
+  Users,
   Wallet,
 } from 'lucide-react';
 
@@ -25,6 +26,7 @@ import { WalletOverview } from './WalletOverview';
 import { WalletManagement } from './WalletManagement';
 import { TransactionSender } from './TransactionSender';
 import { FreezeUnfreeze } from './FreezeUnfreeze';
+import { ResourceDelegation } from './ResourceDelegation';
 import { ExportWalletModal } from './ExportWalletModal';
 import { MobileHeader } from './MobileHeader';
 import { DesktopHeader } from './DesktopHeader';
@@ -298,6 +300,13 @@ export const Dashboard: React.FC = () => {
                   Staking
                 </TabsTrigger>
                 <TabsTrigger
+                  value="delegation"
+                  className="flex items-center gap-2"
+                >
+                  <Users className="w-4 h-4" />
+                  Delegation
+                </TabsTrigger>
+                <TabsTrigger
                   value="settings"
                   className="flex items-center gap-2"
                 >
@@ -364,6 +373,10 @@ export const Dashboard: React.FC = () => {
 
             <TabsContent value="staking">
               <FreezeUnfreeze />
+            </TabsContent>
+
+            <TabsContent value="delegation">
+              <ResourceDelegation />
             </TabsContent>
 
             <TabsContent value="settings">

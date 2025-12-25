@@ -158,3 +158,105 @@ export async function createWithdrawExpireUnfreezeTransaction(
     );
   }
 }
+
+/**
+ * Create a delegate resource transaction (delegateResource)
+ * @param from - Sender address
+ * @param receiver - Receiver address
+ * @param resource - Resource type ('ENERGY' or 'BANDWIDTH')
+ * @param amount - Amount in ORGON to delegate
+ * @param network - Network configuration
+ * @returns Unsigned transaction object
+ */
+export async function createDelegateResourceTransaction(
+  from: string,
+  receiver: string,
+  resource: 'ENERGY' | 'BANDWIDTH',
+  amount: string,
+  network?: NetworkConfig,
+): Promise<any> {
+  try {
+    // Validate and parse amount
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      throw new Error('Invalid amount provided');
+    }
+
+    // Create OrgonWeb service
+    const orgonWebService = createOrgonWebService(network?.rpcUrl, undefined);
+
+    // Convert amount to sun (ORGON has 6 decimals like TRX)
+    const amountSun = orgonWebService.orgonWeb.toSun(amountNum.toString());
+
+    // Create delegate resource transaction using tronWeb.transactionBuilder
+    const transaction = await orgonWebService.orgonWeb.transactionBuilder.delegateResource(
+      amountSun,
+      receiver,
+      resource,
+      from,
+      false, // lock - not used
+      0, // lockPeriod - not used
+      { permissionId: 0 }
+    );
+
+    if (!transaction || !transaction.raw_data) {
+      throw new Error('Failed to create delegate resource transaction');
+    }
+
+    return transaction;
+  } catch (error) {
+    throw new Error(
+      `Failed to create delegate resource transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+}
+
+/**
+ * Create an undelegate resource transaction (undelegateResource)
+ * @param from - Sender address
+ * @param receiver - Receiver address
+ * @param resource - Resource type ('ENERGY' or 'BANDWIDTH')
+ * @param amount - Amount in ORGON to undelegate
+ * @param network - Network configuration
+ * @returns Unsigned transaction object
+ */
+export async function createUndelegateResourceTransaction(
+  from: string,
+  receiver: string,
+  resource: 'ENERGY' | 'BANDWIDTH',
+  amount: string,
+  network?: NetworkConfig,
+): Promise<any> {
+  try {
+    // Validate and parse amount
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      throw new Error('Invalid amount provided');
+    }
+
+    // Create OrgonWeb service
+    const orgonWebService = createOrgonWebService(network?.rpcUrl, undefined);
+
+    // Convert amount to sun (ORGON has 6 decimals like TRX)
+    const amountSun = orgonWebService.orgonWeb.toSun(amountNum.toString());
+
+    // Create undelegate resource transaction using tronWeb.transactionBuilder
+    const transaction = await orgonWebService.orgonWeb.transactionBuilder.undelegateResource(
+      amountSun,
+      receiver,
+      resource,
+      from,
+      { permissionId: 0 }
+    );
+
+    if (!transaction || !transaction.raw_data) {
+      throw new Error('Failed to create undelegate resource transaction');
+    }
+
+    return transaction;
+  } catch (error) {
+    throw new Error(
+      `Failed to create undelegate resource transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+}
