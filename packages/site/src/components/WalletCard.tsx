@@ -7,6 +7,8 @@ import {
   RefreshCw,
   Trash2,
   Wallet,
+  Gift,
+  Coins,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
@@ -18,7 +20,8 @@ import { Card, CardContent } from './ui/card';
 //   DropdownMenuSeparator
 // } from './ui/dropdown-menu';
 // import { Badge } from './ui/badge';
-import { copyToClipboard, formatAddress } from '../utils/helpers';
+import { copyToClipboard, formatAddress, getReward, formatReward } from '../utils/helpers';
+import { createOrgonWebService } from '../utils/orgonWeb';
 import {
   type BandwidthEnergyInfo,
   getEnhancedTokenBalances,
@@ -26,6 +29,7 @@ import {
   useTokenBalances,
   type WalletService,
 } from '../hooks/wallet';
+import { useTransactionManager } from '../hooks/transaction';
 import type { OrgonAccount } from '../types';
 
 interface WalletCardProps {
@@ -37,6 +41,7 @@ interface WalletCardProps {
     walletId: string,
     resourceType: 'BANDWIDTH' | 'ENERGY',
   ) => void;
+  onWithdrawReward?: (walletId: string) => Promise<void>;
   isRefreshing?: boolean;
   currentNetwork?: any;
   walletService?: WalletService;
@@ -48,6 +53,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   onDelete,
   onExport,
   onWithdrawExpireUnfreeze,
+  onWithdrawReward,
   isRefreshing = false,
   currentNetwork,
   walletService,
@@ -56,6 +62,16 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const [tokens, setTokens] = useState<TokenBalance[]>([]);
   const [tokensLoading, setTokensLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
+
+  // Reward states
+  const [reward, setReward] = useState<number | null>(null);
+  const [rewardLoading, setRewardLoading] = useState(false);
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [withdrawSuccess, setWithdrawSuccess] = useState(false);
+  const [rewardError, setRewardError] = useState<string | null>(null);
+
+  // Transaction manager
+  const { sendTransaction } = useTransactionManager();
 
   const displayAddress = (address: string) => {
     return address; // Always show full address
@@ -90,6 +106,11 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     loadTokens();
   }, [wallet, currentNetwork?.rpcUrl, walletService]);
 
+  // Load reward when wallet or network changes
+  useEffect(() => {
+    loadReward();
+  }, [wallet.address, currentNetwork?.rpcUrl]);
+
   // Get bandwidth and energy info
   const bandwidthEnergy: BandwidthEnergyInfo | null =
     (wallet.balance as any)?.bandwidthEnergy || null;
@@ -108,6 +129,87 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   // Helper functions for tooltip
   const showTooltipFor = (id: string) => setShowTooltip(id);
   const hideTooltip = () => setShowTooltip(null);
+
+  // Load reward function
+  const loadReward = async () => {
+    if (!currentNetwork?.rpcUrl) return;
+
+    try {
+      setRewardLoading(true);
+      setRewardError(null);
+      const rewardData = await getReward(currentNetwork.rpcUrl, wallet.address);
+      setReward(rewardData.reward);
+    } catch (error: any) {
+      console.error('Failed to load reward:', error);
+      setRewardError(error.message || 'Failed to load reward');
+      setReward(null);
+    } finally {
+      setRewardLoading(false);
+    }
+  };
+
+  // Withdraw reward function
+  const handleWithdrawReward = async () => {
+    if (!onWithdrawReward) {
+      // Fallback implementation if no prop provided
+      await withdrawReward();
+      return;
+    }
+
+    try {
+      setWithdrawLoading(true);
+      setRewardError(null);
+      setWithdrawSuccess(false);
+      await onWithdrawReward(wallet.id);
+      // Show success message
+      setWithdrawSuccess(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => setWithdrawSuccess(false), 3000);
+      // Reload reward after successful withdrawal
+      await loadReward();
+    } catch (error: any) {
+      console.error('Failed to withdraw reward:', error);
+      setRewardError(error.message || 'Failed to withdraw reward');
+    } finally {
+      setWithdrawLoading(false);
+    }
+  };
+
+  // Withdraw reward function (internal implementation)
+  const withdrawReward = async () => {
+    if (!currentNetwork || !reward || reward <= 0) return;
+
+    try {
+      // Create OrgonWeb service
+      const orgonWebService = createOrgonWebService(
+        currentNetwork.rpcUrl,
+        currentNetwork.chainId,
+      );
+
+      // Create withdraw transaction
+      const transaction = await orgonWebService.createWithdrawRewardTransaction(
+        wallet.address,
+      );
+
+      // Send transaction through snap
+      const result = await sendTransaction({
+        from: wallet.address,
+        to: '', // Not needed for system transactions
+        amount: '0', // Not needed for system transactions
+        memo: 'Withdraw block reward',
+        accountId: wallet.id,
+        transaction,
+      });
+
+      console.log('Reward withdrawn successfully:', result);
+      // Show success message
+      setWithdrawSuccess(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => setWithdrawSuccess(false), 3000);
+    } catch (error: any) {
+      throw error;
+    }
+  };
   return (
     <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-[1.02]">
       <CardContent className="p-6">
@@ -406,6 +508,83 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               </Button>
             </div>
           )}
+        </div>
+
+        {/* Reward Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
+              Награда
+            </span>
+            <div className="flex items-center space-x-2">
+              {withdrawSuccess && (
+                <div className="text-xs text-green-600 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
+                  Награда успешно выведена!
+                </div>
+              )}
+              {rewardError && (
+                <div className="text-xs text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
+                  {rewardError}
+                </div>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                onClick={loadReward}
+                disabled={rewardLoading}
+                title="Обновить награду"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 text-blue-600 ${rewardLoading ? 'animate-spin' : ''}`}
+                />
+              </Button>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-slate-700/50 dark:to-slate-600/50 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center space-x-2">
+                <Gift className="w-5 h-5 text-yellow-600" />
+                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                  Доступная награда
+                </span>
+              </div>
+              <span className="text-lg font-bold text-yellow-600">
+                {rewardLoading ? (
+                  <RefreshCw className="w-5 h-5 animate-spin" />
+                ) : reward !== null ? (
+                  formatReward(reward)
+                ) : (
+                  '0.000000'
+                )}{' '}
+                ORGON
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between">
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 px-3 text-xs bg-yellow-500 hover:bg-yellow-600 text-white border-yellow-500 hover:border-yellow-600 disabled:opacity-50"
+                onClick={handleWithdrawReward}
+                disabled={
+                  withdrawLoading ||
+                  rewardLoading ||
+                  !reward ||
+                  reward <= 0
+                }
+              >
+                {withdrawLoading ? (
+                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                ) : (
+                  <Coins className="w-3 h-3 mr-1" />
+                )}
+                {withdrawLoading ? 'Получение...' : 'Получить награду'}
+              </Button>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

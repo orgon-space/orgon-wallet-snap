@@ -203,3 +203,43 @@ export const copyToClipboard = async (text: string): Promise<void> => {
     throw err;
   }
 };
+
+// ============================================================================
+// Reward Utilities
+// ============================================================================
+
+/**
+ * Get reward information from the network
+ */
+export const getReward = async (
+  rpcUrl: string,
+  address: string,
+): Promise<{ reward: number }> => {
+  try {
+    const response = await fetch(`${rpcUrl}/wallet/getReward`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ address }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to get reward:', error);
+    throw error;
+  }
+};
+
+/**
+ * Format reward amount (divide by 10^6)
+ */
+export const formatReward = (reward: number): string => {
+  const formatted = reward / 1000000;
+  return formatted.toFixed(6);
+};

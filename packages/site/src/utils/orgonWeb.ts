@@ -183,6 +183,30 @@ export class OrgonWebService {
   }
 
   /**
+   * Создать транзакцию для получения награды
+   */
+  async createWithdrawRewardTransaction(
+    address: string,
+    options?: { permissionId?: number; blockHeader?: any },
+  ): Promise<any> {
+    try {
+      console.log('🎁 Создание транзакции получения награды...');
+      console.log('📍 Адрес кошелька:', address);
+
+      const tx = await this.orgonWeb.transactionBuilder.withdrawBlockRewards(
+        address,
+        options,
+      );
+
+      console.log('✅ Транзакция получения награды создана:', tx.txID);
+      return tx;
+    } catch (error) {
+      console.error('❌ Ошибка при создании транзакции получения награды:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Получить экземпляр TronWeb
    */
   getOrgonWeb(): OrgonWebType {
