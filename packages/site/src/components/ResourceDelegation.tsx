@@ -379,6 +379,7 @@ export const ResourceDelegation: React.FC = () => {
                     type="text"
                     value={receiverAddress}
                     onChange={(e) => setReceiverAddress(e.target.value)}
+                    maxLength={34}
                     className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
                     required
                   />
@@ -414,12 +415,12 @@ export const ResourceDelegation: React.FC = () => {
                     onChange={(e) => setMemo(e.target.value)}
                     placeholder="Add a memo to your transaction"
                     rows={3}
-                    maxLength={200}
+                    maxLength={256}
                     className="rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
                   />
                   <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                     <span>Optional message to include with the transaction</span>
-                    <span>{memo.length}/200</span>
+                    <span>{memo.length}/256</span>
                   </div>
                 </div>
 
@@ -656,18 +657,18 @@ export const ResourceDelegation: React.FC = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                             <div className="text-2xl font-bold text-blue-600">
-                              {formatNumberCommaDot(delegationState.maxDelegatable.ENERGY / 1e6)}
+                              {formatNumberCommaDot(delegationState.maxDelegatable.ENERGY / 1e6)} Staked ORGON
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                              ENERGY ≈ {formatNumberCommaDot(delegationState.maxDelegatable.ENERGY * delegationState.prices.staking.ENERGY)} Energy
+                              ENERGY ≈ {formatNumberCommaDot(delegationState.maxDelegatable.ENERGY * delegationState.prices.staking.ENERGY / 1e6)} Energy
                             </div>
                           </div>
                           <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
                             <div className="text-2xl font-bold text-green-600">
-                              {formatNumberCommaDot(delegationState.maxDelegatable.BANDWIDTH / 1e6)}
+                              {formatNumberCommaDot(delegationState.maxDelegatable.BANDWIDTH / 1e6)} Staked ORGON
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                              BANDWIDTH ≈ {formatNumberCommaDot(delegationState.maxDelegatable.BANDWIDTH * delegationState.prices.staking.BANDWIDTH)} Bandwidth
+                              BANDWIDTH ≈ {formatNumberCommaDot(delegationState.maxDelegatable.BANDWIDTH * delegationState.prices.staking.BANDWIDTH / 1e6)} Bandwidth
                             </div>
                           </div>
                         </div>
@@ -683,18 +684,18 @@ export const ResourceDelegation: React.FC = () => {
                         <div className="grid grid-cols-2 gap-4">
                           <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
                             <div className="text-2xl font-bold text-orange-600">
-                              {formatNumberCommaDot(delegationState.totals.delegatedOut.ENERGY / 1e6)}
+                              {formatNumberCommaDot(delegationState.totals.delegatedOut.ENERGY / 1e6)} ORGON
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                              ENERGY ≈ {formatNumberCommaDot(delegationState.totals.delegatedOut.ENERGY * delegationState.prices.staking.ENERGY)} Energy
+                              ENERGY ≈ {formatNumberCommaDot(delegationState.totals.delegatedOut.ENERGY * delegationState.prices.staking.ENERGY / 1e6)} Energy
                             </div>
                           </div>
                           <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                             <div className="text-2xl font-bold text-purple-600">
-                              {formatNumberCommaDot(delegationState.totals.delegatedOut.BANDWIDTH / 1e6)}
+                              {formatNumberCommaDot(delegationState.totals.delegatedOut.BANDWIDTH / 1e6)} ORGON
                             </div>
                             <div className="text-sm text-gray-600 dark:text-gray-400">
-                              BANDWIDTH ≈ {formatNumberCommaDot(delegationState.totals.delegatedOut.BANDWIDTH * delegationState.prices.staking.BANDWIDTH)} Bandwidth
+                              BANDWIDTH ≈ {formatNumberCommaDot(delegationState.totals.delegatedOut.BANDWIDTH * delegationState.prices.staking.BANDWIDTH / 1e6)} Bandwidth
                             </div>
                           </div>
                         </div>

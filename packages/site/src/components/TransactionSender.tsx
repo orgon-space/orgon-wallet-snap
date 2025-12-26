@@ -372,6 +372,7 @@ export const TransactionSender: React.FC = () => {
                   value={toAddress}
                   onChange={(e) => setToAddress(e.target.value)}
                   placeholder="oRecipientAddress..."
+                  maxLength={34}
                   className={`h-12 rounded-xl border-2 focus:border-blue-500 dark:focus:border-blue-400 ${
                     toAddress && !validateOrgonAddress(toAddress)
                       ? 'border-red-500 dark:border-red-400'
@@ -423,12 +424,12 @@ export const TransactionSender: React.FC = () => {
                 onChange={(e) => setMemo(e.target.value)}
                 placeholder="Add a memo to your transaction"
                 rows={3}
-                maxLength={200}
+                maxLength={256}
                 className="rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
               />
               <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                 <span>Optional message to include with the transaction</span>
-                <span>{memo.length}/200</span>
+                <span>{memo.length}/256</span>
               </div>
             </div>
 

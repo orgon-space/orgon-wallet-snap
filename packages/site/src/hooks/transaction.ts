@@ -5,7 +5,7 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import type { OrgonTransaction } from '../types';
-import { useInvokeSnap } from './metamask';
+import { useInvokeSnap, processMetaMaskError } from './metamask';
 
 // ============================================================================
 // Transaction Service - Snap Communication
@@ -38,7 +38,9 @@ export class TransactionService implements TransactionServiceInterface {
       return result as { success: boolean; txId: string };
     } catch (error: any) {
       console.error('Failed to send transaction:', error);
-      throw new Error(error?.message || 'Failed to send transaction');
+      // Process error to decode hex strings and translate to Russian
+      const processedError = processMetaMaskError(error);
+      throw new Error(processedError);
     }
   }
 }
@@ -68,8 +70,10 @@ export const useTransactionManager = () => {
         return result;
       } catch (err: any) {
         console.error('Failed to send transaction:', err);
-        setError(err.message || 'Failed to send transaction');
-        throw err;
+        // Process error to decode hex strings and translate to Russian
+        const processedError = processMetaMaskError(err);
+        setError(processedError);
+        throw new Error(processedError);
       } finally {
         setLoading(false);
       }

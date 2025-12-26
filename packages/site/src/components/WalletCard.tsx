@@ -63,6 +63,10 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const [tokensLoading, setTokensLoading] = useState(false);
   const [showTooltip, setShowTooltip] = useState<string | null>(null);
 
+  // Account resources state
+  const [accountResources, setAccountResources] = useState<any>(null);
+  const [resourcesLoading, setResourcesLoading] = useState(false);
+
   // Reward states
   const [reward, setReward] = useState<number | null>(null);
   const [rewardLoading, setRewardLoading] = useState(false);
@@ -111,6 +115,11 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     loadReward();
   }, [wallet.address, currentNetwork?.rpcUrl]);
 
+  // Load account resources when wallet or network changes
+  useEffect(() => {
+    loadAccountResources();
+  }, [wallet.address, currentNetwork?.rpcUrl]);
+
   // Get bandwidth and energy info
   const bandwidthEnergy: BandwidthEnergyInfo | null =
     (wallet.balance as any)?.bandwidthEnergy || null;
@@ -130,6 +139,27 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const showTooltipFor = (id: string) => setShowTooltip(id);
   const hideTooltip = () => setShowTooltip(null);
 
+  // Helper functions for bandwidth and energy calculation
+  const calculateBandwidth = () => {
+    if (!accountResources) return 0;
+    // If response is empty object {}, default to 600 bandwidth
+    if (Object.keys(accountResources).length === 0) return 600;
+    const freeNetLimit = accountResources.freeNetLimit || 0;
+    const netLimit = accountResources.NetLimit || 0;
+    const freeNetUsed = accountResources.freeNetUsed || 0;
+    const netUsed = accountResources.NetUsed || 0;
+    const bandwidth = freeNetLimit + netLimit - freeNetUsed - netUsed;
+    return Math.floor(Math.max(0, bandwidth));
+  };
+
+  const calculateEnergy = () => {
+    if (!accountResources) return 0;
+    const energyLimit = accountResources.EnergyLimit || 0;
+    const energyUsed = accountResources.EnergyUsed || 0;
+    const energy = energyLimit - energyUsed;
+    return Math.floor(Math.max(0, energy));
+  };
+
   // Load reward function
   const loadReward = async () => {
     if (!currentNetwork?.rpcUrl) return;
@@ -145,6 +175,26 @@ export const WalletCard: React.FC<WalletCardProps> = ({
       setReward(null);
     } finally {
       setRewardLoading(false);
+    }
+  };
+
+  // Load account resources function
+  const loadAccountResources = async () => {
+    if (!currentNetwork?.rpcUrl) return;
+
+    try {
+      setResourcesLoading(true);
+      const orgonWebService = createOrgonWebService(
+        currentNetwork.rpcUrl,
+        currentNetwork.chainId,
+      );
+      const resources = await orgonWebService.orgonWeb.trx.getAccountResources(wallet.address);
+      setAccountResources(resources);
+    } catch (error: any) {
+      console.error('Failed to load account resources:', error);
+      setAccountResources(null);
+    } finally {
+      setResourcesLoading(false);
     }
   };
 
@@ -170,6 +220,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     } catch (error: any) {
       console.error('Failed to withdraw reward:', error);
       setRewardError(error.message || 'Failed to withdraw reward');
+      setWithdrawSuccess(false); // Ensure success message is hidden on error
     } finally {
       setWithdrawLoading(false);
     }
@@ -202,10 +253,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
       });
 
       console.log('Reward withdrawn successfully:', result);
-      // Show success message
-      setWithdrawSuccess(true);
-      // Hide success message after 3 seconds
-      setTimeout(() => setWithdrawSuccess(false), 3000);
+      // Success handling will be done in handleWithdrawReward
     } catch (error: any) {
       throw error;
     }
@@ -234,8 +282,11 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                 variant="ghost"
                 size="sm"
                 className="h-9 w-9 p-0 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                onClick={() => onRefresh?.()}
-                disabled={isRefreshing}
+                onClick={() => {
+                  onRefresh?.();
+                  loadAccountResources();
+                }}
+                disabled={isRefreshing || resourcesLoading}
                 title="Refresh Balance"
               >
                 <RefreshCw
@@ -280,7 +331,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
         </div>
 
         {/* Bandwidth & Energy Section */}
-        {bandwidthEnergy && (
+        {accountResources && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
@@ -296,17 +347,21 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                     Пропускная способность (Bandwidth)
                   </span>
                   <span className="text-lg font-bold text-blue-600">
-                    {bandwidthEnergy.bandwidth.available}
+                    {calculateBandwidth()}
                   </span>
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
                   <div>
-                    Заморожено: {bandwidthEnergy.bandwidth.frozen} Bandwidth
+                    Заморожено: {((wallet.balance as any)?.frozenV2 || [])
+                      .filter((frozen: any) => !frozen.type || frozen.type === 'TRON_POWER')
+                      .reduce((sum: number, frozen: any) => sum + (frozen.amount || 0), 0) / 1e6} Bandwidth
                   </div>
-                  {bandwidthEnergy.bandwidth.unfrozen.length > 0 && (
+                  {((wallet.balance as any)?.unfrozenV2 || []).filter((item: any) => !item.type).length > 0 && (
                     <div>
                       На разморозке:{' '}
-                      {bandwidthEnergy.bandwidth.unfrozen.map((item, idx) => (
+                      {((wallet.balance as any)?.unfrozenV2 || [])
+                        .filter((item: any) => !item.type)
+                        .map((item: any, idx: number) => (
                         <div
                           key={idx}
                           className="ml-2 flex items-center justify-between"
@@ -363,14 +418,16 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                     Энергия (Energy)
                   </span>
                   <span className="text-lg font-bold text-green-600">
-                    {bandwidthEnergy.energy.frozen}
+                    {calculateEnergy()}
                   </span>
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                  {bandwidthEnergy.energy.unfrozen.length > 0 ? (
+                  {((wallet.balance as any)?.unfrozenV2 || []).filter((item: any) => item.type === 'ENERGY').length > 0 ? (
                     <div>
                       На разморозке:{' '}
-                      {bandwidthEnergy.energy.unfrozen.map((item, idx) => (
+                      {((wallet.balance as any)?.unfrozenV2 || [])
+                        .filter((item: any) => item.type === 'ENERGY')
+                        .map((item: any, idx: number) => (
                         <div
                           key={idx}
                           className="ml-2 flex items-center justify-between"
