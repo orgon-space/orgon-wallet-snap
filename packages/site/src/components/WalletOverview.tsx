@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Wallet, 
-  TrendingUp, 
-  TrendingDown, 
-  Send, 
-  Plus, 
-  RefreshCw,
-  Copy,
-  ExternalLink,
-  Globe
-} from 'lucide-react';
+import React from 'react';
+import { ExternalLink, Plus, RefreshCw, Send } from 'lucide-react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-// import { Badge } from './ui/badge';
-import { NetworkSwitcher } from './NetworkSwitcher';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card'; // import { Badge } from './ui/badge';
 import { WalletCard } from './WalletCard';
-import { formatAddress, formatBalance, copyToClipboard } from '../utils/helpers';
-import type { OrgonAccount, OrgonBalance, OrgonNetwork } from '../types';
+import { formatBalance } from '../utils/helpers';
+import type { OrgonAccount, OrgonBalance } from '../types';
+import type { WalletService } from '../hooks/wallet';
 
 interface WalletOverviewProps {
   onCreateWallet: () => void;
@@ -26,12 +21,17 @@ interface WalletOverviewProps {
   onRefreshWallet?: (id: string) => void;
   onDeleteWallet?: (id: string) => void;
   onExportWallet?: (id: string) => void;
+  onWithdrawExpireUnfreeze?: (
+    walletId: string,
+    resourceType: 'BANDWIDTH' | 'ENERGY',
+  ) => void;
   onRefreshAll?: () => void;
   currentNetwork?: any;
   accounts?: OrgonAccount[];
   balances?: Record<string, OrgonBalance>;
   loading?: boolean;
   refreshingWallets?: Set<string>;
+  walletService?: WalletService;
 }
 
 export const WalletOverview: React.FC<WalletOverviewProps> = ({
@@ -42,14 +42,15 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
   onRefreshWallet,
   onDeleteWallet,
   onExportWallet,
+  onWithdrawExpireUnfreeze,
   onRefreshAll,
   currentNetwork: parentCurrentNetwork,
   accounts: parentAccounts = [],
   balances: parentBalances = {},
   loading = false,
-  refreshingWallets = new Set()
+  refreshingWallets = new Set(),
+  walletService,
 }) => {
-
   const handleNetworkChange = (network: any) => {
     // Call parent's network change handler if provided
     if (onNetworkChange) {
@@ -62,19 +63,22 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
       return sum;
     }
     const balance = parentBalances[account.id];
-    return sum + (balance ? parseFloat(balance.orgon) : 0);
+    return (
+      sum + (balance?.balance ? parseFloat(balance.balance.toString()) : 0)
+    );
   }, 0);
 
   const displayBalance = (balance: number) => {
     return formatBalance(balance.toString());
   };
 
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Wallet Overview</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Wallet Overview
+        </h2>
         <p className="text-sm text-gray-600 dark:text-gray-300">
           Manage your Orgon wallets across different networks
         </p>
@@ -121,15 +125,6 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
       {/* Wallet List */}
       {parentAccounts && parentAccounts.length > 0 && (
         <div className="flex flex-col gap-4">
-          {/* Network Switcher - positioned above Your Wallets */}
-          <div className="flex justify-center mb-2">
-            <NetworkSwitcher 
-              onNetworkChange={handleNetworkChange}
-              className="w-full max-w-lg"
-              currentNetwork={parentCurrentNetwork}
-            />
-          </div>
-          
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Your Wallets</h3>
             <Button
@@ -155,17 +150,24 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {(parentAccounts || [])
                 .filter((account) => account && account.id) // Filter out null/undefined accounts
-                .map((account) => (
-                  <WalletCard
-                    key={account.id}
-                    wallet={{ ...account, balance: parentBalances[account.id] }}
-                    onRefresh={() => onRefreshWallet?.(account.id)}
-                    onDelete={onDeleteWallet}
-                    onExport={onExportWallet}
-                    isRefreshing={refreshingWallets.has(account.id)}
-                    currentNetwork={parentCurrentNetwork}
-                  />
-                ))}
+                .map((account) => {
+                  const balance = parentBalances[account.id];
+                  return (
+                    <WalletCard
+                      key={account.id}
+                      wallet={{ ...account, ...(balance && { balance }) }}
+                      onRefresh={() => onRefreshWallet?.(account.id)}
+                      {...(onDeleteWallet && { onDelete: onDeleteWallet })}
+                      {...(onExportWallet && { onExport: onExportWallet })}
+                      {...(onWithdrawExpireUnfreeze && {
+                        onWithdrawExpireUnfreeze,
+                      })}
+                      isRefreshing={refreshingWallets.has(account.id)}
+                      currentNetwork={parentCurrentNetwork}
+                      {...(walletService && { walletService })}
+                    />
+                  );
+                })}
             </div>
             {loading && (
               <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">

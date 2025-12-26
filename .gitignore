@@ -79,6 +79,5 @@ node_modules/
 # Lock files and IDE directories
 package-lock.json
 yarn.lock
-.yarn/
 .vscode/
 .idea/

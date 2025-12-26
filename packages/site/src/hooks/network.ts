@@ -1,6 +1,6 @@
 /**
  * Network Layer - Complete network functionality
- * Combines: NetworkService, NetworkStore, and useNetworkManager
+ * Combines: NetworkService, NetworkStore, useNetworkManager, and NetworkProvider
  */
 
 import { useCallback, useMemo } from 'react';
@@ -15,13 +15,21 @@ import { useInvokeSnap } from './metamask';
 
 export interface NetworkServiceInterface {
   getNetworks(): Promise<OrgonNetwork[]>;
-  getCurrentNetwork(): Promise<{ success: boolean; network: OrgonNetwork | null }>;
-  switchNetwork(chainId: string): Promise<{ success: boolean; network: OrgonNetwork | null }>;
+  getCurrentNetwork(): Promise<{
+    success: boolean;
+    network: OrgonNetwork | null;
+  }>;
+  switchNetwork(
+    chainId: string,
+  ): Promise<{ success: boolean; network: OrgonNetwork | null }>;
 }
 
 export class NetworkService implements NetworkServiceInterface {
   constructor(
-    private invokeSnap: (params: { method: string; params?: Record<string, unknown> }) => Promise<unknown>
+    private invokeSnap: (params: {
+      method: string;
+      params?: Record<string, unknown>;
+    }) => Promise<unknown>,
   ) {}
 
   async getNetworks(): Promise<OrgonNetwork[]> {
@@ -36,7 +44,10 @@ export class NetworkService implements NetworkServiceInterface {
     }
   }
 
-  async getCurrentNetwork(): Promise<{ success: boolean; network: OrgonNetwork | null }> {
+  async getCurrentNetwork(): Promise<{
+    success: boolean;
+    network: OrgonNetwork | null;
+  }> {
     try {
       const result = await this.invokeSnap({
         method: 'keyring_getCurrentNetwork',
@@ -48,7 +59,9 @@ export class NetworkService implements NetworkServiceInterface {
     }
   }
 
-  async switchNetwork(chainId: string): Promise<{ success: boolean; network: OrgonNetwork | null }> {
+  async switchNetwork(
+    chainId: string,
+  ): Promise<{ success: boolean; network: OrgonNetwork | null }> {
     try {
       const result = await this.invokeSnap({
         method: 'keyring_switchNetwork',
@@ -96,44 +109,52 @@ export const useNetworkStore = create<NetworkState>()(
 
       // Actions
       setNetworks: (networks) => set({ networks }, false, 'setNetworks'),
-      
-      setCurrentNetwork: (currentNetwork) => 
+
+      setCurrentNetwork: (currentNetwork) =>
         set({ currentNetwork }, false, 'setCurrentNetwork'),
-      
+
       setLoading: (loading) => set({ loading }, false, 'setLoading'),
-      
+
       setError: (error) => set({ error }, false, 'setError'),
-      
+
       setSwitching: (switching) => set({ switching }, false, 'setSwitching'),
-      
+
       clearError: () => set({ error: null }, false, 'clearError'),
-      
-      reset: () => set({
-        networks: [],
-        currentNetwork: null,
-        loading: false,
-        error: null,
-        switching: false
-      }, false, 'reset')
+
+      reset: () =>
+        set(
+          {
+            networks: [],
+            currentNetwork: null,
+            loading: false,
+            error: null,
+            switching: false,
+          },
+          false,
+          'reset',
+        ),
     }),
-    { name: 'network-store' }
-  )
+    { name: 'network-store' },
+  ),
 );
 
 // Selectors for better performance
-export const useNetworks = () => useNetworkStore(state => state.networks);
-export const useCurrentNetwork = () => useNetworkStore(state => state.currentNetwork);
-export const useNetworkLoading = () => useNetworkStore(state => state.loading);
-export const useNetworkError = () => useNetworkStore(state => state.error);
-export const useNetworkSwitching = () => useNetworkStore(state => state.switching);
+export const useNetworks = () => useNetworkStore((state) => state.networks);
+export const useCurrentNetwork = () =>
+  useNetworkStore((state) => state.currentNetwork);
+export const useNetworkLoading = () =>
+  useNetworkStore((state) => state.loading);
+export const useNetworkError = () => useNetworkStore((state) => state.error);
+export const useNetworkSwitching = () =>
+  useNetworkStore((state) => state.switching);
 export const useNetworkActions = () => {
-  const setNetworks = useNetworkStore(state => state.setNetworks);
-  const setCurrentNetwork = useNetworkStore(state => state.setCurrentNetwork);
-  const setLoading = useNetworkStore(state => state.setLoading);
-  const setError = useNetworkStore(state => state.setError);
-  const setSwitching = useNetworkStore(state => state.setSwitching);
-  const clearError = useNetworkStore(state => state.clearError);
-  const reset = useNetworkStore(state => state.reset);
+  const setNetworks = useNetworkStore((state) => state.setNetworks);
+  const setCurrentNetwork = useNetworkStore((state) => state.setCurrentNetwork);
+  const setLoading = useNetworkStore((state) => state.setLoading);
+  const setError = useNetworkStore((state) => state.setError);
+  const setSwitching = useNetworkStore((state) => state.setSwitching);
+  const clearError = useNetworkStore((state) => state.clearError);
+  const reset = useNetworkStore((state) => state.reset);
 
   return {
     setNetworks,
@@ -142,7 +163,7 @@ export const useNetworkActions = () => {
     setError,
     setSwitching,
     clearError,
-    reset
+    reset,
   };
 };
 
@@ -152,34 +173,40 @@ export const useNetworkActions = () => {
 
 export const useNetworkManager = () => {
   const invokeSnap = useInvokeSnap();
-  
+
   // Store state
-  const networks = useNetworkStore(state => state.networks);
-  const currentNetwork = useNetworkStore(state => state.currentNetwork);
-  const loading = useNetworkStore(state => state.loading);
-  const error = useNetworkStore(state => state.error);
-  const switching = useNetworkStore(state => state.switching);
-  
+  const networks = useNetworkStore((state) => state.networks);
+  const currentNetwork = useNetworkStore((state) => state.currentNetwork);
+  const loading = useNetworkStore((state) => state.loading);
+  const error = useNetworkStore((state) => state.error);
+  const switching = useNetworkStore((state) => state.switching);
+
   // Store actions
   const networkActions = useNetworkActions();
-  
+
   // Create network service (memoized to prevent recreation on every render)
-  const networkService = useMemo(() => new NetworkService(invokeSnap), [invokeSnap]);
+  const networkService = useMemo(
+    () => new NetworkService(invokeSnap),
+    [invokeSnap],
+  );
 
   const loadNetworks = useCallback(async () => {
     try {
       networkActions.setLoading(true);
       networkActions.clearError();
-      
+
       const [networksData, currentNetworkData] = await Promise.all([
         networkService.getNetworks(),
         networkService.getCurrentNetwork(),
       ]);
-      
+
       networkActions.setNetworks(networksData);
       networkActions.setCurrentNetwork(currentNetworkData.network);
-      
-      return { networks: networksData, currentNetwork: currentNetworkData.network };
+
+      return {
+        networks: networksData,
+        currentNetwork: currentNetworkData.network,
+      };
     } catch (err: any) {
       console.error('Failed to load networks:', err);
       networkActions.setError(err.message || 'Failed to load networks');
@@ -189,25 +216,28 @@ export const useNetworkManager = () => {
     }
   }, [networkService, networkActions]);
 
-  const switchNetwork = useCallback(async (chainId: string) => {
-    if (chainId === currentNetwork?.chainId) return currentNetwork;
-    
-    try {
-      networkActions.setSwitching(true);
-      networkActions.clearError();
-      
-      const result = await networkService.switchNetwork(chainId);
-      networkActions.setCurrentNetwork(result.network);
-      
-      return result.network;
-    } catch (err: any) {
-      console.error('Failed to switch network:', err);
-      networkActions.setError(err.message || 'Failed to switch network');
-      throw err;
-    } finally {
-      networkActions.setSwitching(false);
-    }
-  }, [networkService, networkActions, currentNetwork]);
+  const switchNetwork = useCallback(
+    async (chainId: string) => {
+      if (chainId === currentNetwork?.chainId) return currentNetwork;
+
+      try {
+        networkActions.setSwitching(true);
+        networkActions.clearError();
+
+        const result = await networkService.switchNetwork(chainId);
+        networkActions.setCurrentNetwork(result.network);
+
+        return result.network;
+      } catch (err: any) {
+        console.error('Failed to switch network:', err);
+        networkActions.setError(err.message || 'Failed to switch network');
+        throw err;
+      } finally {
+        networkActions.setSwitching(false);
+      }
+    },
+    [networkService, networkActions, currentNetwork],
+  );
 
   return {
     // State
@@ -216,11 +246,10 @@ export const useNetworkManager = () => {
     loading,
     error,
     switching,
-    
+
     // Actions
     loadNetworks,
     switchNetwork,
     clearError: networkActions.clearError,
   };
 };
-

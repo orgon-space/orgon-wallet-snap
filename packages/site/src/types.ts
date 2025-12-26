@@ -8,7 +8,6 @@ import type {
   EIP6963RequestProviderEvent,
   MetaMaskInpageProvider,
 } from '@metamask/providers';
-import type { FunctionComponent, SVGProps } from 'react';
 
 // ============================================================================
 // MetaMask & Snap Types
@@ -36,6 +35,49 @@ export type OrgonBalance = {
     value: number;
   }>;
   orc20?: Array<Record<string, string>>;
+  net_usage?: number;
+  free_net_usage?: number;
+  latest_opration_time?: number;
+  asset_issued_name?: string;
+  free_asset_net_usageV2?: Array<{
+    key: string;
+    value: number;
+  }>;
+  asset_issued_ID?: string;
+  frozenV2?: Array<{
+    type?: string;
+    amount?: number;
+  }>;
+  unfrozenV2?: Array<{
+    type?: string;
+    amount?: number;
+    unfreeze_amount?: number;
+    unfreeze_expire_time?: number;
+  }>;
+  account_resource?: {
+    latest_consume_time_for_energy?: number;
+    energy_window_size?: number;
+  };
+  owner_permission?: {
+    permission_name?: string;
+    threshold?: number;
+    keys?: Array<{
+      address?: string;
+      weight?: number;
+    }>;
+  };
+  active_permission?: Array<{
+    type?: string;
+    id?: number;
+    permission_name?: string;
+    threshold?: number;
+    operations?: string;
+    keys?: Array<{
+      address?: string;
+      weight?: number;
+    }>;
+  }>;
+  asset_optimized?: boolean;
 };
 
 export type OrgonAccount = {
@@ -101,6 +143,3 @@ declare module 'styled-components' {
     colors: Record<string, Record<string, string>>;
   }
 }
-
-
-

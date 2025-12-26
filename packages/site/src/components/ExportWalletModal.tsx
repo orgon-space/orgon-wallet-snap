@@ -1,22 +1,21 @@
 import React, { useState } from 'react';
-import { 
-  Download, 
-  Copy, 
-  Eye, 
-  EyeOff, 
-  AlertTriangle, 
+import {
+  AlertTriangle,
   CheckCircle,
+  Copy,
+  Download,
+  Eye,
+  EyeOff,
   Shield,
-  ExternalLink
 } from 'lucide-react';
 import { Button } from './ui/button';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from './ui/dialog';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
@@ -34,7 +33,7 @@ export const ExportWalletModal: React.FC<ExportWalletModalProps> = ({
   onClose,
   walletName,
   walletAddress,
-  privateKey
+  privateKey,
 }) => {
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -125,8 +124,9 @@ export const ExportWalletModal: React.FC<ExportWalletModalProps> = ({
           <Alert variant="destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Security Warning:</strong> Your private key gives full access to this wallet. 
-              Never share it with anyone and store it securely. Anyone with this key can access your funds.
+              <strong>Security Warning:</strong> Your private key gives full
+              access to this wallet. Never share it with anyone and store it
+              securely. Anyone with this key can access your funds.
             </AlertDescription>
           </Alert>
 
@@ -144,7 +144,9 @@ export const ExportWalletModal: React.FC<ExportWalletModalProps> = ({
                   Address
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-mono">{formatAddress(walletAddress)}</span>
+                  <span className="text-sm font-mono">
+                    {formatAddress(walletAddress)}
+                  </span>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -221,10 +223,16 @@ export const ExportWalletModal: React.FC<ExportWalletModalProps> = ({
                     Security Best Practices
                   </h4>
                   <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-                    <li>• Store your private key in a secure password manager</li>
+                    <li>
+                      • Store your private key in a secure password manager
+                    </li>
                     <li>• Never share your private key with anyone</li>
-                    <li>• Consider using a hardware wallet for large amounts</li>
-                    <li>• Make multiple secure backups in different locations</li>
+                    <li>
+                      • Consider using a hardware wallet for large amounts
+                    </li>
+                    <li>
+                      • Make multiple secure backups in different locations
+                    </li>
                   </ul>
                 </div>
               </div>
@@ -240,10 +248,7 @@ export const ExportWalletModal: React.FC<ExportWalletModalProps> = ({
           >
             Close
           </Button>
-          <Button
-            onClick={handleCopyPrivateKey}
-            className="w-full sm:w-auto"
-          >
+          <Button onClick={handleCopyPrivateKey} className="w-full sm:w-auto">
             {copied ? (
               <>
                 <CheckCircle className="w-4 h-4 mr-2" />

@@ -11,7 +11,6 @@ if (typeof window !== 'undefined') {
   }
 }
 
-import { App } from './src/App';
 import { Root } from './src/Root';
 
 export const wrapRootElement: GatsbyBrowser['wrapRootElement'] = ({
@@ -22,6 +21,3 @@ export const wrapRootElement: GatsbyBrowser['wrapRootElement'] = ({
   </StrictMode>
 );
 
-export const wrapPageElement: GatsbyBrowser['wrapPageElement'] = ({
-  element,
-}) => <App>{element}</App>;

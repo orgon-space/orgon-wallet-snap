@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
   AlertCircle,
+  Calculator,
   CheckCircle,
   Clock,
   Copy,
   ExternalLink,
   Loader2,
-  Send,
+  Shield,
+  Snowflake,
   Zap,
 } from 'lucide-react';
 
@@ -29,6 +31,8 @@ import {
 } from './ui/select';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Label } from './ui/label';
 
 import { useTokenBalances, useWalletManager } from '../hooks/wallet';
 import { useNetworkManager } from '../hooks/network';
@@ -37,35 +41,35 @@ import {
   calculateTransactionFee,
   copyToClipboard,
   formatAddress,
-  validateOrgonAddress,
 } from '../utils/helpers';
 import {
-  createOrc10Transaction,
-  createOrc20Transaction,
-  createOrgonTransaction,
-} from '../utils/transaction';
+  createFreezeTransaction,
+  createUnfreezeTransaction,
+} from '../utils/staking-transactions';
 import { getExplorerUrlForNetwork } from '../utils/orgonWeb';
 import type { OrgonAccount, OrgonTransaction } from '../types';
 
-export const TransactionSender: React.FC = () => {
+type FreezeUnfreezeType = 'freeze' | 'unfreeze';
+type ResourceType = 'ENERGY' | 'BANDWIDTH';
+
+export const FreezeUnfreeze: React.FC = () => {
   const walletManager = useWalletManager();
   const networkManager = useNetworkManager();
   const transactionManager = useTransactionManager();
 
   // Form state
   const [selectedAccount, setSelectedAccount] = useState<string>('');
-  const [toAddress, setToAddress] = useState(
-    'oZJ26HNoRGPDJDVezXe5ZWWgy9W49KMoUp',
-  );
+  const [operationType, setOperationType] =
+    useState<FreezeUnfreezeType>('freeze');
+  const [resourceType, setResourceType] = useState<ResourceType>('ENERGY');
   const [amount, setAmount] = useState('1');
   const [memo, setMemo] = useState('');
-  const [selectedToken, setSelectedToken] = useState<string>(''); // Format: "type|symbol|address|index"
   const [transactionResult, setTransactionResult] = useState<any>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [gasPrice, setGasPrice] = useState('0.1');
   const [gasLimit, setGasLimit] = useState('1000000');
 
-  // Get selected account data and its token balances
+  // Get selected account data
   const selectedAccountData = walletManager.accounts?.find(
     (acc: OrgonAccount) => acc.address === selectedAccount,
   );
@@ -78,9 +82,10 @@ export const TransactionSender: React.FC = () => {
       }
     : undefined;
 
+  // Get token balances for the selected account
   const tokens = useTokenBalances(accountWithBalance);
 
-  // Get ORGON balance specifically
+  // Get ORGON balance specifically for freeze/unfreeze operations
   const orgonToken = tokens.find(
     (token) => token.type === 'native' && token.symbol === 'ORGON',
   );
@@ -89,19 +94,6 @@ export const TransactionSender: React.FC = () => {
         orgonToken.decimals,
       )
     : '0';
-
-  // Parse selected token
-  const currentToken = selectedToken
-    ? (() => {
-        const [type, symbol, address] = selectedToken.split('|').slice(0, 3);
-        return tokens.find(
-          (t) =>
-            t.type === type &&
-            t.symbol === symbol &&
-            (t.address || '') === address,
-        );
-      })()
-    : tokens[0]; // Default to first token (ORGON)
 
   // Load balance when account is selected
   useEffect(() => {
@@ -113,87 +105,51 @@ export const TransactionSender: React.FC = () => {
     }
   }, [selectedAccountData?.id]);
 
-  // Set default token when tokens are loaded
-  useEffect(() => {
-    if (tokens.length > 0 && !selectedToken) {
-      const defaultToken = tokens[0];
-      if (defaultToken) {
-        setSelectedToken(
-          `${defaultToken.type}|${defaultToken.symbol}|${defaultToken.address || ''}|0`,
-        );
-      }
-    }
-  }, [tokens.length, selectedToken]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     transactionManager.clearError();
     setTransactionResult(null);
 
-    if (!selectedAccount || !toAddress || !amount) {
+    if (!selectedAccount || !amount) {
+      return;
+    }
+
+    // Validate amount
+    const amountNum = parseFloat(amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      alert('Invalid amount. Please enter a positive number.');
+      return;
+    }
+    if (amountNum < 1) {
+      alert('Minimum amount is 1 ORGON.');
       return;
     }
 
     try {
       // Get network config
-      const networkConfig = selectedNetworkData
+      const networkConfig = networkManager.currentNetwork
         ? {
-            rpcUrl: selectedNetworkData.rpcUrl,
-            apiKey: (selectedNetworkData as any).apiKey,
+            rpcUrl: networkManager.currentNetwork.rpcUrl,
           }
         : undefined;
 
-      // Create raw transaction based on token type
+      // Create raw transaction based on operation type
       let rawTransaction: any;
-      const memoValue = memo && memo.trim() !== '' ? memo.trim() : undefined;
 
-      if (currentToken?.type === 'orc10') {
-        // ORC10 transaction
-        if (!currentToken.address) {
-          throw new Error('Token ID is required for ORC10 transactions');
-        }
-        const amountNum = parseFloat(amount);
-        const decimals = currentToken.decimals || 6;
-        const finalAmount = Math.floor(
-          amountNum * Math.pow(10, decimals),
-        ).toString();
-
-        rawTransaction = await createOrc10Transaction(
+      if (operationType === 'freeze') {
+        rawTransaction = await createFreezeTransaction(
           selectedAccount,
-          toAddress,
-          finalAmount,
-          currentToken.address,
-          memoValue,
-          networkConfig,
-        );
-      } else if (currentToken?.type === 'orc20') {
-        // ORC20 transaction
-        if (!currentToken.address) {
-          throw new Error(
-            'Contract address is required for ORC20 transactions',
-          );
-        }
-        const amountNum = parseFloat(amount);
-        const decimals = currentToken.decimals || 6;
-        const finalAmount = Math.floor(
-          amountNum * Math.pow(10, decimals),
-        ).toString();
-
-        rawTransaction = await createOrc20Transaction(
-          selectedAccount,
-          toAddress,
-          finalAmount,
-          currentToken.address,
-          memoValue,
+          resourceType,
+          amount,
+          memo || undefined,
           networkConfig,
         );
       } else {
-        // Native ORGON transaction
-        rawTransaction = await createOrgonTransaction(
+        rawTransaction = await createUnfreezeTransaction(
           selectedAccount,
-          toAddress,
+          resourceType,
           amount,
-          memoValue,
+          memo || undefined,
           networkConfig,
         );
       }
@@ -201,7 +157,7 @@ export const TransactionSender: React.FC = () => {
       // Send to snap for signing and broadcasting
       const transaction: OrgonTransaction = {
         from: selectedAccount,
-        to: toAddress,
+        to: '', // Not used for freeze/unfreeze
         amount,
         networkId: networkManager.currentNetwork?.chainId || '',
         accountId:
@@ -217,26 +173,27 @@ export const TransactionSender: React.FC = () => {
       setTransactionResult(result);
 
       // Clear form
-      setToAddress('');
-      setAmount('');
+      setAmount('1');
       setMemo('');
     } catch (err) {
       console.error('Failed to send transaction:', err);
     }
   };
 
-  const selectedNetworkData = networkManager.currentNetwork;
-
   const isFormValid =
-    selectedAccount && toAddress && amount && parseFloat(amount) > 0;
+    selectedAccount &&
+    amount &&
+    parseFloat(amount) > 0 &&
+    parseFloat(amount) >= 1;
+  const selectedNetworkData = networkManager.currentNetwork;
 
   if (walletManager.loading || networkManager.loading) {
     return (
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Send size={20} />
-            Send Transaction
+            <Snowflake size={20} />
+            Staking Operations
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -252,14 +209,14 @@ export const TransactionSender: React.FC = () => {
   return (
     <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
       <CardHeader className="text-center pb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl mb-4 shadow-lg">
-          <Send size={32} color="white" />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-3xl mb-4 shadow-lg">
+          <Snowflake size={32} color="white" />
         </div>
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-          Send Transaction
+          Staking Operations
         </CardTitle>
         <CardDescription className="text-gray-600 dark:text-gray-300 text-lg">
-          Transfer tokens to another Orgon address
+          Freeze or unfreeze ORGON to gain Energy or Bandwidth
         </CardDescription>
       </CardHeader>
       <CardContent className="px-8 pb-8">
@@ -291,127 +248,112 @@ export const TransactionSender: React.FC = () => {
                 </SelectContent>
               </Select>
               {selectedAccount && accountWithBalance && (
-                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <span className="text-sm text-green-700 dark:text-green-300">
+                <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <span className="text-sm text-blue-700 dark:text-blue-300">
                     Available Balance:
                   </span>
-                  <span className="font-mono text-sm font-semibold text-green-900 dark:text-green-100">
+                  <span className="font-mono text-sm font-semibold text-blue-900 dark:text-blue-100">
                     {orgonBalance} ORGON
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Token Selection */}
-            {selectedAccount && (
-              <div className="flex flex-col gap-3">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  Token
-                </label>
-                {tokens.length > 0 ? (
-                  <Select
-                    value={selectedToken}
-                    onValueChange={setSelectedToken}
-                  >
-                    <SelectTrigger className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400">
-                      <SelectValue placeholder="Select a token" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tokens.map((token, index) => {
-                        const tokenKey = `${token.type}|${token.symbol}|${token.address || ''}|${index}`;
-                        const balance = (
-                          token.value /
-                          10 ** token.decimals
-                        ).toFixed(token.decimals);
-                        const displaySymbol =
-                          token.type === 'orc20'
-                            ? formatAddress(token.symbol)
-                            : token.symbol;
-
-                        return (
-                          <SelectItem key={tokenKey} value={tokenKey}>
-                            <div className="flex items-center justify-between w-full gap-4">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs uppercase"
-                                >
-                                  {token.type}
-                                </Badge>
-                                <span className="font-medium">
-                                  {displaySymbol}
-                                </span>
-                              </div>
-                              <span className="text-xs text-gray-500">
-                                Balance: {balance}
-                              </span>
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 flex items-center justify-center bg-gray-50 dark:bg-slate-800">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Loading tokens...</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* To Address */}
+            {/* Operation Type */}
             <div className="flex flex-col gap-3">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                To Address
+                Operation Type
               </label>
-              <div className="relative">
-                <Input
-                  value={toAddress}
-                  onChange={(e) => setToAddress(e.target.value)}
-                  placeholder="oRecipientAddress..."
-                  maxLength={34}
-                  className={`h-12 rounded-xl border-2 focus:border-blue-500 dark:focus:border-blue-400 ${
-                    toAddress && !validateOrgonAddress(toAddress)
-                      ? 'border-red-500 dark:border-red-400'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                  required
-                />
-                {toAddress && validateOrgonAddress(toAddress) && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <CheckCircle size={18} className="text-green-500" />
-                  </div>
-                )}
-              </div>
-              {toAddress && !validateOrgonAddress(toAddress) && (
-                <p className="text-sm text-red-600 dark:text-red-400">
-                  Invalid Orgon address format
-                </p>
-              )}
+              <RadioGroup
+                value={operationType}
+                onValueChange={(value) =>
+                  setOperationType(value as FreezeUnfreezeType)
+                }
+                className="flex gap-6"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="freeze" id="freeze" />
+                  <Label
+                    htmlFor="freeze"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Snowflake size={16} className="text-blue-500" />
+                    Freeze
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="unfreeze" id="unfreeze" />
+                  <Label
+                    htmlFor="unfreeze"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Zap size={16} className="text-orange-500" />
+                    Unfreeze
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            {/* Resource Type */}
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Resource Type
+              </label>
+              <RadioGroup
+                value={resourceType}
+                onValueChange={(value) =>
+                  setResourceType(value as ResourceType)
+                }
+                className="flex gap-6"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="ENERGY" id="energy" />
+                  <Label
+                    htmlFor="energy"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Zap size={16} className="text-yellow-500" />
+                    Energy
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="BANDWIDTH" id="bandwidth" />
+                  <Label
+                    htmlFor="bandwidth"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <Shield size={16} className="text-green-500" />
+                    Bandwidth
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
 
             {/* Amount */}
             <div className="flex flex-col gap-3">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Amount{' '}
-                {currentToken &&
-                  `(${currentToken.type === 'orc20' ? formatAddress(currentToken.symbol) : currentToken.symbol})`}
+                Amount (ORGON)
+                {operationType === 'unfreeze' && (
+                  <span className="text-xs text-gray-500 ml-2">
+                    (amount to unfreeze)
+                  </span>
+                )}
               </label>
               <div className="relative">
                 <Input
                   type="number"
                   step="0.000001"
-                  min="0"
+                  min="1"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.0"
+                  placeholder="1.0"
                   className="h-12 rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 pr-32"
                   required
                 />
               </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Minimum amount is 1 ORGON
+              </p>
             </div>
 
             {/* Memo */}
@@ -424,12 +366,12 @@ export const TransactionSender: React.FC = () => {
                 onChange={(e) => setMemo(e.target.value)}
                 placeholder="Add a memo to your transaction"
                 rows={3}
-                maxLength={256}
+                maxLength={200}
                 className="rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400"
               />
               <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                 <span>Optional message to include with the transaction</span>
-                <span>{memo.length}/256</span>
+                <span>{memo.length}/200</span>
               </div>
             </div>
 
@@ -441,7 +383,7 @@ export const TransactionSender: React.FC = () => {
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="w-full"
               >
-                <Zap size={16} className="mr-2" />
+                <Calculator size={16} className="mr-2" />
                 {showAdvanced ? 'Hide' : 'Show'} Advanced Options
               </Button>
 
@@ -501,10 +443,10 @@ export const TransactionSender: React.FC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-blue-700 dark:text-blue-300">
-                      To:
+                      Operation:
                     </span>
-                    <span className="font-mono text-blue-900 dark:text-blue-100">
-                      {formatAddress(toAddress)}
+                    <span className="text-blue-900 dark:text-blue-100 uppercase">
+                      {operationType} {resourceType}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -512,20 +454,7 @@ export const TransactionSender: React.FC = () => {
                       Amount:
                     </span>
                     <span className="font-mono text-blue-900 dark:text-blue-100">
-                      {amount}{' '}
-                      {currentToken
-                        ? currentToken.type === 'orc20'
-                          ? formatAddress(currentToken.symbol)
-                          : currentToken.symbol
-                        : 'ORGON'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
-                      Token Type:
-                    </span>
-                    <span className="text-blue-900 dark:text-blue-100 uppercase">
-                      {currentToken?.type || 'native'}
+                      {amount} ORGON
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -561,17 +490,19 @@ export const TransactionSender: React.FC = () => {
             <Button
               type="submit"
               disabled={transactionManager.loading || !isFormValid}
-              className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-14 text-lg font-semibold rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {transactionManager.loading ? (
                 <>
                   <Loader2 size={20} className="mr-2 animate-spin" />
-                  Sending Transaction...
+                  Processing Transaction...
                 </>
               ) : (
                 <>
-                  <Send size={20} className="mr-2" />
-                  Send Transaction
+                  <Snowflake size={20} className="mr-2" />
+                  {operationType === 'freeze'
+                    ? 'Freeze ORGON'
+                    : 'Unfreeze ORGON'}
                 </>
               )}
             </Button>

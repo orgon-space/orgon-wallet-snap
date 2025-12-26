@@ -112,12 +112,12 @@ export const formatBalance = (balance: string): string => {
   // For blockchain applications, show full precision
   const num = parseFloat(balance);
   if (isNaN(num)) return '0';
-  
+
   // For very small numbers, use scientific notation to preserve precision
   if (num > 0 && num < 0.000001) {
     return num.toExponential(6);
   }
-  
+
   // For normal numbers, show up to 18 decimal places (common for blockchain tokens)
   // but remove trailing zeros for cleaner display
   const formatted = num.toFixed(18);
@@ -153,10 +153,13 @@ export const validateOrgonAddress = (address: string): boolean => {
 /**
  * Calculate transaction fee
  */
-export const calculateTransactionFee = (gasPrice: string, gasLimit: string): string => {
+export const calculateTransactionFee = (
+  gasPrice: string,
+  gasLimit: string,
+): string => {
   const gasPriceNum = parseFloat(gasPrice);
   const gasLimitNum = parseFloat(gasLimit);
-  return (gasPriceNum * gasLimitNum / 1000000).toFixed(6);
+  return ((gasPriceNum * gasLimitNum) / 1000000).toFixed(6);
 };
 
 /**
@@ -201,4 +204,42 @@ export const copyToClipboard = async (text: string): Promise<void> => {
   }
 };
 
+// ============================================================================
+// Reward Utilities
+// ============================================================================
 
+/**
+ * Get reward information from the network
+ */
+export const getReward = async (
+  rpcUrl: string,
+  address: string,
+): Promise<{ reward: number }> => {
+  try {
+    const response = await fetch(`${rpcUrl}/wallet/getReward`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ address }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Failed to get reward:', error);
+    throw error;
+  }
+};
+
+/**
+ * Format reward amount (divide by 10^6)
+ */
+export const formatReward = (reward: number): string => {
+  const formatted = reward / 1000000;
+  return formatted.toFixed(6);
+};
