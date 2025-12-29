@@ -139,9 +139,9 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
       {/* Create/Import Forms */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Create New Wallet */}
-        <Card>
+        <Card className="orgon-card orgon-card-hover">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Plus size={20} />
               Create New Wallet
             </CardTitle>
@@ -156,7 +156,7 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block text-slate-900 dark:text-white">
                   Wallet Name (Optional)
                 </label>
                 <Input
@@ -172,7 +172,7 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               <Button
                 type="submit"
                 disabled={walletManager.loading}
-                className="w-full"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {walletManager.loading ? (
                   <>
@@ -206,9 +206,9 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
         </Card>
 
         {/* Import Existing Wallet */}
-        <Card>
+        <Card className="orgon-card orgon-card-hover">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Download size={20} />
               Import Existing Wallet
             </CardTitle>
@@ -222,7 +222,7 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block text-slate-900 dark:text-white">
                   Private Key
                 </label>
                 <div className="relative">
@@ -250,7 +250,7 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block text-slate-900 dark:text-white">
                   Wallet Name (Optional)
                 </label>
                 <Input
@@ -266,7 +266,7 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               <Button
                 type="submit"
                 disabled={walletManager.loading || !privateKey.trim()}
-                className="w-full"
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {walletManager.loading ? (
                   <>
@@ -300,9 +300,9 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
         </Card>
 
         {/* Import from Mnemonic */}
-        <Card>
+        <Card className="orgon-card orgon-card-hover">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Download size={20} />
               Import from Recovery Phrase
             </CardTitle>
@@ -317,7 +317,7 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               className="flex flex-col gap-4"
             >
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block text-slate-900 dark:text-white">
                   Recovery Phrase
                 </label>
                 <Textarea
@@ -334,7 +334,7 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="text-sm font-medium mb-2 block text-slate-900 dark:text-white">
                   Wallet Name (Optional)
                 </label>
                 <Input
@@ -350,7 +350,7 @@ export const WalletManagement: React.FC<WalletManagementProps> = ({
               <Button
                 type="submit"
                 disabled={walletManager.loading || !mnemonicPhrase.trim()}
-                className="w-full"
+                className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 {walletManager.loading ? (
                   <>

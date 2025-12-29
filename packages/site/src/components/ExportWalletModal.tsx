@@ -215,14 +215,14 @@ export const ExportWalletModal: React.FC<ExportWalletModalProps> = ({
             </div>
 
             {/* Additional Security Tips */}
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
               <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
                 <div className="space-y-2">
-                  <h4 className="font-medium text-blue-900 dark:text-blue-100">
+                  <h4 className="font-medium text-amber-900 dark:text-amber-100">
                     Security Best Practices
                   </h4>
-                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                  <ul className="text-sm text-amber-800 dark:text-amber-200 space-y-1">
                     <li>
                       • Store your private key in a secure password manager
                     </li>

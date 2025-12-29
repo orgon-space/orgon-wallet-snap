@@ -76,19 +76,19 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
           Wallet Overview
         </h2>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-sm text-slate-600 dark:text-slate-300">
           Manage your Orgon wallets across different networks
         </p>
       </div>
 
       {/* Quick Actions */}
-      <Card>
+      <Card className="orgon-card orgon-card-hover">
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-slate-900 dark:text-white">Quick Actions</CardTitle>
+          <CardDescription className="text-slate-600 dark:text-slate-300">
             Manage your wallets and send transactions
           </CardDescription>
         </CardHeader>
@@ -96,7 +96,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
           <div className="flex gap-3">
             <Button
               onClick={onCreateWallet}
-              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2 bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:text-white"
             >
               <Plus className="w-5 h-5" />
               <span className="text-xs">Create Wallet</span>
@@ -104,7 +104,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
             <Button
               onClick={onImportWallet}
               variant="outline"
-              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2 border-dashed"
+              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2 border-dashed bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white hover:text-white border-transparent transition-all duration-200"
             >
               <ExternalLink className="w-5 h-5" />
               <span className="text-xs">Import Wallet</span>
@@ -112,7 +112,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
             <Button
               onClick={onSendTransaction}
               variant="outline"
-              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2"
+              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white hover:text-white border-transparent transition-all duration-200"
               disabled={parentAccounts.length === 0}
             >
               <Send className="w-5 h-5" />
@@ -126,21 +126,22 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
       {parentAccounts && parentAccounts.length > 0 && (
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Your Wallets</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Your Wallets</h3>
             <Button
               variant="outline"
               size="sm"
               onClick={onRefreshAll}
               disabled={loading}
+              className="border-dashed bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white hover:text-white border-transparent transition-all duration-200"
             >
               {loading ? (
                 <>
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
                   Refreshing...
                 </>
               ) : (
                 <>
-                  <RefreshCw className="w-4 h-4 mr-2" />
+                  <RefreshCw className="w-5 h-5 mr-2" />
                   Refresh All
                 </>
               )}
@@ -171,7 +172,7 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
             </div>
             {loading && (
               <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-300">
+                <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
                   <RefreshCw className="w-5 h-5 animate-spin" />
                   <span>Updating balances...</span>
                 </div>

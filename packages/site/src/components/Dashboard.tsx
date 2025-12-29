@@ -168,7 +168,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
                 Welcome to{' '}
-                <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent">
+                <span className="text-blue-600 dark:text-blue-400">
                   Orgon Snap
                 </span>
               </h1>
@@ -189,7 +189,7 @@ export const Dashboard: React.FC = () => {
 
             <div className="flex flex-col gap-6 max-w-md mx-auto">
               {!isMetaMaskReady && (
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                <Card className="border-0 shadow-xl orgon-card orgon-card-hover">
                   <CardHeader className="text-center pb-4">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl mb-4">
                       <Download size={24} color="white" />
@@ -215,7 +215,7 @@ export const Dashboard: React.FC = () => {
               )}
 
               {isMetaMaskReady && (
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                <Card className="border-0 shadow-xl orgon-card orgon-card-hover">
                   <CardHeader className="text-center pb-4">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
                       <Wallet size={24} color="white" />
@@ -380,10 +380,10 @@ export const Dashboard: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="settings">
-              <Card>
+              <Card className="orgon-card orgon-card-hover">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Cog className="w-5 h-5" />
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <Cog className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     Settings
                   </CardTitle>
                   <CardDescription>
@@ -409,10 +409,10 @@ export const Dashboard: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="history">
-              <Card>
+              <Card className="orgon-card orgon-card-hover">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <RefreshCw className="w-5 h-5" />
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <RefreshCw className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     History
                   </CardTitle>
                   <CardDescription>

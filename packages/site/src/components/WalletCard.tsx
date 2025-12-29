@@ -259,7 +259,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     }
   };
   return (
-    <Card className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hover:scale-[1.02]">
+    <Card className="group orgon-card orgon-card-hover border-0 shadow-lg hover:scale-[1.02]">
       <CardContent className="p-6">
         <div className="mb-4">
           {/* Header with wallet icon and name */}
@@ -290,7 +290,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                 title="Refresh Balance"
               >
                 <RefreshCw
-                  className={`w-4 h-4 text-blue-600 ${isRefreshing ? 'animate-spin' : ''}`}
+                  className={`w-4 h-4 text-gray-600 dark:text-gray-400 ${isRefreshing ? 'animate-spin' : ''}`}
                 />
               </Button>
               <Button
@@ -346,7 +346,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                   <span className="text-sm font-medium text-gray-900 dark:text-white">
                     Пропускная способность (Bandwidth)
                   </span>
-                  <span className="text-lg font-bold text-blue-600">
+                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                     {calculateBandwidth()}
                   </span>
                 </div>
@@ -487,7 +487,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               Tokens
             </span>
             {(isRefreshing || tokensLoading) && (
-              <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
+              <RefreshCw className="w-4 h-4 animate-spin text-gray-500 dark:text-gray-400" />
             )}
           </div>
 
@@ -587,13 +587,13 @@ export const WalletCard: React.FC<WalletCardProps> = ({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                className="h-8 w-8 p-0 rounded-xl hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
                 onClick={loadReward}
                 disabled={rewardLoading}
                 title="Обновить награду"
               >
                 <RefreshCw
-                  className={`w-4 h-4 text-blue-600 ${rewardLoading ? 'animate-spin' : ''}`}
+                  className={`w-4 h-4 text-yellow-600 ${rewardLoading ? 'animate-spin' : ''}`}
                 />
               </Button>
             </div>
