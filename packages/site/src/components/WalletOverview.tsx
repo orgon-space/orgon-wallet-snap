@@ -1,9 +1,5 @@
 import React from 'react';
-import { WalletOverviewHeader } from './WalletOverviewHeader';
-import { QuickActions } from './QuickActions';
-import { WalletList } from './WalletList';
-import { useWalletBalance } from '../hooks/useWalletBalance';
-import { useWalletActions } from '../hooks/useWalletActions';
+import { WalletOverviewContainer } from './WalletOverviewContainer';
 import type { OrgonAccount, OrgonBalance } from '../types';
 import type { WalletService } from '../hooks/wallet';
 
@@ -31,65 +27,13 @@ interface WalletOverviewProps {
   walletService?: WalletService;
 }
 
-export const WalletOverview: React.FC<WalletOverviewProps> = ({
-  onCreateWallet,
-  onSendTransaction,
-  onImportWallet,
-  onNetworkChange,
-  onRefreshWallet,
-  onDeleteWallet,
-  onExportWallet,
-  onWithdrawExpireUnfreeze,
-  onRefreshAll,
-  accounts,
-  balances,
-  loading,
-  refreshingWallets,
-  currentNetwork,
-  walletService,
-}) => {
-  // Use custom hooks for business logic
-  const walletActions = useWalletActions({
-    onCreateWallet,
-    onSendTransaction,
-    onImportWallet,
-    onNetworkChange,
-    onRefreshWallet,
-    onDeleteWallet,
-    onExportWallet,
-    onWithdrawExpireUnfreeze,
-    onRefreshAll,
-  });
-
-  const { totalBalance } = useWalletBalance({
-    accounts,
-    balances,
-  });
-
-  return (
-    <div className="space-y-6">
-      <WalletOverviewHeader />
-
-      <QuickActions
-        onCreateWallet={walletActions.handleCreateWallet}
-        onSendTransaction={walletActions.handleSendTransaction}
-        onImportWallet={walletActions.handleImportWallet}
-        hasWallets={accounts.length > 0}
-      />
-
-      <WalletList
-        accounts={accounts}
-        balances={balances}
-        loading={loading}
-        refreshingWallets={refreshingWallets}
-        currentNetwork={currentNetwork}
-        walletService={walletService}
-        onRefreshWallet={walletActions.handleRefreshWallet}
-        onDeleteWallet={walletActions.handleDeleteWallet}
-        onExportWallet={walletActions.handleExportWallet}
-        onWithdrawExpireUnfreeze={walletActions.handleWithdrawExpireUnfreeze}
-        onRefreshAll={walletActions.handleRefreshAll}
-      />
-    </div>
-  );
+/**
+ * WalletOverview - Main wallet overview component
+ *
+ * Uses Container/Presentational pattern:
+ * - WalletOverviewContainer: Business logic and state management
+ * - WalletOverviewView: Pure UI presentation
+ */
+export const WalletOverview: React.FC<WalletOverviewProps> = (props) => {
+  return <WalletOverviewContainer {...props} />;
 };

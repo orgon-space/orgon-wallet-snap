@@ -3,7 +3,7 @@ import { RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface RefreshButtonProps {
-  onClick: () => void;
+  onClick?: (() => void) | undefined;
   loading?: boolean;
   disabled?: boolean;
   size?: 'sm' | 'default' | 'lg';
@@ -17,12 +17,18 @@ export const RefreshButton: React.FC<RefreshButtonProps> = ({
   size = 'sm',
   children,
 }) => {
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <Button
       variant="outline"
       size={size}
-      onClick={onClick}
-      disabled={disabled || loading}
+      onClick={handleClick}
+      disabled={disabled || loading || !onClick}
       className="border-dashed bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white hover:text-white border-transparent transition-all duration-200"
     >
       {loading ? (
