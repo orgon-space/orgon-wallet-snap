@@ -235,35 +235,36 @@ export async function parseTokenBalances(
     walletService
   ) {
     for (const tokenObj of balance.orc20) {
-      for (const [address, tokenValue] of Object.entries(tokenObj)) {
+      if (tokenObj.key && tokenObj.value !== undefined && tokenObj.decimals !== undefined) {
         try {
           // Get detailed token balance and info
           const tokenData = await walletService.getOrc20TokenBalance(
-            address,
+            tokenObj.key,
             '',
             networkRpcUrl,
           );
 
           tokenBalances.push({
             type: 'orc20',
-            symbol: tokenData?.symbol || address.substring(0, 8),
-            name: tokenData?.name || `ORC-20 Token ${address.substring(0, 8)}`,
-            address: address,
-            decimals: tokenData?.decimals || 4,
-            value: Number(tokenValue) || 0,
+            symbol: tokenData?.symbol || tokenObj.key,
+            name: tokenData?.name || `ORC-20 Token (${tokenObj.key})`,
+            address: tokenObj.key,
+            decimals: tokenData?.decimals || tokenObj.decimals,
+            value: tokenObj.value,
           });
         } catch (error) {
           console.warn(
-            `Failed to get ORC-20 token info for ${address}:`,
+            `Failed to get ORC-20 token info for ${tokenObj.key}:`,
             error,
           );
           // Fallback to basic info
           tokenBalances.push({
             type: 'orc20',
-            symbol: address.substring(0, 8),
-            address: address,
-            decimals: 4,
-            value: Number(tokenValue) || 0,
+            symbol: tokenObj.key,
+            name: `ORC-20 Token (${tokenObj.key})`,
+            address: tokenObj.key,
+            decimals: tokenObj.decimals,
+            value: tokenObj.value,
           });
         }
       }
@@ -271,15 +272,16 @@ export async function parseTokenBalances(
   } else if (balance?.orc20 && Array.isArray(balance.orc20)) {
     // Fallback for when no networkRpcUrl or walletService provided
     balance.orc20.forEach((tokenObj: any) => {
-      Object.entries(tokenObj).forEach(([address, tokenValue]) => {
+      if (tokenObj.key && tokenObj.value !== undefined && tokenObj.decimals !== undefined) {
         tokenBalances.push({
           type: 'orc20',
-          symbol: address.substring(0, 8),
-          address: address,
-          decimals: 4,
-          value: Number(tokenValue) || 0,
+          symbol: tokenObj.key,
+          name: `ORC-20 Token (${tokenObj.key})`,
+          address: tokenObj.key,
+          decimals: tokenObj.decimals,
+          value: tokenObj.value,
         });
-      });
+      }
     });
   }
 
@@ -345,15 +347,16 @@ function parseTokenBalancesSync(balance?: OrgonBalance): TokenBalance[] {
   // Parse ORC20 tokens - basic info only
   if (balance?.orc20 && Array.isArray(balance.orc20)) {
     balance.orc20.forEach((tokenObj: any) => {
-      Object.entries(tokenObj).forEach(([address, tokenValue]) => {
+      if (tokenObj.key && tokenObj.value !== undefined && tokenObj.decimals !== undefined) {
         tokenBalances.push({
           type: 'orc20',
-          symbol: address.substring(0, 8),
-          address: address,
-          decimals: 4,
-          value: Number(tokenValue) || 0,
+          symbol: tokenObj.key,
+          name: `ORC-20 Token (${tokenObj.key})`,
+          address: tokenObj.key,
+          decimals: tokenObj.decimals,
+          value: tokenObj.value,
         });
-      });
+      }
     });
   }
 

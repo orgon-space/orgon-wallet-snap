@@ -495,14 +495,8 @@ export const WalletCard: React.FC<WalletCardProps> = ({
             <div className="space-y-2">
               {tokens.map((token, index) => {
                 const balance = (token.value / 10 ** token.decimals).toFixed(
-                  token.decimals,
+                  Math.min(token.decimals, 6), // Limit decimal places to 6 max for readability
                 );
-                const displaySymbol =
-                  token.name && token.name !== token.symbol
-                    ? `${token.name} (${token.symbol})`
-                    : token.type === 'orc20'
-                      ? formatAddress(token.symbol)
-                      : token.symbol;
 
                 return (
                   <div
@@ -511,32 +505,68 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
-                        <span className="font-bold text-lg text-gray-900 dark:text-white block">
-                          {balance}
-                        </span>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span
-                            className="text-sm text-gray-600 dark:text-gray-300 font-medium truncate"
-                            title={token.name || token.symbol}
-                          >
-                            {displaySymbol}
-                          </span>
-                          {token.type === 'orc20' && token.address && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-5 w-5 p-0 rounded hover:bg-gray-200 dark:hover:bg-slate-600"
-                              onClick={() => copyToClipboard(token.address!)}
-                              title="Copy token address"
-                            >
-                              <Copy className="w-3 h-3 text-gray-500" />
-                            </Button>
-                          )}
-                        </div>
-                        {token.totalSupply && (
-                          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Total Supply: {token.totalSupply.toLocaleString()}
+                        {token.type === 'orc20' ? (
+                          // Special layout for ORC-20 tokens: key and value in one container
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                Key:
+                              </span>
+                              <span className="font-mono text-sm text-gray-900 dark:text-white truncate">
+                                {token.symbol}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 rounded hover:bg-gray-200 dark:hover:bg-slate-600 flex-shrink-0"
+                                onClick={() => copyToClipboard(token.symbol)}
+                                title="Copy token key"
+                              >
+                                <Copy className="w-3 h-3 text-gray-500" />
+                              </Button>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm text-gray-600 dark:text-gray-300 font-medium">
+                                Value:
+                              </span>
+                              <span className="font-bold text-lg text-gray-900 dark:text-white">
+                                {balance}
+                              </span>
+                            </div>
                           </div>
+                        ) : (
+                          // Standard layout for other token types
+                          <>
+                            <span className="font-bold text-lg text-gray-900 dark:text-white block">
+                              {balance}
+                            </span>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span
+                                className="text-sm text-gray-600 dark:text-gray-300 font-medium truncate"
+                                title={token.name || token.symbol}
+                              >
+                                {token.name && token.name !== token.symbol
+                                  ? `${token.name} (${token.symbol})`
+                                  : token.symbol}
+                              </span>
+                              {token.address && token.type !== 'native' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-5 w-5 p-0 rounded hover:bg-gray-200 dark:hover:bg-slate-600"
+                                  onClick={() => copyToClipboard(token.address!)}
+                                  title="Copy token address"
+                                >
+                                  <Copy className="w-3 h-3 text-gray-500" />
+                                </Button>
+                              )}
+                            </div>
+                            {token.totalSupply && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Total Supply: {token.totalSupply.toLocaleString()}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                       <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md ml-3">

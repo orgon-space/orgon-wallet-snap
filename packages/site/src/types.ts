@@ -34,7 +34,11 @@ export type OrgonBalance = {
     key: string;
     value: number;
   }>;
-  orc20?: Array<Record<string, string>>;
+  orc20?: Array<{
+    key: string;
+    value: number;
+    decimals: number;
+  }>;
   net_usage?: number;
   free_net_usage?: number;
   latest_opration_time?: number;
