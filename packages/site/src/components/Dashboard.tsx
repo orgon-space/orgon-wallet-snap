@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AlertCircle,
   Cog,
@@ -47,8 +47,10 @@ import { isLocalSnap, shouldDisplayReconnectButton } from '../utils/helpers';
 
 export const Dashboard: React.FC = () => {
   const { error } = useMetaMaskContext();
-  const { isFlask, snapsDetected, installedSnap } = useMetaMask();
+  const { isFlask, snapsDetected, installedSnap, isLoading } = useMetaMask();
   const requestSnap = useRequestSnap();
+
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const walletManager = useWalletManager();
   const networkManager = useNetworkManager();
@@ -61,6 +63,19 @@ export const Dashboard: React.FC = () => {
   const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
     ? isFlask
     : snapsDetected;
+
+  // Add small delay before showing welcome page to prevent flickering
+  useEffect(() => {
+    if (!isLoading && !installedSnap) {
+      const timer = setTimeout(() => {
+        setShowWelcome(true);
+      }, 300); // 300ms delay
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowWelcome(false);
+    }
+  }, [isLoading, installedSnap]);
 
   // Load initial data when snap is installed
   useEffect(() => {
@@ -156,8 +171,27 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  // If snap is not installed, show installation UI
-  if (!installedSnap) {
+  // Show loading screen while checking snap status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-3xl mb-6 animate-pulse">
+            <Wallet size={48} color="white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Загрузка Orgon Snap
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Проверяем статус подключения...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If snap is not installed, show installation UI (with delay to prevent flickering)
+  if (showWelcome) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
         <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">

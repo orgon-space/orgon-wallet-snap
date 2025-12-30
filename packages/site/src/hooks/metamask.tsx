@@ -671,6 +671,7 @@ export const useMetaMask = () => {
   const request = useRequest();
 
   const [isFlask, setIsFlask] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const snapsDetected = provider !== null;
 
@@ -701,13 +702,20 @@ export const useMetaMask = () => {
   useEffect(() => {
     const detect = async () => {
       if (provider) {
+        setIsLoading(true);
         await detectFlask();
         await getSnap();
+        setIsLoading(false);
+      } else {
+        setIsLoading(false);
       }
     };
 
-    detect().catch(console.error);
+    detect().catch((error) => {
+      console.error(error);
+      setIsLoading(false);
+    });
   }, [provider]);
 
-  return { isFlask, snapsDetected, installedSnap, getSnap };
+  return { isFlask, snapsDetected, installedSnap, isLoading, getSnap };
 };
