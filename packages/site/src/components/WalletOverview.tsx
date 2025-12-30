@@ -1,19 +1,14 @@
 import React from 'react';
-import { ExternalLink, Plus, RefreshCw, Send } from 'lucide-react';
-import { Button } from './ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from './ui/card'; // import { Badge } from './ui/badge';
-import { WalletCard } from './WalletCard';
-import { formatBalance } from '../utils/helpers';
+import { WalletOverviewHeader } from './WalletOverviewHeader';
+import { QuickActions } from './QuickActions';
+import { WalletList } from './WalletList';
+import { useWalletBalance } from '../hooks/useWalletBalance';
+import { useWalletActions } from '../hooks/useWalletActions';
 import type { OrgonAccount, OrgonBalance } from '../types';
 import type { WalletService } from '../hooks/wallet';
 
 interface WalletOverviewProps {
+  // Actions
   onCreateWallet: () => void;
   onSendTransaction: () => void;
   onImportWallet: () => void;
@@ -26,11 +21,13 @@ interface WalletOverviewProps {
     resourceType: 'BANDWIDTH' | 'ENERGY',
   ) => void;
   onRefreshAll?: () => void;
+
+  // Data
+  accounts: OrgonAccount[];
+  balances: Record<string, OrgonBalance>;
+  loading: boolean;
+  refreshingWallets: Set<string>;
   currentNetwork?: any;
-  accounts?: OrgonAccount[];
-  balances?: Record<string, OrgonBalance>;
-  loading?: boolean;
-  refreshingWallets?: Set<string>;
   walletService?: WalletService;
 }
 
@@ -44,143 +41,55 @@ export const WalletOverview: React.FC<WalletOverviewProps> = ({
   onExportWallet,
   onWithdrawExpireUnfreeze,
   onRefreshAll,
-  currentNetwork: parentCurrentNetwork,
-  accounts: parentAccounts = [],
-  balances: parentBalances = {},
-  loading = false,
-  refreshingWallets = new Set(),
+  accounts,
+  balances,
+  loading,
+  refreshingWallets,
+  currentNetwork,
   walletService,
 }) => {
-  const handleNetworkChange = (network: any) => {
-    // Call parent's network change handler if provided
-    if (onNetworkChange) {
-      onNetworkChange(network);
-    }
-  };
+  // Use custom hooks for business logic
+  const walletActions = useWalletActions({
+    onCreateWallet,
+    onSendTransaction,
+    onImportWallet,
+    onNetworkChange,
+    onRefreshWallet,
+    onDeleteWallet,
+    onExportWallet,
+    onWithdrawExpireUnfreeze,
+    onRefreshAll,
+  });
 
-  const totalBalance = parentAccounts.reduce((sum, account) => {
-    if (!account || !account.id) {
-      return sum;
-    }
-    const balance = parentBalances[account.id];
-    return (
-      sum + (balance?.balance ? parseFloat(balance.balance.toString()) : 0)
-    );
-  }, 0);
-
-  const displayBalance = (balance: number) => {
-    return formatBalance(balance.toString());
-  };
+  const { totalBalance } = useWalletBalance({
+    accounts,
+    balances,
+  });
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-          Wallet Overview
-        </h2>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          Manage your Orgon wallets across different networks
-        </p>
-      </div>
+      <WalletOverviewHeader />
 
-      {/* Quick Actions */}
-      <Card className="orgon-card orgon-card-hover">
-        <CardHeader>
-          <CardTitle className="text-slate-900 dark:text-white">Quick Actions</CardTitle>
-          <CardDescription className="text-slate-600 dark:text-slate-300">
-            Manage your wallets and send transactions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-3">
-            <Button
-              onClick={onCreateWallet}
-              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:text-white"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="text-xs">Create Wallet</span>
-            </Button>
-            <Button
-              onClick={onImportWallet}
-              variant="outline"
-              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2 border-dashed bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white hover:text-white border-transparent transition-all duration-200"
-            >
-              <ExternalLink className="w-5 h-5" />
-              <span className="text-xs">Import Wallet</span>
-            </Button>
-            <Button
-              onClick={onSendTransaction}
-              variant="outline"
-              className="flex-1 h-24 flex flex-col items-center justify-center space-y-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white hover:text-white border-transparent transition-all duration-200"
-              disabled={parentAccounts.length === 0}
-            >
-              <Send className="w-5 h-5" />
-              <span className="text-xs">Send ORGON</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <QuickActions
+        onCreateWallet={walletActions.handleCreateWallet}
+        onSendTransaction={walletActions.handleSendTransaction}
+        onImportWallet={walletActions.handleImportWallet}
+        hasWallets={accounts.length > 0}
+      />
 
-      {/* Wallet List */}
-      {parentAccounts && parentAccounts.length > 0 && (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Your Wallets</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRefreshAll}
-              disabled={loading}
-              className="border-dashed bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white hover:text-white border-transparent transition-all duration-200"
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
-                  Refreshing...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="w-5 h-5 mr-2" />
-                  Refresh All
-                </>
-              )}
-            </Button>
-          </div>
-          <div className="relative">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {(parentAccounts || [])
-                .filter((account) => account && account.id) // Filter out null/undefined accounts
-                .map((account) => {
-                  const balance = parentBalances[account.id];
-                  return (
-                    <WalletCard
-                      key={account.id}
-                      wallet={{ ...account, ...(balance && { balance }) }}
-                      onRefresh={() => onRefreshWallet?.(account.id)}
-                      {...(onDeleteWallet && { onDelete: onDeleteWallet })}
-                      {...(onExportWallet && { onExport: onExportWallet })}
-                      {...(onWithdrawExpireUnfreeze && {
-                        onWithdrawExpireUnfreeze,
-                      })}
-                      isRefreshing={refreshingWallets.has(account.id)}
-                      currentNetwork={parentCurrentNetwork}
-                      {...(walletService && { walletService })}
-                    />
-                  );
-                })}
-            </div>
-            {loading && (
-              <div className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-lg flex items-center justify-center">
-                <div className="flex items-center space-x-2 text-slate-600 dark:text-slate-300">
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  <span>Updating balances...</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <WalletList
+        accounts={accounts}
+        balances={balances}
+        loading={loading}
+        refreshingWallets={refreshingWallets}
+        currentNetwork={currentNetwork}
+        walletService={walletService}
+        onRefreshWallet={walletActions.handleRefreshWallet}
+        onDeleteWallet={walletActions.handleDeleteWallet}
+        onExportWallet={walletActions.handleExportWallet}
+        onWithdrawExpireUnfreeze={walletActions.handleWithdrawExpireUnfreeze}
+        onRefreshAll={walletActions.handleRefreshAll}
+      />
     </div>
   );
 };
