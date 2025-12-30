@@ -51,7 +51,7 @@ export const WalletList: React.FC<WalletListProps> = ({
         />
       </div>
       <div className="relative">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-6">
           {accounts
             .filter((account) => account && account.id)
             .map((account) => {

@@ -9,6 +9,8 @@ import {
   Wallet,
   Gift,
   Coins,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
@@ -73,6 +75,8 @@ export const WalletCard: React.FC<WalletCardProps> = ({
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
   const [rewardError, setRewardError] = useState<string | null>(null);
+  const [showAllTokens, setShowAllTokens] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Transaction manager
   const { sendTransaction } = useTransactionManager();
@@ -126,8 +130,25 @@ export const WalletCard: React.FC<WalletCardProps> = ({
 
   // Helper function to format timestamp to date and time
   const formatDate = (timestamp: number) => {
-    if (!timestamp) return 'N/A';
-    return new Date(timestamp).toLocaleString();
+    if (!timestamp || timestamp === 0) return 'N/A';
+
+    // Try different timestamp formats
+    let date;
+    if (timestamp > 1e12) {
+      // Milliseconds
+      date = new Date(timestamp);
+    } else if (timestamp > 1e9) {
+      // Seconds
+      date = new Date(timestamp * 1000);
+    } else {
+      // Unknown format, try as milliseconds
+      date = new Date(timestamp);
+    }
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) return 'N/A';
+
+    return date.toLocaleString();
   };
 
   // Helper function to check if unfreeze time has expired
@@ -259,7 +280,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
     }
   };
   return (
-    <Card className="group orgon-card orgon-card-hover border-0 shadow-lg hover:scale-[1.02]">
+    <Card className="group orgon-card orgon-card-hover border-0 shadow-lg hover:scale-[1.02] cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
       <CardContent className="p-6">
         <div className="mb-4">
           {/* Header with wallet icon and name */}
@@ -282,7 +303,8 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                 variant="ghost"
                 size="sm"
                 className="h-9 w-9 p-0 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   onRefresh?.();
                   loadAccountResources();
                 }}
@@ -297,7 +319,10 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                 variant="ghost"
                 size="sm"
                 className="h-9 w-9 p-0 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/30"
-                onClick={() => onExport?.(wallet.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onExport?.(wallet.id);
+                }}
                 title="Export Private Key"
               >
                 <Download className="w-4 h-4 text-green-600" />
@@ -306,11 +331,21 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                 variant="ghost"
                 size="sm"
                 className="h-9 w-9 p-0 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/30"
-                onClick={() => onDelete?.(wallet.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete?.(wallet.id);
+                }}
                 title="Delete Wallet"
               >
                 <Trash2 className="w-4 h-4 text-red-600" />
               </Button>
+              <div className="ml-2 transition-transform duration-200" onClick={(e) => e.stopPropagation()}>
+                {isExpanded ? (
+                  <ChevronUp className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                )}
+              </div>
             </div>
           </div>
 
@@ -330,9 +365,39 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           </div>
         </div>
 
-        {/* Bandwidth & Energy Section */}
-        {accountResources && (
-          <div className="space-y-4">
+        {/* Compact info section (always visible) */}
+        <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center space-x-4">
+            {/* Bandwidth & Energy compact */}
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-600 dark:text-gray-400">Bandwidth:</span>
+              <span className="font-semibold text-blue-600 dark:text-blue-400">
+                {accountResources ? calculateBandwidth() : '...'}
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-gray-600 dark:text-gray-400">Energy:</span>
+              <span className="font-semibold text-green-600 dark:text-green-400">
+                {accountResources ? calculateEnergy() : '...'}
+              </span>
+            </div>
+          </div>
+
+          {/* Tokens count */}
+          <div className="flex items-center space-x-2">
+            <span className="text-gray-600 dark:text-gray-400">Tokens:</span>
+            <span className="font-semibold text-purple-600 dark:text-purple-400">
+              {tokens.length}
+            </span>
+          </div>
+        </div>
+
+        {/* Expanded content */}
+        {isExpanded && (
+          <>
+            {/* Bandwidth & Energy Section */}
+            {accountResources && (
+              <div className="space-y-4 mb-8 mt-6">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
                 Bandwidth & Energy
@@ -367,8 +432,8 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                           className="ml-2 flex items-center justify-between"
                         >
                           <span>
-                            {item.amount} Bandwidth (до{' '}
-                            {formatDate(item.expireTime)})
+                            {item.unfreeze_amount / 1e6} Bandwidth (до{' '}
+                            {formatDate(item.expireTime || item.unfreeze_expire_time)})
                           </span>
                           {onWithdrawExpireUnfreeze && (
                             <div className="relative flex items-center gap-1">
@@ -433,8 +498,8 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                           className="ml-2 flex items-center justify-between"
                         >
                           <span>
-                            {item.amount} Energy (до{' '}
-                            {formatDate(item.expireTime)})
+                            {item.unfreeze_amount / 1e6} Energy (до{' '}
+                            {formatDate(item.expireTime || item.unfreeze_expire_time)})
                           </span>
                           {onWithdrawExpireUnfreeze && (
                             <div className="relative flex items-center gap-1">
@@ -481,10 +546,10 @@ export const WalletCard: React.FC<WalletCardProps> = ({
         )}
 
         {/* Tokens Section */}
-        <div className="space-y-4">
+        <div className="space-y-4 mb-8">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
-              Tokens
+              Tokens ({tokens.length})
             </span>
             {(isRefreshing || tokensLoading) && (
               <RefreshCw className="w-4 h-4 animate-spin text-gray-500 dark:text-gray-400" />
@@ -492,8 +557,10 @@ export const WalletCard: React.FC<WalletCardProps> = ({
           </div>
 
           {wallet.balance && tokens.length > 0 ? (
-            <div className="space-y-2">
-              {tokens.map((token, index) => {
+            <div className="space-y-3">
+              {/* Compact view: show first 3 tokens or all if expanded */}
+              <div className={`space-y-2 ${!showAllTokens && tokens.length > 3 ? 'max-h-48 overflow-hidden' : ''}`}>
+                {(showAllTokens ? tokens : tokens.slice(0, 3)).map((token, index) => {
                 const balance = (token.value / 10 ** token.decimals).toFixed(
                   Math.min(token.decimals, 6), // Limit decimal places to 6 max for readability
                 );
@@ -576,6 +643,21 @@ export const WalletCard: React.FC<WalletCardProps> = ({
                   </div>
                 );
               })}
+              </div>
+
+              {/* Show more/less button if there are more than 3 tokens */}
+              {tokens.length > 3 && (
+                <div className="flex justify-center pt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowAllTokens(!showAllTokens)}
+                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
+                  >
+                    {showAllTokens ? 'Показать меньше' : `Показать все (${tokens.length})`}
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center justify-center py-6">
@@ -598,7 +680,7 @@ export const WalletCard: React.FC<WalletCardProps> = ({
         </div>
 
         {/* Reward Section */}
-        <div className="space-y-4">
+        <div className="space-y-4 pt-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 uppercase tracking-wide">
               Награда
@@ -673,6 +755,8 @@ export const WalletCard: React.FC<WalletCardProps> = ({
             </div>
           </div>
         </div>
+        </>
+        )}
       </CardContent>
     </Card>
   );

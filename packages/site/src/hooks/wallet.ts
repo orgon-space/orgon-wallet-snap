@@ -681,19 +681,6 @@ export class WalletService implements WalletServiceInterface {
         networkRpcUrl,
       });
 
-      // For ORC-20 tokens, we need to make contract calls
-      // This is a simplified version - in real implementation you'd use OrgonWeb or similar
-      // Currently not implemented - return null
-
-      // Note: This is a placeholder implementation
-      // In a real implementation, you would:
-      // 1. Load the contract ABI
-      // 2. Create contract instance with OrgonWeb
-      // 3. Call balanceOf(userAddress)
-      // 4. Call decimals(), symbol(), name() methods
-
-      console.warn('ORC-20 token balance fetching not implemented');
-
       return null;
     } catch (error: any) {
       console.error('Failed to get ORC-20 token balance:', error);
