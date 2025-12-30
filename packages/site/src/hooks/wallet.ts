@@ -403,10 +403,6 @@ export interface WalletServiceInterface {
 export class WalletService implements WalletServiceInterface {
   // Cache for token information to avoid repeated API calls
   private orc10TokenCache = new Map<string, Orc10TokenInfo>();
-  private orc20TokenCache = new Map<
-    string,
-    { balance: number; decimals: number; symbol: string; name: string }
-  >();
 
   constructor(
     private invokeSnap: (params: {
@@ -685,13 +681,9 @@ export class WalletService implements WalletServiceInterface {
         networkRpcUrl,
       });
 
-      // Check cache first (for token metadata, not balance)
-      const cacheKey = `${networkRpcUrl}:${contractAddress}`;
-      const cachedToken = this.orc20TokenCache.get(cacheKey);
-
       // For ORC-20 tokens, we need to make contract calls
       // This is a simplified version - in real implementation you'd use OrgonWeb or similar
-      // For now, we'll return mock data or try to get basic info
+      // Currently not implemented - return null
 
       // Note: This is a placeholder implementation
       // In a real implementation, you would:
@@ -700,36 +692,9 @@ export class WalletService implements WalletServiceInterface {
       // 3. Call balanceOf(userAddress)
       // 4. Call decimals(), symbol(), name() methods
 
-      if (cachedToken) {
-        // Update balance but keep cached metadata
-        console.log('Using cached ORC-20 token metadata for:', contractAddress);
-        return {
-          ...cachedToken,
-          balance: 0, // This should be fetched from contract.balanceOf(userAddress)
-        };
-      }
+      console.warn('ORC-20 token balance fetching not implemented');
 
-      console.warn(
-        'ORC-20 token balance fetching not fully implemented - returning mock data',
-      );
-
-      // Mock implementation for now
-      const tokenData = {
-        balance: 0, // This should be fetched from contract.balanceOf(userAddress)
-        decimals: 6, // This should be fetched from contract.decimals()
-        symbol: contractAddress.substring(0, 8), // This should be fetched from contract.symbol()
-        name: `ORC-20 Token ${contractAddress.substring(0, 8)}`, // This should be fetched from contract.name()
-      };
-
-      // Cache the token metadata (but not balance, as it can change)
-      this.orc20TokenCache.set(cacheKey, {
-        balance: 0,
-        decimals: tokenData.decimals,
-        symbol: tokenData.symbol,
-        name: tokenData.name,
-      });
-
-      return tokenData;
+      return null;
     } catch (error: any) {
       console.error('Failed to get ORC-20 token balance:', error);
       return null;
