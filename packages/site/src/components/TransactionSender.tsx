@@ -232,9 +232,9 @@ export const TransactionSender: React.FC = () => {
 
   if (walletManager.loading || networkManager.loading) {
     return (
-      <Card>
+      <Card className="orgon-card orgon-card-hover">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <Send size={20} />
             Send Transaction
           </CardTitle>
@@ -250,7 +250,7 @@ export const TransactionSender: React.FC = () => {
   }
 
   return (
-    <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+    <Card className="border-0 shadow-xl orgon-card orgon-card-hover">
       <CardHeader className="text-center pb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl mb-4 shadow-lg">
           <Send size={32} color="white" />
@@ -291,11 +291,11 @@ export const TransactionSender: React.FC = () => {
                 </SelectContent>
               </Select>
               {selectedAccount && accountWithBalance && (
-                <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                  <span className="text-sm text-green-700 dark:text-green-300">
+                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
                     Available Balance:
                   </span>
-                  <span className="font-mono text-sm font-semibold text-green-900 dark:text-green-100">
+                  <span className="font-mono text-sm font-semibold text-gray-900 dark:text-white">
                     {orgonBalance} ORGON
                   </span>
                 </div>
@@ -485,33 +485,33 @@ export const TransactionSender: React.FC = () => {
 
             {/* Transaction Preview */}
             {isFormValid && selectedAccountData && selectedNetworkData && (
-              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                <h4 className="font-medium mb-3 text-blue-900 dark:text-blue-100">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 className="font-medium mb-3 text-gray-900 dark:text-white">
                   Transaction Preview
                 </h4>
                 <div className="flex flex-col gap-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
+                    <span className="text-gray-700 dark:text-gray-300">
                       From:
                     </span>
-                    <span className="font-mono text-blue-900 dark:text-blue-100">
+                    <span className="font-mono text-gray-900 dark:text-white">
                       {selectedAccountData.name} (
                       {formatAddress(selectedAccountData.address)})
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
+                    <span className="text-gray-700 dark:text-gray-300">
                       To:
                     </span>
-                    <span className="font-mono text-blue-900 dark:text-blue-100">
+                    <span className="font-mono text-gray-900 dark:text-white">
                       {formatAddress(toAddress)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
+                    <span className="text-gray-700 dark:text-gray-300">
                       Amount:
                     </span>
-                    <span className="font-mono text-blue-900 dark:text-blue-100">
+                    <span className="font-mono text-gray-900 dark:text-white">
                       {amount}{' '}
                       {currentToken
                         ? currentToken.type === 'orc20'
@@ -521,36 +521,36 @@ export const TransactionSender: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
+                    <span className="text-gray-700 dark:text-gray-300">
                       Token Type:
                     </span>
-                    <span className="text-blue-900 dark:text-blue-100 uppercase">
+                    <span className="text-gray-900 dark:text-white uppercase">
                       {currentToken?.type || 'native'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
+                    <span className="text-gray-700 dark:text-gray-300">
                       Network:
                     </span>
-                    <span className="text-blue-900 dark:text-blue-100">
+                    <span className="text-gray-900 dark:text-white">
                       {selectedNetworkData.name}
                     </span>
                   </div>
                   {memo && (
                     <div className="flex justify-between">
-                      <span className="text-blue-700 dark:text-blue-300">
+                      <span className="text-gray-700 dark:text-gray-300">
                         Memo:
                       </span>
-                      <span className="font-mono text-blue-900 dark:text-blue-100 text-xs">
+                      <span className="font-mono text-gray-900 dark:text-white text-xs">
                         {memo}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-blue-700 dark:text-blue-300">
+                    <span className="text-gray-700 dark:text-gray-300">
                       Fee:
                     </span>
-                    <span className="font-mono text-blue-900 dark:text-blue-100">
+                    <span className="font-mono text-gray-900 dark:text-white">
                       {calculateTransactionFee(gasPrice, gasLimit)} ORGON
                     </span>
                   </div>

@@ -94,7 +94,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               onClick={onRefresh}
               className="h-9 w-9 p-0 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/30"
             >
-              <RefreshCw className="w-4 h-4 text-blue-600" />
+              <RefreshCw className="w-4 h-4 text-gray-600 dark:text-gray-400" />
             </Button>
             <Button
               variant="ghost"
@@ -253,7 +253,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
                       setIsMenuOpen(false);
                     }}
                   >
-                    <Cog className="w-4 h-4 mr-2" />
+                    <Cog className="w-4 h-4 mr-2 text-white" />
                     Settings
                   </Button>
                   <Button

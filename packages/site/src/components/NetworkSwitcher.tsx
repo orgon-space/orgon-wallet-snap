@@ -59,7 +59,7 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
   const getNetworkBadge = (network: Network) => {
     if (network.chainId.includes('mainnet')) {
       return (
-        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200">
           Mainnet
         </span>
       );
@@ -89,7 +89,7 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
 
   if (networkManager.loading) {
     return (
-      <Card className={className}>
+      <Card className={`orgon-card orgon-card-hover ${className}`}>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -101,7 +101,7 @@ export const NetworkSwitcher: React.FC<NetworkSwitcherProps> = ({
   }
 
   return (
-    <Card className={className}>
+    <Card className={`orgon-card orgon-card-hover ${className}`}>
       <CardContent className="p-4">
         <div className="space-y-3">
           <div className="flex items-center gap-2">

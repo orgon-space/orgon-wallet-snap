@@ -272,9 +272,9 @@ export const ResourceDelegation: React.FC = () => {
 
   if (walletManager.loading || networkManager.loading) {
     return (
-      <Card>
+      <Card className="orgon-card orgon-card-hover">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-white">
             <Users size={20} />
             Resource Delegation
           </CardTitle>
@@ -282,7 +282,7 @@ export const ResourceDelegation: React.FC = () => {
         <CardContent>
           <div className="text-center py-8">
             <Loader2 size={32} className="animate-spin mx-auto mb-4" />
-            <div className="text-gray-500">Loading...</div>
+            <div className="text-slate-500">Loading...</div>
           </div>
         </CardContent>
       </Card>
@@ -290,7 +290,7 @@ export const ResourceDelegation: React.FC = () => {
   }
 
   return (
-    <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+    <Card className="border-0 shadow-xl orgon-card orgon-card-hover">
       <CardHeader className="text-center pb-6">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-3xl mb-4 shadow-lg">
           <Users size={32} color="white" />
@@ -309,7 +309,7 @@ export const ResourceDelegation: React.FC = () => {
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 {/* From Account */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white">
                     From Account
                   </label>
                   <Select
@@ -337,42 +337,44 @@ export const ResourceDelegation: React.FC = () => {
 
                 {/* Resource Type */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white">
                     Resource Type
                   </label>
-                  <RadioGroup
-                    value={resourceType}
-                    onValueChange={(value) =>
-                      setResourceType(value as ResourceType)
-                    }
-                    className="flex gap-6"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="ENERGY" id="energy" />
-                      <Label
-                        htmlFor="energy"
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Zap size={16} className="text-yellow-500" />
-                        Energy
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="BANDWIDTH" id="bandwidth" />
-                      <Label
-                        htmlFor="bandwidth"
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Shield size={16} className="text-green-500" />
-                        Bandwidth
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  <div className="orgon-card orgon-card-hover p-4 rounded-xl">
+                    <RadioGroup
+                      value={resourceType}
+                      onValueChange={(value) =>
+                        setResourceType(value as ResourceType)
+                      }
+                      className="flex gap-6"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="ENERGY" id="energy" />
+                        <Label
+                          htmlFor="energy"
+                          className="flex items-center gap-2 cursor-pointer text-white"
+                        >
+                          <Zap size={16} className="text-yellow-300" />
+                          Energy
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="BANDWIDTH" id="bandwidth" />
+                        <Label
+                          htmlFor="bandwidth"
+                          className="flex items-center gap-2 cursor-pointer text-white"
+                        >
+                          <Shield size={16} className="text-green-300" />
+                          Bandwidth
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
                 </div>
 
                 {/* Receiver Address */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white">
                     Receiver Address
                   </label>
                   <Input
@@ -387,7 +389,7 @@ export const ResourceDelegation: React.FC = () => {
 
                 {/* Amount */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white">
                     Amount (ORGON)
                   </label>
                   <Input
@@ -407,7 +409,7 @@ export const ResourceDelegation: React.FC = () => {
 
                 {/* Memo */}
                 <div className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  <label className="text-sm font-semibold text-slate-900 dark:text-white">
                     Memo (Optional)
                   </label>
                   <Textarea
@@ -430,7 +432,7 @@ export const ResourceDelegation: React.FC = () => {
                     type="button"
                     variant="ghost"
                     onClick={() => setShowAdvanced(!showAdvanced)}
-                    className="w-full"
+                    className="w-full text-slate-900 dark:text-white hover:text-slate-900 dark:hover:text-white"
                   >
                     <Calculator size={16} className="mr-2" />
                     {showAdvanced ? 'Hide' : 'Show'} Advanced Options
@@ -439,7 +441,7 @@ export const ResourceDelegation: React.FC = () => {
                   {showAdvanced && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                       <div className="flex flex-col gap-2">
-                        <label className="text-sm font-medium">
+                        <label className="text-sm font-medium text-slate-900 dark:text-white">
                           Gas Price (ORGON)
                         </label>
                         <Input
@@ -476,67 +478,67 @@ export const ResourceDelegation: React.FC = () => {
 
                 {/* Transaction Preview */}
                 {isFormValid && selectedAccountData && selectedNetworkData && (
-                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <h4 className="font-medium mb-3 text-blue-900 dark:text-blue-100">
+                  <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <h4 className="font-medium mb-3 text-gray-900 dark:text-white">
                       Transaction Preview
                     </h4>
                     <div className="flex flex-col gap-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-blue-700 dark:text-blue-300">
+                        <span className="text-gray-700 dark:text-gray-300">
                           From:
                         </span>
-                        <span className="font-mono text-blue-900 dark:text-blue-100">
+                        <span className="font-mono text-gray-900 dark:text-white">
                           {selectedAccountData.name} (
                           {formatAddress(selectedAccountData.address)})
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-700 dark:text-blue-300">
+                        <span className="text-gray-700 dark:text-gray-300">
                           To:
                         </span>
-                        <span className="font-mono text-blue-900 dark:text-blue-100">
+                        <span className="font-mono text-gray-900 dark:text-white">
                           {formatAddress(receiverAddress)}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-700 dark:text-blue-300">
+                        <span className="text-gray-700 dark:text-gray-300">
                           Operation:
                         </span>
-                        <span className="text-blue-900 dark:text-blue-100 uppercase">
+                        <span className="text-gray-900 dark:text-white uppercase">
                           delegate {resourceType}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-700 dark:text-blue-300">
+                        <span className="text-gray-700 dark:text-gray-300">
                           Amount:
                         </span>
-                        <span className="font-mono text-blue-900 dark:text-blue-100">
+                        <span className="font-mono text-gray-900 dark:text-white">
                           {amount} ORGON
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-blue-700 dark:text-blue-300">
+                        <span className="text-gray-700 dark:text-gray-300">
                           Network:
                         </span>
-                        <span className="text-blue-900 dark:text-blue-100">
+                        <span className="text-gray-900 dark:text-white">
                           {selectedNetworkData.name}
                         </span>
                       </div>
                       {memo && (
                         <div className="flex justify-between">
-                          <span className="text-blue-700 dark:text-blue-300">
+                          <span className="text-gray-700 dark:text-gray-300">
                             Memo:
                           </span>
-                          <span className="font-mono text-blue-900 dark:text-blue-100 text-xs">
+                          <span className="font-mono text-gray-900 dark:text-white text-xs">
                             {memo}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-blue-700 dark:text-blue-300">
+                        <span className="text-gray-700 dark:text-gray-300">
                           Fee:
                         </span>
-                        <span className="font-mono text-blue-900 dark:text-blue-100">
+                        <span className="font-mono text-gray-900 dark:text-white">
                           {calculateTransactionFee(gasPrice, gasLimit)} ORGON
                         </span>
                       </div>
@@ -634,8 +636,8 @@ export const ResourceDelegation: React.FC = () => {
             {/* Delegation Overview Section */}
             <div className="border-t pt-8">
               <div className="flex items-center gap-2 mb-6">
-                <Users size={20} />
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <Users size={20} className="text-blue-500 dark:text-blue-400" />
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                   Delegation Overview
                 </h2>
               </div>
@@ -644,30 +646,30 @@ export const ResourceDelegation: React.FC = () => {
                 {loadingDelegation ? (
                   <div className="text-center py-8">
                     <Loader2 size={32} className="animate-spin mx-auto mb-4" />
-                    <div className="text-gray-500">Loading delegation data...</div>
+                    <div className="text-slate-500">Loading delegation data...</div>
                   </div>
                 ) : delegationState ? (
                   <>
                     {/* Max Delegatable */}
-                    <Card>
+                    <Card className="orgon-card orgon-card-hover">
                       <CardHeader>
-                        <CardTitle className="text-lg">Max Delegatable</CardTitle>
+                        <CardTitle className="text-lg text-slate-900 dark:text-white">Max Delegatable</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                            <div className="text-2xl font-bold text-blue-600">
+                          <div className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                            <div className="text-2xl font-bold text-slate-900 dark:text-white">
                               {formatNumberCommaDot(delegationState.maxDelegatable.ENERGY / 1e6)} Staked ORGON
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-sm text-slate-600 dark:text-slate-400">
                               ENERGY ≈ {formatNumberCommaDot(delegationState.maxDelegatable.ENERGY * delegationState.prices.staking.ENERGY / 1e6)} Energy
                             </div>
                           </div>
-                          <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                            <div className="text-2xl font-bold text-green-600">
+                          <div className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                            <div className="text-2xl font-bold text-slate-900 dark:text-white">
                               {formatNumberCommaDot(delegationState.maxDelegatable.BANDWIDTH / 1e6)} Staked ORGON
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-sm text-slate-600 dark:text-slate-400">
                               BANDWIDTH ≈ {formatNumberCommaDot(delegationState.maxDelegatable.BANDWIDTH * delegationState.prices.staking.BANDWIDTH / 1e6)} Bandwidth
                             </div>
                           </div>
@@ -676,25 +678,25 @@ export const ResourceDelegation: React.FC = () => {
                     </Card>
 
                     {/* Currently Delegated Out */}
-                    <Card>
+                    <Card className="orgon-card orgon-card-hover">
                       <CardHeader>
-                        <CardTitle className="text-lg">Currently Delegated Out</CardTitle>
+                        <CardTitle className="text-lg text-slate-900 dark:text-white">Currently Delegated Out</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                            <div className="text-2xl font-bold text-orange-600">
+                          <div className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                            <div className="text-2xl font-bold text-slate-900 dark:text-white">
                               {formatNumberCommaDot(delegationState.totals.delegatedOut.ENERGY / 1e6)} ORGON
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-sm text-slate-600 dark:text-slate-400">
                               ENERGY ≈ {formatNumberCommaDot(delegationState.totals.delegatedOut.ENERGY * delegationState.prices.staking.ENERGY / 1e6)} Energy
                             </div>
                           </div>
-                          <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-                            <div className="text-2xl font-bold text-purple-600">
+                          <div className="text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                            <div className="text-2xl font-bold text-slate-900 dark:text-white">
                               {formatNumberCommaDot(delegationState.totals.delegatedOut.BANDWIDTH / 1e6)} ORGON
                             </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                            <div className="text-sm text-slate-600 dark:text-slate-400">
                               BANDWIDTH ≈ {formatNumberCommaDot(delegationState.totals.delegatedOut.BANDWIDTH * delegationState.prices.staking.BANDWIDTH / 1e6)} Bandwidth
                             </div>
                           </div>
@@ -703,9 +705,9 @@ export const ResourceDelegation: React.FC = () => {
                     </Card>
 
                     {/* Delegated to others */}
-                    <Card>
+                    <Card className="orgon-card orgon-card-hover">
                       <CardHeader>
-                        <CardTitle className="text-lg">Delegated to Others</CardTitle>
+                        <CardTitle className="text-lg text-slate-900 dark:text-white">Delegated to Others</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {delegationState.outgoing.length > 0 ? (
@@ -719,8 +721,8 @@ export const ResourceDelegation: React.FC = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                   <div className="flex flex-col">
-                                    <span className="text-gray-600 dark:text-gray-400">Energy</span>
-                                    <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
+                                    <span className="text-slate-600 dark:text-slate-400">Energy</span>
+                                    <span className="font-mono font-semibold text-slate-900 dark:text-white">
                                       {formatNumberCommaDot(delegation.ENERGY / 1e6)} ORGON
                                     </span>
                                     {delegation.ENERGY > 0 && (
@@ -735,7 +737,7 @@ export const ResourceDelegation: React.FC = () => {
                                     )}
                                   </div>
                                   <div className="flex flex-col">
-                                    <span className="text-gray-600 dark:text-gray-400">Bandwidth</span>
+                                    <span className="text-slate-600 dark:text-slate-400">Bandwidth</span>
                                     <span className="font-mono font-semibold text-green-600 dark:text-green-400">
                                       {formatNumberCommaDot(delegation.BANDWIDTH / 1e6)} ORGON
                                     </span>
@@ -755,7 +757,7 @@ export const ResourceDelegation: React.FC = () => {
                             ))}
                           </div>
                         ) : (
-                          <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                          <div className="text-center py-4 text-slate-500 dark:text-slate-400">
                             Ничего не делегировано другим аккаунтам
                           </div>
                         )}
@@ -763,9 +765,9 @@ export const ResourceDelegation: React.FC = () => {
                     </Card>
 
                     {/* Delegated to me */}
-                    <Card>
+                    <Card className="orgon-card orgon-card-hover">
                       <CardHeader>
-                        <CardTitle className="text-lg">Delegated to Me</CardTitle>
+                        <CardTitle className="text-lg text-slate-900 dark:text-white">Delegated to Me</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {delegationState.incoming.length > 0 ? (
@@ -779,13 +781,13 @@ export const ResourceDelegation: React.FC = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                   <div className="flex flex-col">
-                                    <span className="text-gray-600 dark:text-gray-400">Energy</span>
-                                    <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
+                                    <span className="text-slate-600 dark:text-slate-400">Energy</span>
+                                    <span className="font-mono font-semibold text-slate-900 dark:text-white">
                                       {formatNumberCommaDot(delegation.ENERGY / 1e6)} ORGON
                                     </span>
                                   </div>
                                   <div className="flex flex-col">
-                                    <span className="text-gray-600 dark:text-gray-400">Bandwidth</span>
+                                    <span className="text-slate-600 dark:text-slate-400">Bandwidth</span>
                                     <span className="font-mono font-semibold text-green-600 dark:text-green-400">
                                       {formatNumberCommaDot(delegation.BANDWIDTH / 1e6)} ORGON
                                     </span>
@@ -795,7 +797,7 @@ export const ResourceDelegation: React.FC = () => {
                             ))}
                           </div>
                         ) : (
-                          <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                          <div className="text-center py-4 text-slate-500 dark:text-slate-400">
                             Ничего не делегировано этому аккаунту
                           </div>
                         )}
@@ -804,8 +806,8 @@ export const ResourceDelegation: React.FC = () => {
                   </>
                 ) : (
                   <div className="text-center py-8">
-                    <Users size={48} className="mx-auto text-gray-400 mb-4" />
-                    <div className="text-gray-500">No delegation data available</div>
+                    <Users size={48} className="mx-auto text-slate-400 mb-4" />
+                    <div className="text-slate-500">No delegation data available</div>
                   </div>
                 )}
               </div>
@@ -813,8 +815,8 @@ export const ResourceDelegation: React.FC = () => {
 
             {!selectedAccount && (
               <div className="text-center py-8">
-                <Users size={48} className="mx-auto text-gray-400 mb-4" />
-                <div className="text-gray-500">Select an account to view delegation information</div>
+                <Users size={48} className="mx-auto text-slate-400 mb-4" />
+                <div className="text-slate-500">Select an account to view delegation information</div>
               </div>
             )}
             </div>

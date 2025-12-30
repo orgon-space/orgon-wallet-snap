@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   AlertCircle,
   Cog,
@@ -47,8 +47,10 @@ import { isLocalSnap, shouldDisplayReconnectButton } from '../utils/helpers';
 
 export const Dashboard: React.FC = () => {
   const { error } = useMetaMaskContext();
-  const { isFlask, snapsDetected, installedSnap } = useMetaMask();
+  const { isFlask, snapsDetected, installedSnap, isLoading } = useMetaMask();
   const requestSnap = useRequestSnap();
+
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const walletManager = useWalletManager();
   const networkManager = useNetworkManager();
@@ -61,6 +63,19 @@ export const Dashboard: React.FC = () => {
   const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
     ? isFlask
     : snapsDetected;
+
+  // Add small delay before showing welcome page to prevent flickering
+  useEffect(() => {
+    if (!isLoading && !installedSnap) {
+      const timer = setTimeout(() => {
+        setShowWelcome(true);
+      }, 300); // 300ms delay
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowWelcome(false);
+    }
+  }, [isLoading, installedSnap]);
 
   // Load initial data when snap is installed
   useEffect(() => {
@@ -156,8 +171,27 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  // If snap is not installed, show installation UI
-  if (!installedSnap) {
+  // Show loading screen while checking snap status
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-3xl mb-6 animate-pulse">
+            <Wallet size={48} color="white" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Загрузка Orgon Snap
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Проверяем статус подключения...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // If snap is not installed, show installation UI (with delay to prevent flickering)
+  if (showWelcome) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
         <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
@@ -168,7 +202,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
                 Welcome to{' '}
-                <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-600 bg-clip-text text-transparent">
+                <span className="text-blue-600 dark:text-blue-400">
                   Orgon Snap
                 </span>
               </h1>
@@ -189,7 +223,7 @@ export const Dashboard: React.FC = () => {
 
             <div className="flex flex-col gap-6 max-w-md mx-auto">
               {!isMetaMaskReady && (
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                <Card className="border-0 shadow-xl orgon-card orgon-card-hover">
                   <CardHeader className="text-center pb-4">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-2xl mb-4">
                       <Download size={24} color="white" />
@@ -215,7 +249,7 @@ export const Dashboard: React.FC = () => {
               )}
 
               {isMetaMaskReady && (
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
+                <Card className="border-0 shadow-xl orgon-card orgon-card-hover">
                   <CardHeader className="text-center pb-4">
                     <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
                       <Wallet size={24} color="white" />
@@ -328,6 +362,8 @@ export const Dashboard: React.FC = () => {
                 onCreateWallet={() => uiActions.setActiveTab('create')}
                 onSendTransaction={() => uiActions.setActiveTab('send')}
                 onImportWallet={() => uiActions.setActiveTab('create')}
+                onStaking={() => uiActions.setActiveTab('staking')}
+                onDelegation={() => uiActions.setActiveTab('delegation')}
                 onNetworkChange={handleNetworkChange}
                 onRefreshWallet={(accountId) =>
                   walletManager.refreshWalletBalance(accountId)
@@ -380,10 +416,10 @@ export const Dashboard: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="settings">
-              <Card>
+              <Card className="orgon-card orgon-card-hover">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Cog className="w-5 h-5" />
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <Cog className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     Settings
                   </CardTitle>
                   <CardDescription>
@@ -409,10 +445,10 @@ export const Dashboard: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="history">
-              <Card>
+              <Card className="orgon-card orgon-card-hover">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <RefreshCw className="w-5 h-5" />
+                  <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                    <RefreshCw className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     History
                   </CardTitle>
                   <CardDescription>

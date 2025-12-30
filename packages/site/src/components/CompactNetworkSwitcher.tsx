@@ -68,13 +68,13 @@ export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
   if (loading) {
     return (
       <Button
-        variant="ghost"
+        variant="outline"
         size="sm"
-        className={`h-8 px-2 ${className}`}
+        className={`orgon-card orgon-card-hover h-10 px-3 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white ${className}`}
         disabled
       >
-        <Loader2 className="w-3 h-3 animate-spin mr-1" />
-        <span className="text-xs">Loading...</span>
+        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        <span className="text-sm">Loading...</span>
       </Button>
     );
   }
@@ -84,10 +84,10 @@ export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
       <Button
         variant="ghost"
         size="sm"
-        className={`h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 ${className}`}
+        className={`orgon-card orgon-card-hover h-8 px-2 text-red-600 ${className}`}
       >
-        <AlertCircle className="w-3 h-3 mr-1" />
-        <span className="text-xs">Error</span>
+        <AlertCircle className="w-3 h-3 mr-1 text-red-500" />
+        <span className="text-xs text-slate-900 dark:text-white">Error</span>
       </Button>
     );
   }
@@ -99,12 +99,12 @@ export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
         onValueChange={handleNetworkSwitch}
         disabled={switching}
       >
-        <SelectTrigger className={`h-8 w-auto min-w-[120px] ${className}`}>
+        <SelectTrigger className={`orgon-card orgon-card-hover h-8 w-auto min-w-[120px] text-slate-900 dark:text-white ${className}`}>
           <SelectValue placeholder="Network">
             {currentNetwork && (
               <div className="flex items-center gap-1">
                 {getNetworkIcon(currentNetwork)}
-                <span className="text-xs font-medium">
+                <span className="text-xs font-medium text-slate-900 dark:text-white">
                   {formatNetworkName(currentNetwork.name)}
                 </span>
                 {switching && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
@@ -112,16 +112,16 @@ export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
             )}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="orgon-card orgon-card-hover">
           {networks.map((network) => (
-            <SelectItem key={network.chainId} value={network.chainId}>
-              <div className="flex items-center gap-2 w-full">
+            <SelectItem key={network.chainId} value={network.chainId} className="hover:bg-white/20 dark:hover:bg-slate-800/50">
+              <div className="flex items-center gap-2 w-full text-slate-900 dark:text-white">
                 {getNetworkIcon(network)}
                 <div className="flex-1">
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium text-slate-900 dark:text-white">
                     {formatNetworkName(network.name)}
                   </span>
-                  <span className="text-xs text-gray-500 ml-1">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">
                     {getNetworkBadge(network)}
                   </span>
                 </div>
@@ -143,36 +143,36 @@ export const CompactNetworkSwitcher: React.FC<CompactNetworkSwitcherProps> = ({
         <Button
           variant="ghost"
           size="sm"
-          className={`h-8 px-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 ${className}`}
+          className={`orgon-card orgon-card-hover h-8 px-2 text-slate-900 dark:text-white ${className}`}
           disabled={switching}
         >
           <div className="flex items-center gap-1">
             {currentNetwork && getNetworkIcon(currentNetwork)}
-            <Globe className="w-3 h-3" />
-            <span className="text-xs font-medium">
+            <Globe className="w-3 h-3 text-slate-600 dark:text-slate-400" />
+            <span className="text-xs font-medium text-slate-900 dark:text-white">
               {currentNetwork
                 ? formatNetworkName(currentNetwork.name)
                 : 'Network'}
             </span>
             {switching && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
-            <ChevronDown className="w-3 h-3 ml-1" />
+            <ChevronDown className="w-3 h-3 ml-1 text-slate-600 dark:text-slate-400" />
           </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 orgon-card orgon-card-hover">
         {networks.map((network) => (
           <DropdownMenuItem
             key={network.chainId}
             onClick={() => handleNetworkSwitch(network.chainId)}
             disabled={switching}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 text-slate-900 dark:text-white hover:bg-white/20 dark:hover:bg-slate-800/50"
           >
             {getNetworkIcon(network)}
             <div className="flex-1">
-              <div className="text-sm font-medium">
+              <div className="text-sm font-medium text-slate-900 dark:text-white">
                 {formatNetworkName(network.name)}
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
                 {getNetworkBadge(network)} • {network.chainId}
               </div>
             </div>
