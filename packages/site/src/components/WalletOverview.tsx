@@ -8,6 +8,8 @@ interface WalletOverviewProps {
   onCreateWallet: () => void;
   onSendTransaction: () => void;
   onImportWallet: () => void;
+  onStaking: () => void;
+  onDelegation: () => void;
   onNetworkChange?: (network: any) => void;
   onRefreshWallet?: (id: string) => void;
   onDeleteWallet?: (id: string) => void;

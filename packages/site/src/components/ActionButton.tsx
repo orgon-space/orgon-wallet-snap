@@ -1,8 +1,8 @@
 import React from 'react';
-import { Plus, ExternalLink, Send } from 'lucide-react';
+import { Plus, ExternalLink, Send, Snowflake, Users } from 'lucide-react';
 import { Button } from './ui/button';
 
-export type ActionButtonVariant = 'create' | 'import' | 'send';
+export type ActionButtonVariant = 'create' | 'import' | 'send' | 'stake' | 'delegate';
 
 interface ActionButtonProps {
   variant: ActionButtonVariant;
@@ -26,6 +26,16 @@ const ACTION_CONFIG = {
     icon: Send,
     label: 'Send ORGON',
     gradient: 'from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700',
+  },
+  stake: {
+    icon: Snowflake,
+    label: 'Stake Resources',
+    gradient: 'from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700',
+  },
+  delegate: {
+    icon: Users,
+    label: 'Delegate',
+    gradient: 'from-cyan-500 to-teal-600 hover:from-cyan-600 hover:to-teal-700',
   },
 } as const;
 

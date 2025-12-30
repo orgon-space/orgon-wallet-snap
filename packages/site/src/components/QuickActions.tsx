@@ -6,6 +6,8 @@ interface QuickActionsProps {
   onCreateWallet: () => void;
   onSendTransaction: () => void;
   onImportWallet: () => void;
+  onStaking: () => void;
+  onDelegation: () => void;
   hasWallets: boolean;
 }
 
@@ -13,6 +15,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onCreateWallet,
   onSendTransaction,
   onImportWallet,
+  onStaking,
+  onDelegation,
   hasWallets,
 }) => {
   return (
@@ -24,7 +28,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           <ActionButton
             variant="create"
             onClick={onCreateWallet}
@@ -36,6 +40,16 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           <ActionButton
             variant="send"
             onClick={onSendTransaction}
+            disabled={!hasWallets}
+          />
+          <ActionButton
+            variant="stake"
+            onClick={onStaking}
+            disabled={!hasWallets}
+          />
+          <ActionButton
+            variant="delegate"
+            onClick={onDelegation}
             disabled={!hasWallets}
           />
         </div>

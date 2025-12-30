@@ -10,6 +10,8 @@ interface WalletOverviewContainerProps {
   onCreateWallet: () => void;
   onSendTransaction: () => void;
   onImportWallet: () => void;
+  onStaking: () => void;
+  onDelegation: () => void;
   onNetworkChange?: (network: any) => void;
   onRefreshWallet?: (id: string) => void;
   onDeleteWallet?: (id: string) => void;
@@ -33,6 +35,8 @@ export const WalletOverviewContainer: React.FC<WalletOverviewContainerProps> = (
   onCreateWallet,
   onSendTransaction,
   onImportWallet,
+  onStaking,
+  onDelegation,
   onNetworkChange,
   onRefreshWallet,
   onDeleteWallet,
@@ -83,6 +87,8 @@ export const WalletOverviewContainer: React.FC<WalletOverviewContainerProps> = (
     onCreateWallet: walletActions.handleCreateWallet,
     onSendTransaction: walletActions.handleSendTransaction,
     onImportWallet: walletActions.handleImportWallet,
+    onStaking,
+    onDelegation,
     onRefreshWallet: walletActions.handleRefreshWallet,
     onDeleteWallet: walletActions.handleDeleteWallet,
     onExportWallet: walletActions.handleExportWallet,

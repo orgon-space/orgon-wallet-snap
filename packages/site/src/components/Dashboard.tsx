@@ -362,6 +362,8 @@ export const Dashboard: React.FC = () => {
                 onCreateWallet={() => uiActions.setActiveTab('create')}
                 onSendTransaction={() => uiActions.setActiveTab('send')}
                 onImportWallet={() => uiActions.setActiveTab('create')}
+                onStaking={() => uiActions.setActiveTab('staking')}
+                onDelegation={() => uiActions.setActiveTab('delegation')}
                 onNetworkChange={handleNetworkChange}
                 onRefreshWallet={(accountId) =>
                   walletManager.refreshWalletBalance(accountId)

@@ -23,6 +23,8 @@ interface WalletOverviewViewProps {
   onCreateWallet: () => void;
   onSendTransaction: () => void;
   onImportWallet: () => void;
+  onStaking: () => void;
+  onDelegation: () => void;
   onRefreshWallet: (walletId: string) => void;
   onDeleteWallet: (walletId: string) => void;
   onExportWallet: (walletId: string) => void;
@@ -47,6 +49,8 @@ export const WalletOverviewView: React.FC<WalletOverviewViewProps> = ({
   onCreateWallet,
   onSendTransaction,
   onImportWallet,
+  onStaking,
+  onDelegation,
   onRefreshWallet,
   onDeleteWallet,
   onExportWallet,
@@ -61,6 +65,8 @@ export const WalletOverviewView: React.FC<WalletOverviewViewProps> = ({
         onCreateWallet={onCreateWallet}
         onSendTransaction={onSendTransaction}
         onImportWallet={onImportWallet}
+        onStaking={onStaking}
+        onDelegation={onDelegation}
         hasWallets={hasWallets}
       />
 
